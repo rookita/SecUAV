@@ -5,7 +5,6 @@
 #define MAXLEN 1024
 #define DEBUG 1
 
-int cfd = -1;
 void *receive(void* arg) {
   Recive_func_arg* rfa = (Recive_func_arg *)arg;
   int ret = 0;
@@ -15,7 +14,7 @@ void *receive(void* arg) {
   
   while(1) {
     bzero(msg, MAXLEN);
-    ret = recvfrom(cfd, &msg, MAXLEN,0, (struct sockaddr *)&src_addr, &src_addr_size); 
+    ret = recvfrom(rfa->sock_fd, &msg, MAXLEN,0, (struct sockaddr *)&src_addr, &src_addr_size); 
     if (-1 == ret) {
       print_err("recv failed",__LINE__,errno);
     }
@@ -25,6 +24,7 @@ void *receive(void* arg) {
         char* src = msg + 1;
         size_t auth_msg_len = sizeof(auth_msg);
         memmove(&auth_msg, src, auth_msg_len);
+        print_char_arr(msg, auth_msg_len+1);
         
         if (DEBUG){
           printf("AUTH MESSAGE!!\n");
@@ -48,9 +48,12 @@ void send_auth_msg(int cfd, Auth* auth_msg, unsigned char* Dest_IP, int Dest_POR
   struct sockaddr_in dest_addr;
   Dest_Socket_init(&dest_addr, Dest_IP, Dest_PORT);
   int len = sizeof(*auth_msg);
-  char* padding_msg = malloc((len + 1) * sizeof(char*));
+  char* padding_msg = malloc((len + 1) * sizeof(char));
   char* dest = padding_msg + 1;
+  //printf("%d\n",len);
   memmove((void* )dest, (void* )auth_msg, len);
+  printf("padding_msg: ");
+  print_char_arr(padding_msg, len+1);
   send_msg(cfd, padding_msg, (struct sockaddr*)&dest_addr);
   free(padding_msg);
 }
@@ -64,7 +67,7 @@ int send_msg(int cfd, void* msg, struct sockaddr* addr){
 
 int My_Socket_init(const unsigned char* IP, int PORT){
   int ret = -1;
-  cfd = socket(AF_INET, SOCK_DGRAM, 0);
+  int cfd = socket(AF_INET, SOCK_DGRAM, 0);
   if (-1 == cfd) {
     print_err("socket failed", __LINE__, errno);
   }

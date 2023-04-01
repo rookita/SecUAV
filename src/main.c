@@ -12,18 +12,16 @@ Uav all_uav[10];
 int main()
 {
   Uav_init(&all_uav[0], 0, MY_IP, MY_PORT);
-  Uav_init(&all_uav[1], 1, "192.168.8.187", 6666);
+  Uav_init(&all_uav[1], 2, "192.168.8.187", 6666);
   
   //PART 1
   int cfd = My_Socket_init(MY_IP, MY_PORT);
-  struct sockaddr_in dest_addr;
-  Dest_Socket_init(&dest_addr, all_uav[1].IP, all_uav[1].PORT);
 
   //PART2
   unsigned char Sm4_key[16] = "Secret Key12345";
   unsigned char Sm4_iv[16] = "0123456789abcde";
   
-  /*
+  /*00020000000000000010000000000000005802402B75F577122F4CD89B8C84C731
   //PART3
   Auth auth_msg = {0};
   int type = 0;
@@ -59,6 +57,7 @@ int main()
   strcpy(ReciveFunArg.Sm4_key, Sm4_key);
   strcpy(ReciveFunArg.Sm4_iv, Sm4_iv);
   ReciveFunArg.decrypted_r = decrypted_r;
+  ReciveFunArg.sock_fd = cfd;
   int ret = pthread_create(&id,NULL,receive,(void* )&ReciveFunArg);
   if (-1 == ret) print_err("pthread_create failed", __LINE__, errno);
 
@@ -75,23 +74,25 @@ int main()
     case 0:
       int rlen = 15;
       unsigned char* r = (unsigned char*) malloc(rlen);
-      unsigned char Dest_IP[20];
-      int Dest_PORT;
+      unsigned char Dest_IP[20] = "192.168.8.187";
+      int Dest_PORT = 6666;
       Auth auth_msg = {0};
       generate_auth_message(&auth_msg, rlen, all_uav[0].id, r);
-      unsigned char* encrypted_r = (unsigned char*) malloc(2 * auth_msg.rlen * sizeof(unsigned char));
+      unsigned char* encrypted_r = (unsigned char*) malloc(16 * sizeof(unsigned char));
       size_t clen;
       printf("origin randnum is: ");
       print_char_arr(auth_msg.r, auth_msg.rlen);
-      my_sm4_cbc_padding_encrypt(Sm4_key, Sm4_iv, auth_msg.r, auth_msg.rlen, encrypted_r, &clen, DEBUG);
-      auth_msg.r = encrypted_r;
+      my_sm4_cbc_padding_encrypt(Sm4_key, Sm4_iv, r, auth_msg.rlen, encrypted_r, &clen, DEBUG);
+      strcpy(auth_msg.r, encrypted_r);
       auth_msg.rlen = clen;
       printf("encrypted randnum is: ");
       print_char_arr(auth_msg.r, auth_msg.rlen);
+      /*
       printf("Input Dest IP: ");
       scanf("%s", Dest_IP);
       printf("Input Dest PORT: ");
       scanf("%d", &Dest_PORT);
+      */
       send_auth_msg(cfd, &auth_msg, Dest_IP, Dest_PORT);
       printf("Send Success!\n");
       free(encrypted_r);

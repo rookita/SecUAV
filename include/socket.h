@@ -15,7 +15,8 @@
 typedef struct recive_func_arg{
   unsigned char Sm4_key[16];
   unsigned char Sm4_iv[16];
-  unsigned char* decrypted_r; 
+  unsigned char* decrypted_r;
+  int sock_fd;
 }Recive_func_arg;
 
 void *receive(void* arg);
