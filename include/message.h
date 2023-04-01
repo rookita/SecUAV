@@ -1,9 +1,16 @@
-#include <stdlib.h>
-#define RANDNUM_SIZE 15
+#ifndef _MESSAGE
+#define _MESSAGE
 
-typedef struct message {
+#include <stdlib.h>
+
+
+//认证消息
+typedef struct auth {
   int id;
-  int type;
-  unsigned char r[RANDNUM_SIZE]; //随机数
+  unsigned char* r; //随机数
   size_t rlen;
-}Message;
+}Auth;
+
+void generate_auth_message(Auth* auth_msg, int rlen, int id, unsigned char* r);
+
+#endif

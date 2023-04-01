@@ -1,0 +1,17 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/usr/lib/gcc/x86_64-linux-gnu/11/include",
+                "/usr/local/include",
+                "/usr/include/x86_64-linux-gnu",
+                "/usr/include",
+                "/home/rookia/Program/GmSSL/include"
+            ],
+            "defines": []
+        }
+    ],
+    "version": 4
+}

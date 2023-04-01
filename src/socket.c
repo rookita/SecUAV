@@ -2,43 +2,63 @@
 #include "../include/utils.h"
 #include "../include/crypto.h"
 
+#define MAXLEN 1024
+#define DEBUG 1
+
 int cfd = -1;
 void *receive(void* arg) {
   Recive_func_arg* rfa = (Recive_func_arg *)arg;
   int ret = 0;
-  Message uav_msg = {0};
+  char* msg = malloc(MAXLEN);
   struct sockaddr_in src_addr = {0};
   int src_addr_size = sizeof(src_addr);
+  
   while(1) {
-    bzero(&uav_msg, sizeof(uav_msg));
-    ret = recvfrom(cfd, &uav_msg, sizeof(uav_msg),0, (struct sockaddr *)&src_addr, &src_addr_size); 
+    bzero(msg, MAXLEN);
+    ret = recvfrom(cfd, &msg, MAXLEN,0, (struct sockaddr *)&src_addr, &src_addr_size); 
     if (-1 == ret) {
       print_err("recv failed",__LINE__,errno);
     }
     else if (ret > 0){
-
-      printf("uav id = %d\n", uav_msg.id);
-      printf("uav_msg type = %d\n", uav_msg.type);
-      printf("uav_msg r: ");
-      print_char_arr(uav_msg.r, uav_msg.rlen);
-      printf("uav_msg rlen = %ld\n", uav_msg.rlen);
-
-      if (uav_msg.type == 0){
+      if (*msg == 0){   //auth message
+        Auth auth_msg = {0};
+        char* src = msg + 1;
+        size_t auth_msg_len = sizeof(auth_msg);
+        memmove(&auth_msg, src, auth_msg_len);
+        
+        if (DEBUG){
+          printf("AUTH MESSAGE!!\n");
+          printf("uav id = %d\n", auth_msg.id);
+          printf("auth_msg r: ");
+          print_char_arr(auth_msg.r, auth_msg.rlen);
+        }
         size_t len;
-        my_sm4_cbc_padding_decrypt(rfa->Sm4_key, rfa->Sm4_iv, uav_msg.r, uav_msg.rlen, rfa->decrypted_r, &len, 0);
-        print_char_arr(rfa->decrypted_r, uav_msg.rlen);
+        my_sm4_cbc_padding_decrypt(rfa->Sm4_key, rfa->Sm4_iv, auth_msg.r, auth_msg.rlen, rfa->decrypted_r, &len, 0);
+        if(DEBUG){
+          printf("decrypted_r:");
+          print_char_arr(rfa->decrypted_r, auth_msg.rlen);
+          printf("src_ip %s,src_port %d\n", inet_ntoa(src_addr.sin_addr),ntohs(src_addr.sin_port));
+        }
       }
-
-      printf("src_ip %s,src_port %d\n",\
-      inet_ntoa(src_addr.sin_addr),ntohs(src_addr.sin_port));
     }
   }
 }
 
-int send_msg(int cfd, Message* uav_msg, struct sockaddr* addr){
+void send_auth_msg(int cfd, Auth* auth_msg, unsigned char* Dest_IP, int Dest_PORT){
+  struct sockaddr_in dest_addr;
+  Dest_Socket_init(&dest_addr, Dest_IP, Dest_PORT);
+  int len = sizeof(*auth_msg);
+  char* padding_msg = malloc((len + 1) * sizeof(char*));
+  char* dest = padding_msg + 1;
+  memmove((void* )dest, (void* )auth_msg, len);
+  send_msg(cfd, padding_msg, (struct sockaddr*)&dest_addr);
+  free(padding_msg);
+}
+
+int send_msg(int cfd, void* msg, struct sockaddr* addr){
   int ret = 0;
-  //while(1)
-  	ret = sendto(cfd, (void *)uav_msg, sizeof(*uav_msg), 0, addr, sizeof(*addr));
+  ret = sendto(cfd, (void *)msg, sizeof(*msg), 0, addr, sizeof(*addr));
+  
   return ret;
 }
 

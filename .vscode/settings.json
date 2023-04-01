@@ -1,0 +1,13 @@
+{
+    "cmake.sourceDirectory": "${workspaceFolder}/GmSSL",
+    "files.associations": {
+        "string.h": "c",
+        "stdlib.h": "c",
+        "crypto.h": "c",
+        "socket.h": "c",
+        "utils.h": "c",
+        "message.h": "c",
+        "sm4.h": "c"
+    },
+    "cmake.configureOnOpen": false
+}
