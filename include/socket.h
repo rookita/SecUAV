@@ -20,7 +20,7 @@ typedef struct recive_func_arg{
 }Recive_func_arg;
 
 void *receive(void* arg);
-int send_msg(int cfd, void* msg, struct sockaddr* addr);
+int send_msg(int cfd, void* msg, int len, struct sockaddr* addr);
 int My_Socket_init(const unsigned char* IP, int PORT);
 void Dest_Socket_init(struct sockaddr_in* dest_addr, const unsigned char* IP, int PORT);
 void send_auth_msg(int cfd, Auth* auth_msg, unsigned char* Dest_IP, int Dest_PORT);

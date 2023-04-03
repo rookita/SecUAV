@@ -54,13 +54,14 @@ void send_auth_msg(int cfd, Auth* auth_msg, unsigned char* Dest_IP, int Dest_POR
   memmove((void* )dest, (void* )auth_msg, len);
   printf("padding_msg: ");
   print_char_arr(padding_msg, len+1);
-  send_msg(cfd, padding_msg, (struct sockaddr*)&dest_addr);
+  send_msg(cfd, (void*)padding_msg, len+1, (struct sockaddr*)&dest_addr);
   free(padding_msg);
 }
 
-int send_msg(int cfd, void* msg, struct sockaddr* addr){
+int send_msg(int cfd, void* msg, int len, struct sockaddr* addr){
   int ret = 0;
-  ret = sendto(cfd, (void *)msg, sizeof(*msg), 0, addr, sizeof(*addr));
+  print_char_arr(msg, len);
+  ret = sendto(cfd, (void *)msg, len, 0, addr, sizeof(*addr));
   
   return ret;
 }
