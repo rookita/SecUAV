@@ -15,9 +15,9 @@ AuthNode* insertNode(AuthNode *head, int id, __uint8_t* mynonce, __uint8_t* othe
     AuthNode *newNode = (AuthNode *)malloc(sizeof(AuthNode));
     newNode->id = id;
     if(mynonce != NULL)
-        strncpy(newNode->mynounce, mynonce, 16);
+        strncpy(newNode->mynonce, mynonce, 16);
     if (othernonce != NULL)
-        strncpy(newNode->othernounce, othernonce, 16);
+        strncpy(newNode->othernonce, othernonce, 16);
     newNode->direct = direct;
     newNode->flag = flag;
     newNode->next = head->next;
@@ -27,12 +27,12 @@ AuthNode* insertNode(AuthNode *head, int id, __uint8_t* mynonce, __uint8_t* othe
 
 //更新mynonce
 void updateMynonce(AuthNode* node, __uint8_t* mynonce){
-    strncpy(node->mynounce, mynonce, 16);
+    strncpy(node->mynonce, mynonce, 16);
 }
 
 //更新othernonce
 void updateOthernonce(AuthNode* node, __uint8_t* othernonce){
-    strncpy(node->othernounce, othernonce, 16);
+    strncpy(node->othernonce, othernonce, 16);
 }
 
 //更新flag
@@ -72,8 +72,8 @@ void printList(AuthNode *head) {
     AuthNode *p = head->next;
     while (p != NULL) {
         printf("id : %d\n", p->id);
-        printf("mynonce: ");print_char_arr(p->mynounce, 16);
-        printf("othernonce: ");print_char_arr(p->othernounce, 16);
+        printf("mynonce: ");print_char_arr(p->mynonce, 16);
+        printf("othernonce: ");print_char_arr(p->othernonce, 16);
         printf("flag : %d\n", p->flag);
         p = p->next;
     }

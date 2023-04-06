@@ -11,11 +11,13 @@
 #include <signal.h>
 #include "message.h"
 #include "auth_table.h"
+#include "drone.h"
 
 
 typedef struct recive_func_arg{
   int sock_fd;
-  int myid;
+  int my_index;
+  Drone* alldrone;
   AuthNode* head;
 }Recive_func_arg;
 

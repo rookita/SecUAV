@@ -8,7 +8,9 @@
         "utils.h": "c",
         "message.h": "c",
         "sm4.h": "c",
-        "rand.h": "c"
+        "rand.h": "c",
+        "auth_table.h": "c",
+        "drone.h": "c"
     },
     "cmake.configureOnOpen": false
 }
