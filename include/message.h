@@ -7,8 +7,8 @@
 //认证消息
 typedef struct auth_msg {
   char index; //认证进行到第几步
-  int srcid;
-  int destid;
+  char srcid;
+  char destid;
   __uint8_t mynonce[16]; //随机数
   __uint8_t hmac[32];
   size_t noncelen;

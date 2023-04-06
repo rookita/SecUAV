@@ -31,11 +31,11 @@ void *receive(void* arg) {
             case 1: //reciver
               AuthNode* node = insertNode(rfa->head, auth_msg.srcid, NULL, auth_msg.mynonce, 0, 0);
               __uint8_t* mynonce = (__uint8_t*) malloc(16);
-              __uint8_t hmac[32];__uint8_t id1[4];__uint8_t id2[4];
-              int2uint8(auth_msg.srcid, id1);int2uint8(auth_msg.destid,id2);
+              __uint8_t hmac[32];
               rand_bytes(mynonce, 16);
-              __uint8_t mbuf[40];
-              strncat(mbuf, id1, 4);strncat(mbuf, id2, 4);strncat(mbuf,mynonce, 16);strncat(mbuf, auth_msg.mynonce, 16);
+              strncpy(node->mynounce, mynonce, 16);
+              __uint8_t mbuf[34];
+              strncat(mbuf, &auth_msg.srcid, 1);strncat(mbuf, &auth_msg.destid, 1);strncat(mbuf,node->mynounce, 16);strncat(mbuf, node->othernounce, 16);
               my_sm3_hmac(hmac_key, sizeof(*hmac_key), mbuf, sizeof(*mbuf), hmac);
               AuthMsg my_auth_msg = {0};
               my_auth_msg.index = 2;
@@ -54,15 +54,24 @@ void *receive(void* arg) {
               //查找table,验证并计算hmac发送给对方
               AuthNode* p2 = searchList(rfa->head, auth_msg.srcid);
               if (p2 != NULL){
-                 __uint8_t mbuf[40];__uint8_t hmac[32];__uint8_t id1[4];__uint8_t id2[4];
-                 int2uint8(auth_msg.destid, id1);int2uint8(auth_msg.srcid, id2);
-                 strncat(mbuf, id1, 4);strncat(mbuf, id2, 4);strncat(mbuf,auth_msg.mynonce, 16);strncat(mbuf, p2->mynounce, 16);
+                 __uint8_t mbuf[34];__uint8_t hmac[32];
+                 strncat(mbuf, &auth_msg.destid, 1);strncat(mbuf, &auth_msg.srcid, 1);strncat(mbuf, auth_msg.mynonce, 16);strncat(mbuf, p2->mynounce, 16);
+                 
                  my_sm3_hmac(hmac_key, sizeof(*hmac_key), mbuf, sizeof(*mbuf), hmac);
                  if ( isEqual(auth_msg.hmac, hmac, 32) ){   //验证通过
                     strncpy(p2->othernounce, auth_msg.mynonce, 16);
                     memset(mbuf, 0, 40);memset(hmac, 0, 32);
-                    strncat(mbuf, id1, 4);strncat(mbuf, id2, 4);strncat(mbuf, p2->mynounce, 16);strncat(mbuf,auth_msg.mynonce, 16);
+                    strncat(mbuf, &auth_msg.destid, 4);strncat(mbuf, &auth_msg.srcid, 4);strncat(mbuf, p2->mynounce, 16);strncat(mbuf, p2->othernounce, 16);
                     my_sm3_hmac(hmac_key, sizeof(*hmac_key), mbuf, sizeof(*mbuf), hmac);
+                    
+                    printf("mbuf: ");print_char_arr(mbuf, 40);
+                    printf("id1: %d\n", auth_msg.destid);
+                    printf("id2: %d\n", auth_msg.srcid);
+                    printf("nonce1: ");print_char_arr(p2->mynounce, 16);
+                    printf("nonce2: ");print_char_arr(p2->othernounce, 16);
+                    printf("hmac_key: ");print_char_arr(hmac_key, 16);
+                    printf("hmac: ");print_char_arr(hmac, 32);
+
                     strncpy(p2->othernounce, auth_msg.mynonce, 16);
                     AuthMsg my_auth_msg = {0};
                     my_auth_msg.index = 3;
@@ -93,9 +102,8 @@ void *receive(void* arg) {
               AuthNode* p3 = searchList(rfa->head, auth_msg.srcid);
               
               if (p3 != NULL){
-                 __uint8_t mbuf[40];__uint8_t hmac[32];__uint8_t id1[4];__uint8_t id2[4];
-                 int2uint8(auth_msg.destid, id1);int2uint8(auth_msg.srcid, id2);
-                 strncat(mbuf, id1, 4);strncat(mbuf, id2, 4);strncat(mbuf,p3->othernounce, 16);strncat(mbuf, p3->mynounce, 16);
+                 __uint8_t mbuf[34];__uint8_t hmac[32];
+                 strncat(mbuf, &auth_msg.srcid, 4);strncat(mbuf, &auth_msg.destid, 4);strncat(mbuf,p3->othernounce, 16);strncat(mbuf, p3->mynounce, 16);
                  my_sm3_hmac(hmac_key, sizeof(*hmac_key), mbuf, sizeof(*mbuf), hmac);
                  if ( isEqual(auth_msg.hmac, hmac, 32) ){   //验证通过
                     p3->direct = 1;
@@ -103,6 +111,16 @@ void *receive(void* arg) {
                     printList(rfa->head);
                     printf("%d auth success!\n\n", auth_msg.srcid);
                  }
+                  else {
+                    printf("case3 hmac is not equal!\n");
+                    printf("mbuf: ");print_char_arr(mbuf, 40);
+                    printf("id1: %d\n", auth_msg.srcid);
+                    printf("id2: %d\n", auth_msg.destid);
+                    printf("nonce1: ");print_char_arr(p3->othernounce, 16);
+                    printf("nonce2: ");print_char_arr(p3->mynounce, 16);
+                    printf("hmac: ");print_char_arr(hmac,32);
+                    printf("hmac_key: ");print_char_arr(hmac_key, 16);
+                  }
               }
               else{
                 printf("case3 Node is not valid!!!\n");

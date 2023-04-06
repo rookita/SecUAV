@@ -41,14 +41,14 @@ int main()
 
       AuthMsg auth_msg = {0};
       auth_msg.index = 1;
-      auth_msg.srcid = 1;
+      auth_msg.srcid = MY_ID;
       auth_msg.destid = Dest_ID;
       rand_bytes(auth_msg.mynonce, rlen);
       auth_msg.noncelen = rlen;
 
       printf("mynonce is: ");
       print_char_arr(auth_msg.mynonce, rlen);
-      
+
       insertNode(head, Dest_ID, auth_msg.mynonce, NULL, 0, 0);
       send_auth_msg(cfd, &auth_msg, Dest_IP, Dest_PORT);
       printf("Send Success!\n");

@@ -10,10 +10,10 @@ void generate_auth_message(AuthMsg* auth_msg, int rlen, int id, unsigned char* r
 }
 
 void printAuthMsg(AuthMsg* auth_msg){
-    printf("index : %d", auth_msg->index);
-    printf("srcid : %d", auth_msg->srcid);
-    printf("destid : %d", auth_msg->destid);
+    printf("index : %d\n", auth_msg->index);
+    printf("srcid : %d\n", auth_msg->srcid);
+    printf("destid : %d\n", auth_msg->destid);
     printf("mynonce : ");print_char_arr(auth_msg->mynonce, 16);
-    printf("hmac : ");print_char_arr(auth_msg->hmac, 16);
+    printf("hmac : ");print_char_arr(auth_msg->hmac, 32);
 
 }
