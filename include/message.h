@@ -15,5 +15,6 @@ typedef struct auth_msg {
 }AuthMsg;
 
 void generate_auth_message(AuthMsg* auth_msg, int rlen, int id, unsigned char* r);
+void printAuthMsg(AuthMsg* auth_msg);
 
 #endif

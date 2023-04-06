@@ -7,7 +7,8 @@
         "socket.h": "c",
         "utils.h": "c",
         "message.h": "c",
-        "sm4.h": "c"
+        "sm4.h": "c",
+        "rand.h": "c"
     },
     "cmake.configureOnOpen": false
 }

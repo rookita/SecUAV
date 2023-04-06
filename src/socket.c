@@ -44,6 +44,10 @@ void *receive(void* arg) {
               strncpy(my_auth_msg.mynonce, mynonce, 16);
               my_auth_msg.noncelen = 16;
               strncpy(my_auth_msg.hmac, hmac, 32);
+              if (DEBUG){
+                printf("auth msg :\n");
+                printAuthMsg(&my_auth_msg);
+              }
               send_auth_msg(rfa->sock_fd, &my_auth_msg, "192.168.8.187", 6666);
               break;
             case 2: //sender
@@ -68,8 +72,17 @@ void *receive(void* arg) {
                     strncpy(my_auth_msg.hmac, hmac, 32);
                     p2->flag = 1;
                     p2->direct = 1;
+                    printf("%d auth success!\n\n", auth_msg.srcid);
+                    printList(rfa->head);
+                    if (DEBUG){
+                      printf("auth msg :\n");
+                      printAuthMsg(&my_auth_msg);
+                    }
                     send_auth_msg(rfa->sock_fd, &my_auth_msg, "192.168.8.187", 6666);
                  }
+              else {
+                printf("hmac is not equal!\n");
+                }
               }
               else{
                 printf("case2 Node is not valid!!!\n");
@@ -87,6 +100,8 @@ void *receive(void* arg) {
                  if ( isEqual(auth_msg.hmac, hmac, 32) ){   //验证通过
                     p3->direct = 1;
                     p3->flag = 1;
+                    printList(rfa->head);
+                    printf("%d auth success!\n\n", auth_msg.srcid);
                  }
               }
               else{
@@ -96,6 +111,7 @@ void *receive(void* arg) {
           }
         }       
         if (DEBUG){
+          printf("\n");
           printf("AUTH MESSAGE!!\n");
           printf("index = %d\n", auth_msg.index);
           printf("src id = %d\n", auth_msg.srcid);
@@ -103,6 +119,7 @@ void *receive(void* arg) {
           printf("noncelen:%ld\n", auth_msg.noncelen);
           printf("nonce: ");print_char_arr(auth_msg.mynonce, auth_msg.noncelen);
           printf("hmac: ");print_char_arr(auth_msg.hmac, 32);
+          printf("\n");
         }
       }
     }
@@ -118,8 +135,8 @@ void send_auth_msg(int cfd, AuthMsg* auth_msg, unsigned char* Dest_IP, int Dest_
   char* dest = padding_msg + 1;
   //printf("%d\n",len);
   memmove((void* )dest, (void* )auth_msg, len);
-  printf("padding_msg: ");
-  print_char_arr(padding_msg, len+1);
+  //printf("padding_msg: ");
+  //print_char_arr(padding_msg, len+1);
   send_msg(cfd, (void*)padding_msg, len+1, (struct sockaddr*)&dest_addr);
   free(padding_msg);
 }
