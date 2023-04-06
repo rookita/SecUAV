@@ -2,6 +2,11 @@
 #include "../include/crypto.h"
 #include "../include/utils.h"
 
+__uint8_t Sm4_key[16] = "Secret SM4 Key12";
+__uint8_t Sm4_iv[16] = "0123456789abcde";
+__uint8_t hmac_key[16] = "Secret HMAC Keyy";
+
+
 void my_sm4_cbc_padding_encrypt(const unsigned char* Sm4_key, const unsigned char* Sm4_iv, unsigned char* msg, size_t mlen, unsigned char* ciphertext, size_t* clen, int DEBUG){
 	SM4_KEY sm4_key;
 	sm4_set_encrypt_key(&sm4_key, Sm4_key);
@@ -34,4 +39,9 @@ void my_sm4_cbc_padding_decrypt(const unsigned char* Sm4_key, const unsigned cha
 	sm4_cbc_padding_decrypt(&sm4_key, Sm4_iv, ciphertext, clen, msg, mlen);
   printf("decrypted_r: ");
   print_char_arr(msg, *mlen);
+}
+
+
+void my_sm3_hmac(const __uint8_t* key, size_t keylen, const __uint8_t* msg, size_t msglen, __uint8_t* hmac){
+  sm3_hmac(key, keylen, msg, msglen, hmac);
 }

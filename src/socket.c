@@ -8,43 +8,109 @@
 void *receive(void* arg) {
   Recive_func_arg* rfa = (Recive_func_arg *)arg;
   int ret = 0;
-  char* msg = malloc(MAXLEN);
+  void* msg = malloc(MAXLEN);
   struct sockaddr_in src_addr = {0};
   int src_addr_size = sizeof(src_addr);
   
   while(1) {
     bzero(msg, MAXLEN);
-    ret = recvfrom(rfa->sock_fd, &msg, MAXLEN,0, (struct sockaddr *)&src_addr, &src_addr_size); 
+    ret = recvfrom(rfa->sock_fd, msg, MAXLEN,0, (struct sockaddr *)&src_addr, &src_addr_size); 
     if (-1 == ret) {
       print_err("recv failed",__LINE__,errno);
     }
     else if (ret > 0){
-      if (*msg == 0){   //auth message
-        Auth auth_msg = {0};
+      if (*(char*)msg == 0){   //auth message
+        AuthMsg auth_msg = {0};
         char* src = msg + 1;
         size_t auth_msg_len = sizeof(auth_msg);
-        memmove(&auth_msg, src, auth_msg_len);
-        print_char_arr(msg, auth_msg_len+1);
-        
+        memmove(&auth_msg, src, auth_msg_len);  //去掉消息前一个字节
+        printf("msg: ");print_char_arr(msg, auth_msg_len+1);
+
+        if (auth_msg.destid == rfa->myid){
+          switch(auth_msg.index){
+            case 1: //reciver
+              AuthNode* node = insertNode(rfa->head, auth_msg.srcid, NULL, auth_msg.mynonce, 0, 0);
+              __uint8_t* mynonce = (__uint8_t*) malloc(16);
+              __uint8_t hmac[32];__uint8_t id1[4];__uint8_t id2[4];
+              int2uint8(auth_msg.srcid, id1);int2uint8(auth_msg.destid,id2);
+              rand_bytes(mynonce, 16);
+              __uint8_t mbuf[40];
+              strncat(mbuf, id1, 4);strncat(mbuf, id2, 4);strncat(mbuf,mynonce, 16);strncat(mbuf, auth_msg.mynonce, 16);
+              my_sm3_hmac(hmac_key, sizeof(*hmac_key), mbuf, sizeof(*mbuf), hmac);
+              AuthMsg my_auth_msg = {0};
+              my_auth_msg.index = 2;
+              my_auth_msg.destid = auth_msg.srcid;
+              my_auth_msg.srcid = auth_msg.destid;
+              strncpy(my_auth_msg.mynonce, mynonce, 16);
+              my_auth_msg.noncelen = 16;
+              strncpy(my_auth_msg.hmac, hmac, 32);
+              send_auth_msg(rfa->sock_fd, &my_auth_msg, "192.168.8.187", 6666);
+              break;
+            case 2: //sender
+              //查找table,验证并计算hmac发送给对方
+              AuthNode* p2 = searchList(rfa->head, auth_msg.srcid);
+              if (p2 != NULL){
+                 __uint8_t mbuf[40];__uint8_t hmac[32];__uint8_t id1[4];__uint8_t id2[4];
+                 int2uint8(auth_msg.destid, id1);int2uint8(auth_msg.srcid, id2);
+                 strncat(mbuf, id1, 4);strncat(mbuf, id2, 4);strncat(mbuf,auth_msg.mynonce, 16);strncat(mbuf, p2->mynounce, 16);
+                 my_sm3_hmac(hmac_key, sizeof(*hmac_key), mbuf, sizeof(*mbuf), hmac);
+                 if ( isEqual(auth_msg.hmac, hmac, 32) ){   //验证通过
+                    strncpy(p2->othernounce, auth_msg.mynonce, 16);
+                    memset(mbuf, 0, 40);memset(hmac, 0, 32);
+                    strncat(mbuf, id1, 4);strncat(mbuf, id2, 4);strncat(mbuf, p2->mynounce, 16);strncat(mbuf,auth_msg.mynonce, 16);
+                    my_sm3_hmac(hmac_key, sizeof(*hmac_key), mbuf, sizeof(*mbuf), hmac);
+                    strncpy(p2->othernounce, auth_msg.mynonce, 16);
+                    AuthMsg my_auth_msg = {0};
+                    my_auth_msg.index = 3;
+                    my_auth_msg.destid = auth_msg.srcid;
+                    my_auth_msg.srcid = auth_msg.destid;
+                    my_auth_msg.noncelen = 16;
+                    strncpy(my_auth_msg.hmac, hmac, 32);
+                    p2->flag = 1;
+                    p2->direct = 1;
+                    send_auth_msg(rfa->sock_fd, &my_auth_msg, "192.168.8.187", 6666);
+                 }
+              }
+              else{
+                printf("case2 Node is not valid!!!\n");
+              }
+              break;
+            case 3: //reciver
+              //查找table,验证hamc
+              AuthNode* p3 = searchList(rfa->head, auth_msg.srcid);
+              
+              if (p3 != NULL){
+                 __uint8_t mbuf[40];__uint8_t hmac[32];__uint8_t id1[4];__uint8_t id2[4];
+                 int2uint8(auth_msg.destid, id1);int2uint8(auth_msg.srcid, id2);
+                 strncat(mbuf, id1, 4);strncat(mbuf, id2, 4);strncat(mbuf,p3->othernounce, 16);strncat(mbuf, p3->mynounce, 16);
+                 my_sm3_hmac(hmac_key, sizeof(*hmac_key), mbuf, sizeof(*mbuf), hmac);
+                 if ( isEqual(auth_msg.hmac, hmac, 32) ){   //验证通过
+                    p3->direct = 1;
+                    p3->flag = 1;
+                 }
+              }
+              else{
+                printf("case3 Node is not valid!!!\n");
+              }
+              break;
+          }
+        }       
         if (DEBUG){
           printf("AUTH MESSAGE!!\n");
-          printf("uav id = %d\n", auth_msg.id);
-          printf("auth_msg r: ");
-          print_char_arr(auth_msg.r, auth_msg.rlen);
-        }
-        size_t len;
-        my_sm4_cbc_padding_decrypt(rfa->Sm4_key, rfa->Sm4_iv, auth_msg.r, auth_msg.rlen, rfa->decrypted_r, &len, 0);
-        if(DEBUG){
-          printf("decrypted_r:");
-          print_char_arr(rfa->decrypted_r, auth_msg.rlen);
-          printf("src_ip %s,src_port %d\n", inet_ntoa(src_addr.sin_addr),ntohs(src_addr.sin_port));
+          printf("index = %d\n", auth_msg.index);
+          printf("src id = %d\n", auth_msg.srcid);
+          printf("dest id = %d\n", auth_msg.destid);
+          printf("noncelen:%ld\n", auth_msg.noncelen);
+          printf("nonce: ");print_char_arr(auth_msg.mynonce, auth_msg.noncelen);
+          printf("hmac: ");print_char_arr(auth_msg.hmac, 32);
         }
       }
     }
   }
+  free(msg);
 }
 
-void send_auth_msg(int cfd, Auth* auth_msg, unsigned char* Dest_IP, int Dest_PORT){
+void send_auth_msg(int cfd, AuthMsg* auth_msg, unsigned char* Dest_IP, int Dest_PORT){
   struct sockaddr_in dest_addr;
   Dest_Socket_init(&dest_addr, Dest_IP, Dest_PORT);
   int len = sizeof(*auth_msg);
@@ -60,9 +126,8 @@ void send_auth_msg(int cfd, Auth* auth_msg, unsigned char* Dest_IP, int Dest_POR
 
 int send_msg(int cfd, void* msg, int len, struct sockaddr* addr){
   int ret = 0;
-  print_char_arr(msg, len);
+  //print_char_arr(msg, len);
   ret = sendto(cfd, (void *)msg, len, 0, addr, sizeof(*addr));
-  
   return ret;
 }
 

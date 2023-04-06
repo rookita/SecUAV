@@ -10,18 +10,18 @@
 #include <pthread.h>
 #include <signal.h>
 #include "message.h"
+#include "auth_table.h"
 
 
 typedef struct recive_func_arg{
-  unsigned char Sm4_key[16];
-  unsigned char Sm4_iv[16];
-  unsigned char* decrypted_r;
   int sock_fd;
+  int myid;
+  AuthNode* head;
 }Recive_func_arg;
 
 void *receive(void* arg);
 int send_msg(int cfd, void* msg, int len, struct sockaddr* addr);
 int My_Socket_init(const unsigned char* IP, int PORT);
 void Dest_Socket_init(struct sockaddr_in* dest_addr, const unsigned char* IP, int PORT);
-void send_auth_msg(int cfd, Auth* auth_msg, unsigned char* Dest_IP, int Dest_PORT);
+void send_auth_msg(int cfd, AuthMsg* auth_msg, unsigned char* Dest_IP, int Dest_PORT);
 

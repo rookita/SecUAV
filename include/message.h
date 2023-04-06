@@ -5,12 +5,15 @@
 
 
 //认证消息
-typedef struct auth {
-  int id;
-  size_t rlen;
-  unsigned char r[16]; //随机数
-}Auth;
+typedef struct auth_msg {
+  char index; //认证进行到第几步
+  int srcid;
+  int destid;
+  __uint8_t mynonce[16]; //随机数
+  __uint8_t hmac[32];
+  size_t noncelen;
+}AuthMsg;
 
-void generate_auth_message(Auth* auth_msg, int rlen, int id, unsigned char* r);
+void generate_auth_message(AuthMsg* auth_msg, int rlen, int id, unsigned char* r);
 
 #endif
