@@ -7,8 +7,9 @@
 // 定义链表节点结构体
 typedef struct authnode {
     int id;         
-    unsigned char mynonce[16];
-    unsigned char othernonce[16];
+    unsigned char nonce1[16];
+    unsigned char nonce2[16];
+    unsigned char sessionkey[16];
     char direct; //是否为直接认证
     char flag;  //是否已经认证完成
     struct authnode *next;

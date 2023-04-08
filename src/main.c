@@ -3,6 +3,7 @@
 #include "../include/utils.h"
 #include "../include/auth_table.h"
 #include "../include/drone.h"
+#include "../include/message.h"
 
 #define DEBUG 1
 
@@ -43,12 +44,12 @@ int main()
       auth_msg.index = 1;
       auth_msg.srcid = alldrone[MY_INDEX].id;
       auth_msg.destid = alldrone[DEST_INDEX].id;
-      rand_bytes(auth_msg.mynonce, rlen);
+      rand_bytes(auth_msg.nonce, rlen);
       auth_msg.noncelen = rlen;
 
       printf("mynonce is: ");
-      print_char_arr(auth_msg.mynonce, rlen);
-      insertNode(head, alldrone[DEST_INDEX].id, auth_msg.mynonce, NULL, 0, 0);
+      print_char_arr(auth_msg.nonce, rlen);
+      insertNode(head, alldrone[DEST_INDEX].id, auth_msg.nonce, NULL, 0, 0);
       send_padding_msg(cfd, (void*)&auth_msg, sizeof(auth_msg), 0x1, alldrone[DEST_INDEX].IP, alldrone[DEST_INDEX].PORT);
       printf("Send Success!\n");
       break;

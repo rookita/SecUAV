@@ -1,3 +1,6 @@
+#ifndef _SOCKET
+#define _SOCKET
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -9,7 +12,6 @@
 #include <errno.h>
 #include <pthread.h>
 #include <signal.h>
-#include "message.h"
 #include "auth_table.h"
 #include "drone.h"
 
@@ -27,3 +29,4 @@ int My_Socket_init(const unsigned char* IP, int PORT);
 void Dest_Socket_init(struct sockaddr_in* dest_addr, const unsigned char* IP, int PORT);
 void send_padding_msg(int cfd, void* msg, int len, char padding, unsigned char* Dest_IP, int Dest_PORT);
 
+#endif

@@ -45,3 +45,12 @@ void my_sm4_cbc_padding_decrypt(const unsigned char* Sm4_key, const unsigned cha
 void my_sm3_hmac(const __uint8_t* key, size_t keylen, const __uint8_t* msg, size_t msglen, __uint8_t* hmac){
   sm3_hmac(key, keylen, msg, msglen, hmac);
 }
+
+void generate_session_key(__uint8_t* sessionkey, __uint8_t* nonce1, __uint8_t* nonce2, int len){ //hmac(K || N1 || N2)
+  __uint8_t* mbuf = (__uint8_t*) malloc (len + len);
+  __uint8_t* hmac = (__uint8_t*) malloc (32);
+  memset(sessionkey, 0, len);memset(mbuf, 0, 2*len);memset(hmac, 0, 32);
+  strncat(mbuf, nonce1, len);strncat(mbuf, nonce2, len);
+  my_sm3_hmac(hmac_key, 16, mbuf, 2*len, hmac);
+  strncat(sessionkey, hmac, len);
+}
