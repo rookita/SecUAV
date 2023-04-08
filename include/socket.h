@@ -25,5 +25,5 @@ void *receive(void* arg);
 int send_msg(int cfd, void* msg, int len, struct sockaddr* addr);
 int My_Socket_init(const unsigned char* IP, int PORT);
 void Dest_Socket_init(struct sockaddr_in* dest_addr, const unsigned char* IP, int PORT);
-void send_auth_msg(int cfd, AuthMsg* auth_msg, unsigned char* Dest_IP, int Dest_PORT);
+void send_padding_msg(int cfd, void* msg, int len, char padding, unsigned char* Dest_IP, int Dest_PORT);
 

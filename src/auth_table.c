@@ -75,6 +75,7 @@ void printList(AuthNode *head) {
         printf("mynonce: ");print_char_arr(p->mynonce, 16);
         printf("othernonce: ");print_char_arr(p->othernonce, 16);
         printf("flag : %d\n", p->flag);
+        printf("direct : %d\n", p->direct);
         p = p->next;
     }
     printf("\n");

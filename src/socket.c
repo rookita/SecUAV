@@ -46,10 +46,10 @@ void *receive(void* arg) {
               AuthMsg my_auth_msg = {0};
               generate_auth_message(&my_auth_msg, 2, auth_msg.destid, auth_msg.srcid, mynonce, 16, hmac);
               if (DEBUG){
-                printf("[info]>>>recive auth request.will send msg is");
+                printf("[info]>>>recive auth request.will send msg \n");
                 printAuthMsg(&my_auth_msg);
               }
-              send_auth_msg(rfa->sock_fd, &my_auth_msg, rfa->alldrone[(int)(auth_msg.srcid) - 1].IP, rfa->alldrone[(int)(auth_msg.srcid)- 1].PORT);
+              send_padding_msg(rfa->sock_fd, (void*)&my_auth_msg, sizeof(my_auth_msg), 0x1, rfa->alldrone[(int)(auth_msg.srcid) - 1].IP, rfa->alldrone[(int)(auth_msg.srcid) - 1].PORT);
               free(mynonce);free(mbuf);free(hmac);
               if (DEBUG)
                 printf("##########CASE ONE DEBUG INFO END##########\n");
@@ -88,20 +88,20 @@ void *receive(void* arg) {
                     generate_auth_message(&my_auth_msg, 3, auth_msg.destid, auth_msg.srcid, NULL, 16, hmac);
                     p2->flag = 1;
                     p2->direct = 1;
-                    printf("[info]>>>%d auth success!\n\n", auth_msg.srcid);
+                    printf("[info]>>>drone's id = %d auth success!\n\n", auth_msg.srcid);
                     if (DEBUG){
                       printf("[info]>> auth table is \n");
                       printList(rfa->head);
-                      printf("[info]>>>auth msg is \n");
+                      printf("[info]>>>will send auth msg is \n");
                       printAuthMsg(&my_auth_msg);
                     }
-                    send_auth_msg(rfa->sock_fd, &my_auth_msg, rfa->alldrone[(int)(auth_msg.srcid) - 1].IP, rfa->alldrone[(int)(auth_msg.srcid) - 1].PORT);
+                    send_padding_msg(rfa->sock_fd, (void*)&my_auth_msg, sizeof(my_auth_msg), 0x1, rfa->alldrone[(int)(auth_msg.srcid) - 1].IP, rfa->alldrone[(int)(auth_msg.srcid) - 1].PORT);
                  }
 
               else {
                 printf("[info]>>>case2 hmac is not equal!\n");
-                printf("[info]>>>compute_hmac is");print_char_arr(hmac, 32);
-                printf("[info]>>>recive_hmac is");print_char_arr(auth_msg.hmac, 32);
+                printf("[info]>>>compute_hmac is ");print_char_arr(hmac, 32);
+                printf("[info]>>>recive_hmac is ");print_char_arr(auth_msg.hmac, 32);
                 }
               free(mbuf);free(hmac);
               }
@@ -120,14 +120,15 @@ void *receive(void* arg) {
               if (p3 != NULL){
                   __uint8_t* mbuf = (__uint8_t*) malloc (34);
                   __uint8_t* hmac = (__uint8_t*) malloc (32);
-                 strncat(mbuf, &auth_msg.srcid, 4);strncat(mbuf, &auth_msg.destid, 4);strncat(mbuf,p3->othernonce, 16);strncat(mbuf, p3->mynonce, 16);
+                  memset(mbuf, 0, 34);memset(hmac, 0, 32);
+                 strncat(mbuf, &auth_msg.srcid, 1);strncat(mbuf, &auth_msg.destid, 1);strncat(mbuf,p3->othernonce, 16);strncat(mbuf, p3->mynonce, 16);
                  my_sm3_hmac(hmac_key, sizeof(*hmac_key), mbuf, sizeof(*mbuf), hmac);
                  if ( isEqual(auth_msg.hmac, hmac, 32) ){   //验证通过
                     if (DEBUG)
                       printf("[info]>>> hmac right\n");
                     p3->direct = 1;
                     p3->flag = 1;
-                    printf("%d auth success!\n\n", auth_msg.srcid);
+                    printf("drone's id = %d auth success!\n\n", auth_msg.srcid);
                     if (DEBUG){
                       printf("[info]>> auth table is \n");
                       printList(rfa->head);
@@ -135,8 +136,16 @@ void *receive(void* arg) {
                  }
                   else {
                     printf("[info]>>>case3 hmac is not equal!\n");
-                    printf("[info]>>>compute_hmac is");print_char_arr(hmac, 32);
-                    printf("[info]>>>recive_hmac is");print_char_arr(auth_msg.hmac, 32);
+                    printf("[info]>>>compute_hmac is ");print_char_arr(hmac, 32);
+                    printf("[info]>>>recive_hmac is ");print_char_arr(auth_msg.hmac, 32);
+                    if (DEBUG){
+                      printf("mbuf: ");print_char_arr(mbuf, 34);
+                      printf("id1: %d\n", auth_msg.srcid);
+                      printf("id2: %d\n", auth_msg.destid);
+                      printf("nonce1: ");print_char_arr(p3->othernonce, 16);
+                      printf("nonce2: ");print_char_arr(p3->mynonce, 16);
+                      printf("hmac: ");print_char_arr(hmac, 32);
+                    }
                   }
                   free(mbuf);free(hmac);
               }
@@ -153,17 +162,13 @@ void *receive(void* arg) {
   free(msg);
 }
 
-void send_auth_msg(int cfd, AuthMsg* auth_msg, unsigned char* Dest_IP, int Dest_PORT){
+void send_padding_msg(int cfd, void* msg, int len, char padding, unsigned char* Dest_IP, int Dest_PORT){
   struct sockaddr_in dest_addr;
   Dest_Socket_init(&dest_addr, Dest_IP, Dest_PORT);
-  int len = sizeof(*auth_msg);
   char* padding_msg = malloc((len + 1) * sizeof(char));
-  padding_msg[0] = 1;
+  padding_msg[0] = padding;
   char* dest = padding_msg + 1;
-  //printf("%d\n",len);
-  memmove((void* )dest, (void* )auth_msg, len);
-  printf("padding_msg: ");
-  print_char_arr(padding_msg, len+1);
+  memmove((void* )dest, msg, len);
   send_msg(cfd, (void*)padding_msg, len+1, (struct sockaddr*)&dest_addr);
   free(padding_msg);
 }

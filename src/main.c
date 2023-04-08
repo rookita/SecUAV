@@ -48,9 +48,8 @@ int main()
 
       printf("mynonce is: ");
       print_char_arr(auth_msg.mynonce, rlen);
-
       insertNode(head, alldrone[DEST_INDEX].id, auth_msg.mynonce, NULL, 0, 0);
-      send_auth_msg(cfd, &auth_msg, alldrone[DEST_INDEX].IP, alldrone[DEST_INDEX].PORT);
+      send_padding_msg(cfd, (void*)&auth_msg, sizeof(auth_msg), 0x1, alldrone[DEST_INDEX].IP, alldrone[DEST_INDEX].PORT);
       printf("Send Success!\n");
       break;
     default:
