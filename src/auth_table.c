@@ -11,7 +11,7 @@ AuthNode *initList() {
 }
 
 // 插入节点
-AuthNode* insertNode(AuthNode *head, int id, __uint8_t* nonce1, __uint8_t* nonce2, char direct, char flag) {
+AuthNode* insertNode(AuthNode *head, char id, __uint8_t* nonce1, __uint8_t* nonce2, char direct, char flag, char index) {
     AuthNode *newNode = (AuthNode *)malloc(sizeof(AuthNode));
     newNode->id = id;
     if(nonce1 != NULL)
@@ -20,6 +20,7 @@ AuthNode* insertNode(AuthNode *head, int id, __uint8_t* nonce1, __uint8_t* nonce
         strncpy(newNode->nonce2, nonce2, 16);
     newNode->direct = direct;
     newNode->flag = flag;
+    newNode->index = index;
     newNode->next = head->next;
     head->next = newNode;
     return newNode;
@@ -41,7 +42,7 @@ void updateFlag(AuthNode* node, char flag){
 }
 
 // 删除节点
-void deleteNode(AuthNode *head, int id) {
+void deleteNode(AuthNode *head, char id) {
     AuthNode *p = head->next;
     AuthNode *pre = head;
     while (p != NULL) {
@@ -56,7 +57,7 @@ void deleteNode(AuthNode *head, int id) {
 }
 
 //查找链表
-AuthNode* searchList(AuthNode* head, int id) {
+AuthNode* searchList(AuthNode* head, char id) {
     AuthNode* node = head;
     while (node != NULL) {
         if (node->id == id) {
@@ -76,6 +77,7 @@ void printList(AuthNode *head) {
         printf("nonce2: ");print_char_arr(p->nonce2, 16);
         printf("flag : %d\n", p->flag);
         printf("direct : %d\n", p->direct);
+        printf("index : %d\n", p->index);
         printf("sessionkey: ");print_char_arr(p->sessionkey, 16);
         p = p->next;
     }

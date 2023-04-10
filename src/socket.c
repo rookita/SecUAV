@@ -25,21 +25,20 @@ void *receive(void* arg) {
         case 1:   //auth msg
           handle_auth_message(msg, rfa, DEBUG);
           break;
-        case 2:
+        case 2:   //share msg
+          handle_share_message(msg, rfa, DEBUG);
           break;
       }
+    }
   }
   free(msg);
-  }
 }
 
 void send_padding_msg(int cfd, void* msg, int len, char padding, unsigned char* Dest_IP, int Dest_PORT){
   struct sockaddr_in dest_addr;
   Dest_Socket_init(&dest_addr, Dest_IP, Dest_PORT);
-  char* padding_msg = malloc((len + 1) * sizeof(char));
-  padding_msg[0] = padding;
-  char* dest = padding_msg + 1;
-  memmove((void* )dest, msg, len);
+  __uint8_t* padding_msg = malloc((len + 1) * sizeof(char));
+  add_byte(padding_msg, msg, len, padding);
   send_msg(cfd, (void*)padding_msg, len+1, (struct sockaddr*)&dest_addr);
   free(padding_msg);
 }

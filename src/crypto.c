@@ -2,7 +2,6 @@
 #include "../include/crypto.h"
 #include "../include/utils.h"
 
-__uint8_t Sm4_key[16] = "Secret SM4 Key12";
 __uint8_t Sm4_iv[16] = "0123456789abcde";
 __uint8_t hmac_key[16] = "Secret HMAC Keyy";
 
@@ -53,4 +52,5 @@ void generate_session_key(__uint8_t* sessionkey, __uint8_t* nonce1, __uint8_t* n
   strncat(mbuf, nonce1, len);strncat(mbuf, nonce2, len);
   my_sm3_hmac(hmac_key, 16, mbuf, 2*len, hmac);
   strncat(sessionkey, hmac, len);
+  free(mbuf);free(hmac);
 }

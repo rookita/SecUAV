@@ -6,7 +6,6 @@
 #include "gmssl/rand.h"
 
 
-extern __uint8_t Sm4_key[16];
 extern __uint8_t Sm4_iv[16];
 extern __uint8_t hmac_key[16];
 

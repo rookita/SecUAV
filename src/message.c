@@ -13,6 +13,10 @@ void generate_auth_message(AuthMsg* auth_msg, int index, char srcid, char destid
         strncat(auth_msg->hmac, hmac, 32);
 }
 
+void send_auth_message(int cfd, AuthMsg* auth_msg, int len, unsigned char* Dest_IP, int Dest_PORT){
+  send_padding_msg(cfd, (void*) auth_msg, len, 0x1, Dest_IP, Dest_PORT); 
+}
+
 void printAuthMsg(AuthMsg* auth_msg){
     printf("index : %d\n", auth_msg->index);
     printf("srcid : %d\n", auth_msg->srcid);
@@ -22,7 +26,7 @@ void printAuthMsg(AuthMsg* auth_msg){
 }
 
 void pre_auth_message(void*msg, AuthMsg* auth_msg, int auth_msg_len, int DEBUG){
-    char* src = msg + 1;
+    __uint8_t* src = msg + 1;
     memmove(auth_msg, src, auth_msg_len);
     if (DEBUG){
         printf("[info]>>>origin msg is ");print_char_arr(msg, auth_msg_len+1);
@@ -41,7 +45,8 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
         case 1: //reciver
           if (DEBUG)
             printf("##########CASE ONE DEBUG INFO START##########\n");
-          AuthNode* node = insertNode(rfa->head, auth_msg.srcid, auth_msg.nonce, NULL, 0, 0);
+          AuthNode* node = insertNode(rfa->head, auth_msg.srcid, auth_msg.nonce, NULL, 0, 0, 0);
+          node->index = 2;
           __uint8_t* nonce2 = (__uint8_t*) malloc (16);
           __uint8_t* mbuf = (__uint8_t*) malloc (34);
           __uint8_t* hmac = (__uint8_t*) malloc (32);
@@ -93,10 +98,12 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
                 }
                 */
                 AuthMsg my_auth_msg = {0};
-                generate_auth_message(&my_auth_msg, 3, auth_msg.destid, auth_msg.srcid, NULL, 16, hmac);
+                generate_auth_message(&my_auth_msg, 3, auth_msg.destid, auth_msg.srcid, NULL, 16, hmac);                
+                generate_session_key(p2->sessionkey, p2->nonce1, p2->nonce2, 16);
                 p2->flag = 1;
                 p2->direct = 1;
                 printf("[info]>>>drone's id = %d auth success!\n\n", auth_msg.srcid);
+                share(rfa->sock_fd, rfa->alldrone[rfa->my_index].id, rfa->head, rfa->alldrone, p2);
                 if (DEBUG){
                   printf("[info]>> auth table is \n");
                   printList(rfa->head);
@@ -133,9 +140,11 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
              if ( isEqual(auth_msg.hmac, hmac, 32) ){   //验证通过
                 if (DEBUG)
                   printf("[info]>>> hmac right\n");
+                generate_session_key(p3->sessionkey, p3->nonce1, p3->nonce2, 16);
                 p3->direct = 1;
                 p3->flag = 1;
                 printf("drone's id = %d auth success!\n\n", auth_msg.srcid);
+                share(rfa->sock_fd, rfa->alldrone[rfa->my_index].id, rfa->head, rfa->alldrone, p3);
                 if (DEBUG){
                   printf("[info]>> auth table is \n");
                   printList(rfa->head);
@@ -166,3 +175,75 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
     }
 }
 
+void generate_share_message(ShareMsg* share_msg, char id, __uint8_t* nonce1, __uint8_t* nonce2, size_t len){
+  share_msg->id = id;
+  share_msg->noncelen = len;
+  strncpy(share_msg->nonce1, nonce1, len);
+  strncpy(share_msg->nonce2, nonce2, len);
+
+}
+
+void send_share_message(int cfd, char id, ShareMsg* share_msg, int mlen, unsigned char* Dest_IP, int Dest_PORT, __uint8_t* Sm4_key){
+  size_t clen = mlen%16 ? mlen+ 16 - mlen % 16: mlen;
+  __uint8_t* ciphertext = (__uint8_t*) malloc (clen);
+  my_sm4_cbc_padding_encrypt(Sm4_key, Sm4_iv, (__uint8_t*)share_msg, mlen, ciphertext, &clen, 1);
+  __uint8_t* msg = (__uint8_t*) malloc (clen+1);
+  add_byte(msg, (void*)ciphertext, clen, id);
+  send_padding_msg(cfd, (void*)msg, clen, 0x2, Dest_IP, Dest_PORT);
+}
+
+void share(int cfd, char id, AuthNode* head, Drone* alldrone, AuthNode* p){
+  AuthNode* node = head;
+  ShareMsg share_msg = {0};
+  while (node != NULL){
+    if (node != p && node->flag == 1 && node->direct == 1){
+      memset(&share_msg, sizeof(share_msg), 0);
+      if (node->index == 1 && p->index == 1)
+        generate_share_message(&share_msg, p->id, node->nonce1, p->nonce1, 16);
+      else if (node->index == 1 && p->index == 2)
+        generate_share_message(&share_msg, p->id, node->nonce1, p->nonce2, 16);
+      else if (node->index == 2 && p->index == 1)
+        generate_share_message(&share_msg, p->id, node->nonce2, p->nonce1, 16);
+      else if (node->index == 2 && p->index == 2)
+        generate_share_message(&share_msg, p->id, node->nonce2, p->nonce2, 16);
+      send_share_message(cfd, id, &share_msg, sizeof(share_msg), alldrone[node->id - 1].IP, alldrone[node->id - 1].PORT, node->sessionkey);
+    }
+  }
+}
+
+void pre_share_message(void* msg, __uint8_t* ciphertext, int len, char* id, int DEBUG){
+  __uint8_t* src = msg + 2;
+  *id = ((char*)msg)[1];
+  memmove(ciphertext, src, len);
+}
+
+
+void handle_share_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
+  ShareMsg share_msg = {0};char id;size_t clen = 48;size_t mlen;
+  __uint8_t* ciphertext = (__uint8_t*)malloc(clen);
+  pre_share_message(msg, ciphertext, 48, &id, DEBUG);
+  AuthNode* p = searchList(rfa->head, id);
+  if (p == NULL){
+    printf("Dont find the id\n");
+    return;
+  }
+  if(p->flag != 1){
+    printf("have not authed\n");
+    return;
+  }
+  my_sm4_cbc_padding_decrypt(p->sessionkey, Sm4_iv, ciphertext, clen, (__uint8_t*)&share_msg, &mlen, 1);
+  if (DEBUG){
+    printf("mlen : %ld\n", mlen);
+  }
+  p = searchList(rfa->head, share_msg.id);
+  if (p != NULL){
+    if (p->flag == 1)
+      printf("Aleardy Auth!\n");
+    else{
+      p->id = share_msg.id;
+      strncpy(p->nonce1, share_msg.nonce1, share_msg.noncelen);
+      strncpy(p->nonce2, share_msg.nonce2, share_msg.noncelen);
+      p->flag = 1;
+    }
+  }
+}

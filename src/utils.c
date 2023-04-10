@@ -30,6 +30,12 @@ int isEqual(unsigned char arr1[], unsigned char arr2[], int len) {
     return 1; // 相等，返回1
 }
 
+void add_byte(__uint8_t* padding_msg, void* msg, int msg_len, char padding){
+  padding_msg[0] = padding;
+  char* dest = padding_msg + 1;
+  memmove((void* )dest, msg, msg_len);
+}
+
 
 
 
