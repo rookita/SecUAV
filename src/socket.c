@@ -37,10 +37,12 @@ void *receive(void* arg) {
 void send_padding_msg(int cfd, void* msg, int len, char padding, unsigned char* Dest_IP, int Dest_PORT){
   struct sockaddr_in dest_addr;
   Dest_Socket_init(&dest_addr, Dest_IP, Dest_PORT);
-  __uint8_t* padding_msg = malloc((len + 1) * sizeof(char));
+  //__uint8_t* padding_msg = malloc((len + 1) * sizeof(char));
+  __uint8_t padding_msg[len+1];
+  memset(padding_msg, 0, len+1);
   add_byte(padding_msg, msg, len, padding);
   send_msg(cfd, (void*)padding_msg, len+1, (struct sockaddr*)&dest_addr);
-  free(padding_msg);
+  //free(padding_msg);
 }
 
 int send_msg(int cfd, void* msg, int len, struct sockaddr* addr){

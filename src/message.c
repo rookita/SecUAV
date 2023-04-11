@@ -47,9 +47,13 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
             printf("##########CASE ONE DEBUG INFO START##########\n");
           AuthNode* node = insertNode(rfa->head, auth_msg.srcid, auth_msg.nonce, NULL, 0, 0, 0);
           node->index = 2;
-          __uint8_t* nonce2 = (__uint8_t*) malloc (16);
-          __uint8_t* mbuf = (__uint8_t*) malloc (34);
-          __uint8_t* hmac = (__uint8_t*) malloc (32);
+          //__uint8_t* nonce2 = (__uint8_t*) malloc (16);
+          //__uint8_t* mbuf = (__uint8_t*) malloc (34);
+          //__uint8_t* hmac = (__uint8_t*) malloc (32);
+          __uint8_t nonce2[16];
+          __uint8_t mbuf[34];
+          __uint8_t hmac[32];
+          memset(nonce2, 0, 16);memset(mbuf, 0, 34);memset(hmac, 0, 32);
           rand_bytes(nonce2, 16);
           strncpy(node->nonce2, nonce2, 16);
           strncat(mbuf, &auth_msg.srcid, 1);strncat(mbuf, &auth_msg.destid, 1);strncat(mbuf,node->nonce2, 16);strncat(mbuf, node->nonce1, 16);
@@ -65,7 +69,7 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
             printAuthMsg(&my_auth_msg);
           }
           send_padding_msg(rfa->sock_fd, (void*)&my_auth_msg, sizeof(my_auth_msg), 0x1, rfa->alldrone[(int)(auth_msg.srcid) - 1].IP, rfa->alldrone[(int)(auth_msg.srcid) - 1].PORT);
-          free(nonce2);free(mbuf);free(hmac);
+          //free(nonce2);free(mbuf);free(hmac);
           if (DEBUG)
             printf("##########CASE ONE DEBUG INFO END##########\n");
           break;
@@ -175,6 +179,7 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
     }
 }
 
+
 void generate_share_message(ShareMsg* share_msg, char id, __uint8_t* nonce1, __uint8_t* nonce2, size_t len){
   share_msg->id = id;
   share_msg->noncelen = len;
@@ -185,29 +190,45 @@ void generate_share_message(ShareMsg* share_msg, char id, __uint8_t* nonce1, __u
 
 void send_share_message(int cfd, char id, ShareMsg* share_msg, int mlen, unsigned char* Dest_IP, int Dest_PORT, __uint8_t* Sm4_key){
   size_t clen = mlen%16 ? mlen+ 16 - mlen % 16: mlen;
-  __uint8_t* ciphertext = (__uint8_t*) malloc (clen);
+  //__uint8_t* ciphertext = (__uint8_t*) malloc (clen);
+  __uint8_t ciphertext[clen];
+  memset(ciphertext, 0, clen);
   my_sm4_cbc_padding_encrypt(Sm4_key, Sm4_iv, (__uint8_t*)share_msg, mlen, ciphertext, &clen, 1);
-  __uint8_t* msg = (__uint8_t*) malloc (clen+1);
+  //__uint8_t* msg = (__uint8_t*) malloc (clen+1);
+  __uint8_t msg[clen+1];
+  memset(msg, 0 , clen+1);
   add_byte(msg, (void*)ciphertext, clen, id);
-  send_padding_msg(cfd, (void*)msg, clen, 0x2, Dest_IP, Dest_PORT);
+  send_padding_msg(cfd, (void*)msg, clen+1, 0x2, Dest_IP, Dest_PORT);
+  //free(msg);
 }
 
 void share(int cfd, char id, AuthNode* head, Drone* alldrone, AuthNode* p){
   AuthNode* node = head;
-  ShareMsg share_msg = {0};
+  ShareMsg share_msg, share_msg1 = {0};
   while (node != NULL){
-    if (node != p && node->flag == 1 && node->direct == 1){
-      memset(&share_msg, sizeof(share_msg), 0);
-      if (node->index == 1 && p->index == 1)
-        generate_share_message(&share_msg, p->id, node->nonce1, p->nonce1, 16);
-      else if (node->index == 1 && p->index == 2)
-        generate_share_message(&share_msg, p->id, node->nonce1, p->nonce2, 16);
-      else if (node->index == 2 && p->index == 1)
+    if (node != p && node->flag == 1 && node->direct == 1){     //对其他节点分享刚认证节点
+      memset(&share_msg, sizeof(share_msg), 0);memset(&share_msg1, sizeof(share_msg1), 0);
+      if (node->index == 1 && p->index == 1){
+        generate_share_message(&share_msg, p->id, node->nonce2, p->nonce2, 16); //发送给node
+        generate_share_message(&share_msg1, node->id, p->nonce2, node->nonce2, 16); //发送给p
+      }
+      else if (node->index == 1 && p->index == 2){
         generate_share_message(&share_msg, p->id, node->nonce2, p->nonce1, 16);
-      else if (node->index == 2 && p->index == 2)
-        generate_share_message(&share_msg, p->id, node->nonce2, p->nonce2, 16);
+        generate_share_message(&share_msg1, node->id, p->nonce1, node->nonce2, 16);
+      } 
+      else if (node->index == 2 && p->index == 1){
+        generate_share_message(&share_msg, p->id, node->nonce1, p->nonce2, 16);
+        generate_share_message(&share_msg1, node->id, p->nonce2, node->nonce1, 16);
+      } 
+      else if (node->index == 2 && p->index == 2){
+        generate_share_message(&share_msg, p->id, node->nonce1, p->nonce1, 16);
+        generate_share_message(&share_msg1, node->id, p->nonce1, node->nonce1, 16);
+      } 
       send_share_message(cfd, id, &share_msg, sizeof(share_msg), alldrone[node->id - 1].IP, alldrone[node->id - 1].PORT, node->sessionkey);
+      send_share_message(cfd, id, &share_msg1, sizeof(share_msg), alldrone[p->id - 1].IP, alldrone[p->id - 1].PORT, node->sessionkey);
     }
+    //对刚认证节点分享已认证其他节点
+    node = node->next;
   }
 }
 
@@ -217,12 +238,17 @@ void pre_share_message(void* msg, __uint8_t* ciphertext, int len, char* id, int 
   memmove(ciphertext, src, len);
 }
 
-
+void printShareMsg(ShareMsg* share_msg){
+  printf("id: %d\n", share_msg->id);
+  printf("nonce1: ");print_char_arr(share_msg->nonce1, 16);
+  printf("nonce2: ");print_char_arr(share_msg->nonce2, 16);
+}
 void handle_share_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
-  ShareMsg share_msg = {0};char id;size_t clen = 48;size_t mlen;
+  ShareMsg share_msg = {0};char id;size_t clen = 64;size_t mlen;
   __uint8_t* ciphertext = (__uint8_t*)malloc(clen);
-  pre_share_message(msg, ciphertext, 48, &id, DEBUG);
-  AuthNode* p = searchList(rfa->head, id);
+  memset(ciphertext, 0, clen);
+  pre_share_message(msg, ciphertext, clen, &id, DEBUG);
+  AuthNode* p = searchList(rfa->head, id);    
   if (p == NULL){
     printf("Dont find the id\n");
     return;
@@ -234,6 +260,7 @@ void handle_share_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
   my_sm4_cbc_padding_decrypt(p->sessionkey, Sm4_iv, ciphertext, clen, (__uint8_t*)&share_msg, &mlen, 1);
   if (DEBUG){
     printf("mlen : %ld\n", mlen);
+    printShareMsg(&share_msg);
   }
   p = searchList(rfa->head, share_msg.id);
   if (p != NULL){
@@ -244,6 +271,13 @@ void handle_share_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
       strncpy(p->nonce1, share_msg.nonce1, share_msg.noncelen);
       strncpy(p->nonce2, share_msg.nonce2, share_msg.noncelen);
       p->flag = 1;
+      printf("Accept Share Msg\n");
+      printList(rfa->head);
     }
+  }
+  else{   //未认证过
+    insertNode(rfa->head, share_msg.id, share_msg.nonce1, share_msg.nonce2, 0, 1, 1);
+    printf("Accept Share Msg\n");
+    printList(rfa->head);
   }
 }
