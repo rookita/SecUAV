@@ -189,7 +189,7 @@ void generate_share_message(ShareMsg* share_msg, char id, __uint8_t* nonce1, __u
 }
 
 void send_share_message(int cfd, char id, ShareMsg* share_msg, int mlen, unsigned char* Dest_IP, int Dest_PORT, __uint8_t* Sm4_key){
-  size_t clen = mlen%16 ? mlen+ 16 - mlen % 16: mlen;
+  size_t clen = 64;
   //__uint8_t* ciphertext = (__uint8_t*) malloc (clen);
   __uint8_t ciphertext[clen];
   memset(ciphertext, 0, clen);
@@ -210,22 +210,24 @@ void share(int cfd, char id, AuthNode* head, Drone* alldrone, AuthNode* p){
       memset(&share_msg, sizeof(share_msg), 0);memset(&share_msg1, sizeof(share_msg1), 0);
       if (node->index == 1 && p->index == 1){
         generate_share_message(&share_msg, p->id, node->nonce2, p->nonce2, 16); //发送给node
-        generate_share_message(&share_msg1, node->id, p->nonce2, node->nonce2, 16); //发送给p
+        generate_share_message(&share_msg1, node->id, node->nonce2, p->nonce2, 16); //发送给p
       }
       else if (node->index == 1 && p->index == 2){
         generate_share_message(&share_msg, p->id, node->nonce2, p->nonce1, 16);
-        generate_share_message(&share_msg1, node->id, p->nonce1, node->nonce2, 16);
+        generate_share_message(&share_msg1, node->id, node->nonce2, p->nonce1, 16);
       } 
       else if (node->index == 2 && p->index == 1){
         generate_share_message(&share_msg, p->id, node->nonce1, p->nonce2, 16);
-        generate_share_message(&share_msg1, node->id, p->nonce2, node->nonce1, 16);
+        generate_share_message(&share_msg1, node->id, node->nonce1, p->nonce2, 16);
       } 
       else if (node->index == 2 && p->index == 2){
         generate_share_message(&share_msg, p->id, node->nonce1, p->nonce1, 16);
-        generate_share_message(&share_msg1, node->id, p->nonce1, node->nonce1, 16);
+        generate_share_message(&share_msg1, node->id, node->nonce1, p->nonce1, 16);
       } 
       send_share_message(cfd, id, &share_msg, sizeof(share_msg), alldrone[node->id - 1].IP, alldrone[node->id - 1].PORT, node->sessionkey);
-      send_share_message(cfd, id, &share_msg1, sizeof(share_msg), alldrone[p->id - 1].IP, alldrone[p->id - 1].PORT, node->sessionkey);
+      printf("Send Share Msg to drone-%d\n", node->id);
+      send_share_message(cfd, id, &share_msg1, sizeof(share_msg1), alldrone[p->id - 1].IP, alldrone[p->id - 1].PORT, p->sessionkey);
+      printf("Send Share Msg to drone-%d\n", p->id);
     }
     //对刚认证节点分享已认证其他节点
     node = node->next;
@@ -243,6 +245,7 @@ void printShareMsg(ShareMsg* share_msg){
   printf("nonce1: ");print_char_arr(share_msg->nonce1, 16);
   printf("nonce2: ");print_char_arr(share_msg->nonce2, 16);
 }
+
 void handle_share_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
   ShareMsg share_msg = {0};char id;size_t clen = 64;size_t mlen;
   __uint8_t* ciphertext = (__uint8_t*)malloc(clen);
@@ -259,7 +262,7 @@ void handle_share_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
   }
   my_sm4_cbc_padding_decrypt(p->sessionkey, Sm4_iv, ciphertext, clen, (__uint8_t*)&share_msg, &mlen, 1);
   if (DEBUG){
-    printf("mlen : %ld\n", mlen);
+    printf("Share_msg:\n");
     printShareMsg(&share_msg);
   }
   p = searchList(rfa->head, share_msg.id);
@@ -271,13 +274,17 @@ void handle_share_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
       strncpy(p->nonce1, share_msg.nonce1, share_msg.noncelen);
       strncpy(p->nonce2, share_msg.nonce2, share_msg.noncelen);
       p->flag = 1;
-      printf("Accept Share Msg\n");
-      printList(rfa->head);
+      generate_session_key(p->sessionkey, share_msg.nonce1, share_msg.nonce2, 16);
+      printf("Recive Share Msg; Authed drone-%d\n", share_msg.id);
+      if (DEBUG)
+        printList(rfa->head);
     }
   }
   else{   //未认证过
-    insertNode(rfa->head, share_msg.id, share_msg.nonce1, share_msg.nonce2, 0, 1, 1);
-    printf("Accept Share Msg\n");
-    printList(rfa->head);
+    p = insertNode(rfa->head, share_msg.id, share_msg.nonce1, share_msg.nonce2, 0, 1, 1);
+    generate_session_key(p->sessionkey, share_msg.nonce1, share_msg.nonce2, 16);
+    printf("Recive Share Msg; Authed drone-%d\n", share_msg.id);
+    if (DEBUG)
+      printList(rfa->head);
   }
 }
