@@ -2,6 +2,34 @@
 #include "../include/gmssl/rand.h"
 #include <string.h>
 
+
+void response_init(Response* response, size_t len){
+  int i = 0;
+  for (i = 0; i<len; i++){
+    response->id = -1;
+    response->isresponsed = -1;
+    response->num = 0;
+  }
+}
+
+Response* response_find(Response* response, char id){
+  int i = 0;
+  for (i = 0; i < response[0].num; i++){
+    if (response[i].id == id)
+      return &(response[i]);
+  }
+  return NULL;
+}
+
+char response_check(Response* response){
+  int i = 0;
+  for (i = 0; i < response[0].num; i++){
+    if (response[i].isresponsed != 1)
+      return 0;
+  }
+  return 1;
+}
+
 void generate_auth_message(AuthMsg* auth_msg, int index, char srcid, char destid, __uint8_t* nonce, int len, __uint8_t* hmac){
     auth_msg->index = index;
     auth_msg->srcid = srcid;
@@ -203,7 +231,7 @@ void send_share_message(int cfd, char dest_id, ShareMsg* share_msg, int mlen, un
 }
 
 void share(int cfd, char id, AuthNode* head, Drone* alldrone, AuthNode* p){
-  AuthNode* node = head;
+  AuthNode* node = head->next;
   ShareMsg share_msg, share_msg1 = {0};
   while (node != NULL){
     if (node != p && node->flag == 1){     //对其他节点分享刚认证节点
@@ -315,8 +343,8 @@ void send_update_msg(int cfd, char src_id, UpdateMsg* update_msg, int mlen, unsi
   //free(msg);
 }
 
-void Update(int cfd, char src_id, Drone* alldrone, AuthNode* head){
-  AuthNode* node = head;
+void Update(int cfd, char src_id, Drone* alldrone, AuthNode* head, Response* response){
+  AuthNode* node = head->next;
   UpdateMsg update_msg = {0};
   update_msg.noncelen = 16;
   __uint8_t nonce[update_msg.noncelen];
@@ -330,6 +358,11 @@ void Update(int cfd, char src_id, Drone* alldrone, AuthNode* head){
       strncpy(update_msg.newnonce, nonce, update_msg.noncelen);
       //printf("Update msg:\n");printUpdateMsg(&update_msg);
       send_update_msg(cfd, src_id, &update_msg, sizeof(update_msg), alldrone[node->id - 1].IP, alldrone[node->id - 1].PORT, node->sessionkey);
+      
+      response[response[0].num].id = node->id;
+      response[response[0].num].isresponsed = 0;
+      response[0].num++;
+      
       if (node->index == 1){
         memset(node->nonce1, 0, 16);
         strncpy(node->nonce1, nonce, 16);
@@ -408,6 +441,12 @@ void handle_update_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
       printf("update error!\n");
       return;
     }
+    Response* response = response_find(rfa->response, update_msg.src_id);
+    if (response == NULL){
+      printf("response error!\n");
+      return;
+    }
+    response->isresponsed = 1;
     printf("recieve update response message of drone-%d\n", update_msg.src_id);
     memset(p->nonce2, 0, 16);
     strncpy(p->nonce2, update_msg.newnonce, update_msg.noncelen);
@@ -416,5 +455,116 @@ void handle_update_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
     printf("new session key is ");print_char_arr(p->sessionkey, 16);
     //printf("Auth Table:\n");
     //printAuthtable(rfa->head);
+    if (response_check(rfa->response)){
+      printf("recived all response. Start Sharing\n");
+      response_init(rfa->response, 10);
+      Update_After_Share(rfa->sock_fd, rfa->my_index + 1, rfa->head, rfa->alldrone);
+    }
   }
+}
+
+void printUpdateShareMsg(UpdateShareMsg* update_share_msg){
+  printf("id:");print_char_arr(update_share_msg->id, update_share_msg->num);
+  printf("nonce:");print_char_arr(update_share_msg->nonce, update_share_msg->num*16);
+}
+
+void pre_update_share_message(void* msg, __uint8_t* ciphertext, int len, char* id, int DEBUG){
+  __uint8_t* src = msg + 2;
+  *id = ((char*)msg)[1];
+  memmove(ciphertext, src, len);
+}
+
+void send_update_share_msg(int cfd, char src_id, UpdateShareMsg* update_share_msg, int mlen, unsigned char* Dest_IP, int Dest_PORT, __uint8_t* Sm4_key){
+  size_t clen = 200;
+  //__uint8_t* ciphertext = (__uint8_t*) malloc (clen);
+  __uint8_t ciphertext[clen];
+  memset(ciphertext, 0, clen);
+  my_sm4_cbc_padding_encrypt(Sm4_key, Sm4_iv, (__uint8_t*)update_share_msg, mlen, ciphertext, &clen, 0);
+  //__uint8_t* msg = (__uint8_t*) malloc (clen+1);
+  __uint8_t msg[clen+1];
+  memset(msg, 0 , clen+1);
+  add_byte(msg, (void*)ciphertext, clen, src_id);
+  send_padding_msg(cfd, (void*)msg, clen+1, 0x4, Dest_IP, Dest_PORT);
+  //free(msg);
+}
+
+void Update_After_Share(int cfd, char src_id, AuthNode* head, Drone* alldrone){
+  UpdateShareMsg update_share_msg = {0};
+  int i = 0;
+  AuthNode* node = head->next;
+  while(node != NULL){
+    update_share_msg.id[i] = node->id;
+    if(node->index == 1){
+      strncat(update_share_msg.nonce, node->nonce1, 16);
+    }
+    else if (node->index == 2){
+      strncat(update_share_msg.nonce, node->nonce2, 16);
+    }
+    i++;
+    node = node->next;
+  }
+  update_share_msg.num = i;
+  node = head->next;
+  while(node != NULL){
+    send_update_share_msg(cfd, src_id, &update_share_msg, sizeof(update_share_msg), alldrone[node->id - 1].IP, alldrone[node->id - 1].PORT, node->sessionkey);
+    node = node->next;
+  }
+}
+
+void handle_update_share_msg(void* msg, struct recive_func_arg* rfa, int DEBUG){
+  UpdateShareMsg update_share_msg = {0};char id;size_t clen = 200;size_t mlen;
+  __uint8_t* ciphertext = (__uint8_t*)malloc(clen);
+  memset(ciphertext, 0, clen);
+  pre_update_share_message(msg, ciphertext, clen, &id, DEBUG);
+  AuthNode* p = searchList(rfa->head, id);    
+  if (p == NULL){
+    printf("Dont find drone-%d\n", id);
+    return;
+  }
+  if(p->flag != 1){
+    printf("have not authed\n");
+    return;
+  }
+  my_sm4_cbc_padding_decrypt(p->sessionkey, Sm4_iv, ciphertext, clen, (__uint8_t*)&update_share_msg, &mlen, DEBUG);
+  if (DEBUG){
+    printf("Update_msg:\n");
+    printUpdateShareMsg(&update_share_msg);
+  }
+  __uint8_t mynonce[16];memset(mynonce, 0, 16);
+  if (p->index == 1)
+    strncpy(mynonce, p->nonce1, 16);
+  else if (p->index == 2)
+    strncpy(mynonce, p->nonce2, 16);
+  p = NULL;
+  int i = 0;char my_id = rfa->my_index + 1;char tmp;
+  
+  for (i = 0; i < update_share_msg.num; i++){
+    tmp = update_share_msg.id[i];
+    if (tmp != my_id){
+      p = searchList(rfa->head, tmp);
+      if (p != NULL){ //之前认证过
+        p->flag = 1;
+        if (p->index == 1){
+          memset(p->nonce2, 0, 16);
+          strncpy(p->nonce2, update_share_msg.nonce + i*16, 16);
+          memset(p->nonce1, 0, 16);
+          strncpy(p->nonce1, mynonce, 16);
+        }
+        else if (p->index == 2){
+          memset(p->nonce1, 0, 16);
+          strncpy(p->nonce1, update_share_msg.nonce + i*16, 16);
+          memset(p->nonce2, 0, 16);
+          strncpy(p->nonce2, mynonce, 16);
+        }
+      }
+      else{ //之前没认证
+        p = insertNode(rfa->head, tmp, mynonce, update_share_msg.nonce + i*16, 0, 1, 1);
+      }
+      memset(p->sessionkey, 0, 16);
+      generate_session_key(p->sessionkey, p->nonce1, p->nonce2, 16);
+      printf("Update drone-%d\n", tmp);
+    }
+    tmp = -1;
+  }
+  printf("Update %d drone\n", i);
 }

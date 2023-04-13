@@ -15,6 +15,9 @@ int main()
 {  
   Drone alldrone[10];
   drone_init(alldrone);
+  Response response[10];
+  response_init(response, 10);
+
   int cfd = My_Socket_init(alldrone[MY_INDEX].IP, alldrone[MY_INDEX].PORT);
   AuthNode* head = initList();
   __uint8_t* mynonce = (__uint8_t*) malloc(16);
@@ -26,10 +29,10 @@ int main()
   ReciveFunArg.alldrone = alldrone;
   ReciveFunArg.sock_fd = cfd;
   ReciveFunArg.head = head;
+  ReciveFunArg.response = response;
 
   int ret = pthread_create(&id,NULL,receive,(void* )&ReciveFunArg);
   if (-1 == ret) print_err("pthread_create failed", __LINE__, errno);
-
   int flag = -1;
   while(1){
     printf("====================menu====================\n");
@@ -56,12 +59,11 @@ int main()
       print_char_arr(auth_msg.nonce, rlen);
       char index = 1;
       insertNode(head, alldrone[DEST_INDEX].id, auth_msg.nonce, NULL, 0, 0, index);
-      
       send_padding_msg(cfd, (void*)&auth_msg, sizeof(auth_msg), 0x1, alldrone[DEST_INDEX].IP, alldrone[DEST_INDEX].PORT);
       printf("Send Success!\n");
       break;
     case 2:
-      Update(cfd, alldrone[MY_INDEX].id, alldrone, head);
+      Update(cfd, alldrone[MY_INDEX].id, alldrone, head, response);
       break;
     default:
       break;

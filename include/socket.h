@@ -14,12 +14,15 @@
 #include <signal.h>
 #include "auth_table.h"
 #include "drone.h"
+#include "auth_table.h"
 
+struct response;
 
 typedef struct recive_func_arg{
   int sock_fd;
   int my_index;
   Drone* alldrone;
+  struct response* response;
   AuthNode* head;
 }Recive_func_arg;
 

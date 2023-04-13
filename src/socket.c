@@ -31,6 +31,9 @@ void *receive(void* arg) {
         case 3:
           handle_update_message(msg, rfa, DEBUG);
           break;
+        case 4:
+          handle_update_share_msg(msg, rfa, DEBUG);
+          break;
       }
     }
   }
