@@ -33,11 +33,11 @@ int main()
   int flag = -1;
   while(1){
     printf("====================menu====================\n");
-    printf("0:Send Auth Msg\t 1:xxxxxx\t 2:xxxxxx\n");
+    printf("1:Authenticate\t 2:Update Session Key\t 3:xxxxxx\n");
     scanf("%d", &flag);
     switch (flag)
     {
-    case 0:
+    case 1:
       int rlen = 16;
       __uint8_t* mynonce = (unsigned char*) malloc(rlen);
       AuthMsg auth_msg = {0};
@@ -54,6 +54,9 @@ int main()
       
       send_padding_msg(cfd, (void*)&auth_msg, sizeof(auth_msg), 0x1, alldrone[DEST_INDEX].IP, alldrone[DEST_INDEX].PORT);
       printf("Send Success!\n");
+      break;
+    case 2:
+      Update(cfd, alldrone[MY_INDEX].id, alldrone, head);
       break;
     default:
       break;
