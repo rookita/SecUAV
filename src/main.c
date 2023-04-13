@@ -33,10 +33,15 @@ int main()
   int flag = -1;
   while(1){
     printf("====================menu====================\n");
+    printf("0:Print Auth Table\n");
     printf("1:Authenticate\t 2:Update Session Key\t 3:xxxxxx\n");
     scanf("%d", &flag);
     switch (flag)
     {
+    case 0:
+      printf("Auth Table is:\n");
+      printAuthtable(head);
+      break;
     case 1:
       int rlen = 16;
       __uint8_t* mynonce = (unsigned char*) malloc(rlen);

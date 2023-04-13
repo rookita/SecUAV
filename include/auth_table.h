@@ -20,9 +20,6 @@ AuthNode* initList();
 AuthNode* insertNode(AuthNode* head, char id, __uint8_t* mynonce, __uint8_t* othernonce, char direct, char flag, char index);
 void deleteNode(AuthNode* head, char id);
 AuthNode* searchList(AuthNode* head, char id);
-void updateMynonce(AuthNode* node, __uint8_t* mynonce);
-void updateOthernonce(AuthNode* node, __uint8_t* othernonce);
-void updateFlag(AuthNode* node, char flag);
-void printList(AuthNode* head);
+void printAuthtable(AuthNode* head);
 
 #endif

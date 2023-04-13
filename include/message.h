@@ -51,6 +51,6 @@ void printUpdateMsg(UpdateMsg* update_msg);
 void send_update_msg(int cfd, char dest_id, UpdateMsg* update_msg, int mlen, unsigned char* Dest_IP, int Dest_PORT, __uint8_t* Sm4_key);
 void Update(int cfd, char src_id, Drone* alldrone, AuthNode* head);
 void pre_update_message(void* msg, __uint8_t* ciphertext, int len, char* id, int DEBUG);
-void handle_update_msg(void* msg, struct recive_func_arg* rfa, int DEBUG);
+void handle_update_message(void* msg, struct recive_func_arg* rfa, int DEBUG);
 
 #endif

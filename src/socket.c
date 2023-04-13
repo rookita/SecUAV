@@ -4,7 +4,7 @@
 #include "../include/message.h"
 
 #define MAXLEN 1024
-#define DEBUG 1
+#define DEBUG 0
 
 void *receive(void* arg) {
   struct recive_func_arg* rfa = (struct recive_func_arg *)arg;
@@ -27,6 +27,9 @@ void *receive(void* arg) {
           break;
         case 2:   //share msg
           handle_share_message(msg, rfa, DEBUG);
+          break;
+        case 3:
+          handle_update_message(msg, rfa, DEBUG);
           break;
       }
     }
