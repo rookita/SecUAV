@@ -58,7 +58,12 @@ int main()
       printf("mynonce is: ");
       print_char_arr(auth_msg.nonce, rlen);
       char index = 1;
-      insertNode(head, alldrone[DEST_INDEX].id, auth_msg.nonce, NULL, 0, 0, index);
+      if (auth_msg.srcid < auth_msg.destid){
+        insertNode(head, alldrone[DEST_INDEX].id, auth_msg.nonce, NULL, 0, 0, index);
+      }
+      else{
+        insertNode(head, alldrone[DEST_INDEX].id, NULL, auth_msg.nonce, 0, 0, index);
+      }
       send_padding_msg(cfd, (void*)&auth_msg, sizeof(auth_msg), 0x1, alldrone[DEST_INDEX].IP, alldrone[DEST_INDEX].PORT);
       printf("Send Success!\n");
       break;
