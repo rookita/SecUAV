@@ -49,6 +49,6 @@ void generate_session_key(__uint8_t* sessionkey, __uint8_t* nonce1, __uint8_t* n
   memset(sessionkey, 0, len);memset(mbuf, 0, 2*len);memset(hmac, 0, 32);
   strncat(mbuf, nonce1, len);strncat(mbuf, nonce2, len);
   my_sm3_hmac(hmac_key, KEYLEN, mbuf, 2*len, hmac);
-  strncat(sessionkey, hmac, len);
+  strncpy(sessionkey, hmac, len);
   free(mbuf);free(hmac);
 }

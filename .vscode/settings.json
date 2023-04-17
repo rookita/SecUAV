@@ -11,7 +11,8 @@
         "rand.h": "c",
         "auth_table.h": "c",
         "drone.h": "c",
-        "ioctl.h": "c"
+        "ioctl.h": "c",
+        "test.h": "c"
     },
     "cmake.configureOnOpen": false
 }

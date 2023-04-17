@@ -15,7 +15,7 @@ void drone_init(Drone* alldrone){
     alldrone[3].PORT = 6666;
 }
 
-char find_drone(Drone* alldrone, char* IP){
+char find_drone_by_ip(Drone* alldrone, char* IP){
     int i = 0;
     for (i = 0; i<10; i++){
         if (strcmp(alldrone[i].IP, IP) == 0)    //相等
@@ -23,3 +23,13 @@ char find_drone(Drone* alldrone, char* IP){
     }
     return -1;
 }
+
+char find_drone_by_id(Drone* alldrone, char id){
+    int i = 0;
+    for (i = 0; i<10; i++){
+        if (alldrone[i].id == id)    //相等
+            return 1;
+    }
+    return 0;
+}
+

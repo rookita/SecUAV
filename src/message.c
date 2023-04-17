@@ -106,7 +106,7 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
             printf("[info]>>>recive auth request.will send msg \n");
             printAuthMsg(&my_auth_msg);
           }
-          send_padding_msg(rfa->sock_fd, (void*)&my_auth_msg, sizeof(my_auth_msg), 0x1, rfa->alldrone[(int)(auth_msg.srcid) - 1].IP, rfa->alldrone[(int)(auth_msg.srcid) - 1].PORT);
+          send_padding_msg(rfa->sock_fd, (void*)&my_auth_msg, sizeof(my_auth_msg), 0x1, rfa->alldrone[(int)(auth_msg.srcid)].IP, rfa->alldrone[(int)(auth_msg.srcid)].PORT);
           //free(nonce2);free(mbuf);free(hmac);
           if (DEBUG)
             printf("##########CASE ONE DEBUG INFO END##########\n");
@@ -162,7 +162,7 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
                   printf("[info]>>>will send auth msg is \n");
                   printAuthMsg(&my_auth_msg);
                 }
-                send_padding_msg(rfa->sock_fd, (void*)&my_auth_msg, sizeof(my_auth_msg), 0x1, rfa->alldrone[(int)(auth_msg.srcid) - 1].IP, rfa->alldrone[(int)(auth_msg.srcid) - 1].PORT);
+                send_padding_msg(rfa->sock_fd, (void*)&my_auth_msg, sizeof(my_auth_msg), 0x1, rfa->alldrone[(int)(auth_msg.srcid) ].IP, rfa->alldrone[(int)(auth_msg.srcid) ].PORT);
              }
           else {
             printf("[info]>>>case2 hmac is not equal!\n");
@@ -278,9 +278,9 @@ void share(int cfd, char my_id, AuthNode* head, Drone* alldrone, AuthNode* p){
         generate_share_message(&share_msg_to_node, p->id, node->nonce2, p->nonce2, NONCELEN); //发送给node
         generate_share_message(&share_msg_to_p, node->id, p->nonce2, node->nonce2, NONCELEN); //发送给p
       }
-      send_share_message(cfd, my_id, &share_msg_to_node, sizeof(share_msg_to_node), alldrone[node->id - 1].IP, alldrone[node->id - 1].PORT, node->sessionkey);
+      send_share_message(cfd, my_id, &share_msg_to_node, sizeof(share_msg_to_node), alldrone[node->id ].IP, alldrone[node->id ].PORT, node->sessionkey);
       printf("Send Share Msg to drone-%d\n", node->id);
-      send_share_message(cfd, my_id, &share_msg_to_p, sizeof(share_msg_to_p), alldrone[p->id - 1].IP, alldrone[p->id - 1].PORT, p->sessionkey);
+      send_share_message(cfd, my_id, &share_msg_to_p, sizeof(share_msg_to_p), alldrone[p->id ].IP, alldrone[p->id ].PORT, p->sessionkey);
       printf("Send Share Msg to drone-%d\n", p->id);
     }
     //对刚认证节点分享已认证其他节点
@@ -398,7 +398,7 @@ void Update(int cfd, char src_id, Drone* alldrone, AuthNode* head, Response* res
       update_msg.noncelen = NONCELEN;
       strncpy(update_msg.newnonce, nonce, update_msg.noncelen); //触发节点对其他节点使用同一个随机数
       //printf("Update msg:\n");printUpdateMsg(&update_msg);
-      send_update_msg(cfd, src_id, &update_msg, sizeof(update_msg), alldrone[node->id - 1].IP, alldrone[node->id - 1].PORT, node->sessionkey);
+      send_update_msg(cfd, src_id, &update_msg, sizeof(update_msg), alldrone[node->id ].IP, alldrone[node->id ].PORT, node->sessionkey);
       
       response[response[0].num].id = node->id;  //记录接收到的响应
       response[response[0].num].isresponsed = 0;
@@ -459,7 +459,7 @@ void handle_update_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
     response_update_msg.noncelen = NONCELEN;
     response_update_msg.index = 2;
     strncpy(response_update_msg.newnonce, nonce, response_update_msg.noncelen);
-    send_update_msg(rfa->sock_fd, update_msg.dest_id, &response_update_msg, sizeof(response_update_msg), rfa->alldrone[update_msg.src_id -1].IP, rfa->alldrone[update_msg.src_id -1].PORT, p->sessionkey);
+    send_update_msg(rfa->sock_fd, update_msg.dest_id, &response_update_msg, sizeof(response_update_msg), rfa->alldrone[update_msg.src_id].IP, rfa->alldrone[update_msg.src_id].PORT, p->sessionkey);
     printf("send response update msg to drone-%d\n", update_msg.src_id);
     printf("response_msg:\n");printUpdateMsg(&response_update_msg);
     memset(p->nonce1, 0, NONCELEN);memset(p->nonce2, 0, NONCELEN);memset(p->sessionkey, 0, NONCELEN);
@@ -558,7 +558,7 @@ void Share_after_Update(int cfd, char src_id, AuthNode* head, Drone* alldrone){
   update_share_msg.num = i;
   node = head->next;
   while(node != NULL){
-    send_update_share_msg(cfd, src_id, &update_share_msg, sizeof(update_share_msg), alldrone[node->id - 1].IP, alldrone[node->id - 1].PORT, node->sessionkey);
+    send_update_share_msg(cfd, src_id, &update_share_msg, sizeof(update_share_msg), alldrone[node->id].IP, alldrone[node->id].PORT, node->sessionkey);
     node = node->next;
   }
 }
