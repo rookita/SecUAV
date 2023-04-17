@@ -5,9 +5,10 @@
 #include "gmssl/hmac.h"
 #include "gmssl/rand.h"
 
+#define KEYLEN 16
 
-extern __uint8_t Sm4_iv[16];
-extern __uint8_t hmac_key[16];
+extern __uint8_t Sm4_iv[KEYLEN];
+extern __uint8_t hmac_key[KEYLEN];
 
 void my_sm4_cbc_padding_encrypt(const unsigned char* Sm4_key, const unsigned char* Sm4_iv,  unsigned char* msg, size_t mlen, unsigned char* ciphertext, size_t* clen, int DEBUG);
 void my_sm4_cbc_padding_decrypt(const unsigned char* Sm4_key, const unsigned char* Sm4_iv,  unsigned char* ciphertext, size_t clen, unsigned char* msg, size_t* mlen, int DEBUG);

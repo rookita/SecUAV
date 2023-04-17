@@ -2,8 +2,8 @@
 #include "../include/crypto.h"
 #include "../include/utils.h"
 
-__uint8_t Sm4_iv[16] = "0123456789abcde";
-__uint8_t hmac_key[16] = "Secret HMAC Keyy";
+__uint8_t Sm4_iv[KEYLEN] = "0123456789abcde";
+__uint8_t hmac_key[KEYLEN] = "Secret HMAC Keyy";
 
 
 void my_sm4_cbc_padding_encrypt(const unsigned char* Sm4_key, const unsigned char* Sm4_iv, unsigned char* msg, size_t mlen, unsigned char* ciphertext, size_t* clen, int DEBUG){
@@ -15,9 +15,9 @@ void my_sm4_cbc_padding_encrypt(const unsigned char* Sm4_key, const unsigned cha
     printf("plaintext: ");
     print_char_arr(msg, mlen);
 	  printf("key: ");
-	  print_char_arr(Sm4_key, 16);
+	  print_char_arr(Sm4_key, KEYLEN);
 	  printf("iv: ");
-	  print_char_arr(Sm4_iv, 16);
+	  print_char_arr(Sm4_iv, KEYLEN);
     printf("ciphertext: ");
     print_char_arr(ciphertext, *clen);
   }
@@ -30,9 +30,9 @@ void my_sm4_cbc_padding_decrypt(const unsigned char* Sm4_key, const unsigned cha
     printf("ciphertext: ");
     print_char_arr(ciphertext, clen);
     printf("key: ");
-	  print_char_arr(Sm4_key, 16);
+	  print_char_arr(Sm4_key, KEYLEN);
 	  printf("iv: ");
-	  print_char_arr(Sm4_iv, 16);
+	  print_char_arr(Sm4_iv, KEYLEN);
   }
 	sm4_set_decrypt_key(&sm4_key, Sm4_key);
 	sm4_cbc_padding_decrypt(&sm4_key, Sm4_iv, ciphertext, clen, msg, mlen);
@@ -48,7 +48,7 @@ void generate_session_key(__uint8_t* sessionkey, __uint8_t* nonce1, __uint8_t* n
   __uint8_t* hmac = (__uint8_t*) malloc (32);
   memset(sessionkey, 0, len);memset(mbuf, 0, 2*len);memset(hmac, 0, 32);
   strncat(mbuf, nonce1, len);strncat(mbuf, nonce2, len);
-  my_sm3_hmac(hmac_key, 16, mbuf, 2*len, hmac);
+  my_sm3_hmac(hmac_key, KEYLEN, mbuf, 2*len, hmac);
   strncat(sessionkey, hmac, len);
   free(mbuf);free(hmac);
 }

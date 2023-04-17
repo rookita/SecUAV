@@ -10,14 +10,12 @@ typedef struct authnode {
     unsigned char nonce1[16];
     unsigned char nonce2[16];
     unsigned char sessionkey[16];
-    char direct; //是否为直接认证
     char flag;  //是否已经认证完成
-    char index; //我的随机数是nonce1还是nonce2
     struct authnode *next;
 } AuthNode;
 
 AuthNode* initList();
-AuthNode* insertNode(AuthNode* head, char id, __uint8_t* mynonce, __uint8_t* othernonce, char direct, char flag, char index);
+AuthNode* insertNode(AuthNode *head, char id, __uint8_t* nonce1, __uint8_t* nonce2, char flag);
 void deleteNode(AuthNode* head, char id);
 AuthNode* searchList(AuthNode* head, char id);
 void printAuthtable(AuthNode* head);

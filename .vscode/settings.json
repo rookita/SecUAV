@@ -10,7 +10,8 @@
         "sm4.h": "c",
         "rand.h": "c",
         "auth_table.h": "c",
-        "drone.h": "c"
+        "drone.h": "c",
+        "ioctl.h": "c"
     },
     "cmake.configureOnOpen": false
 }
