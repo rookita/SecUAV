@@ -1,5 +1,6 @@
 #include "../include/auth_table.h"
 #include "../include/utils.h"
+#include "../include/message.h"
 #include <string.h>
 
 // 初始化链表
@@ -15,9 +16,9 @@ AuthNode* insertNode(AuthNode *head, char id, __uint8_t* nonce1, __uint8_t* nonc
     AuthNode *newNode = (AuthNode *)malloc(sizeof(AuthNode));
     newNode->id = id;
     if(nonce1 != NULL)
-        strncpy(newNode->nonce1, nonce1, 16);
+        strncpy(newNode->nonce1, nonce1, NONCELEN);
     if (nonce2 != NULL)
-        strncpy(newNode->nonce2, nonce2, 16);
+        strncpy(newNode->nonce2, nonce2, NONCELEN);
     newNode->flag = flag;
     newNode->index = index;
     newNode->next = head->next;

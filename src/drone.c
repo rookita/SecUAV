@@ -4,7 +4,7 @@
 /*
 "192.168.8.130", "192.168.8.187", "192.168.8.139", "192.168.8.146", "192.168.8.169", "192.168.8.109", "192.168.8.177", "192.168.8.178"
 */
-void drone_init(Drone* alldrone){
+int drone_init(Drone* alldrone){
     alldrone[1].id = 1;
     strncpy(alldrone[1].IP, "192.168.8.130\0", 14);
     alldrone[1].PORT = 6666;
@@ -36,6 +36,7 @@ void drone_init(Drone* alldrone){
     alldrone[8].id = 8;
     strncpy(alldrone[8].IP, "192.168.8.178\0", 14);
     alldrone[8].PORT = 6666;
+    return 8;
 }
 
 char find_drone_by_ip(Drone* alldrone, char* IP){

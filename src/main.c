@@ -12,8 +12,8 @@ int main()
 {  
   Drone alldrone[20];
   drone_init(alldrone);
-  Response response[10];
-  response_init(response, 10);
+  Response response[DRONENUM];
+  response_init(response, DRONENUM);
   char local_ip[13];
   get_local_ip("ens18", local_ip);
   char MY_ID = find_drone_by_ip(alldrone, local_ip);

@@ -4,6 +4,7 @@
 #include "auth_table.h"
 #include "crypto.h"
 #include "utils.h"
+#include "drone.h"
 #include <stdlib.h>
 
 #define NONCELEN 16
@@ -20,10 +21,10 @@ typedef struct auth_msg {
 
 //随机数分享消息
 typedef struct share_msg {
-  char id;
+  char id[DRONENUM];
   __uint8_t nonce1[NONCELEN];
-  __uint8_t nonce2[NONCELEN];
-  size_t noncelen;
+  __uint8_t nonce2[NONCELEN*DRONENUM];
+  size_t num;
 }ShareMsg;
 
 //密钥更新消息
@@ -37,8 +38,8 @@ typedef struct update_msg {
 
 //密钥更新后的密钥共享消息
 typedef struct update_share_msg{
-  char id[10];
-  __uint8_t nonce[NONCELEN*10];
+  char id[DRONENUM];
+  __uint8_t nonce[NONCELEN*DRONENUM];
   size_t num; 
 }UpdateShareMsg;
 
