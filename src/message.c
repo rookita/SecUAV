@@ -270,11 +270,11 @@ void share(int cfd, char my_id, AuthNode* head, Drone* alldrone, AuthNode* p){
       }
       else if (node->id < my_id && p->id > my_id){
         generate_share_message(&share_msg_to_node, p->id, node->nonce1, p->nonce2, NONCELEN); //发送给node
-        generate_share_message(&share_msg_to_p, node->id, p->nonce1, node->nonce2, NONCELEN); //发送给p
+        generate_share_message(&share_msg_to_p, node->id, p->nonce2, node->nonce1, NONCELEN); //发送给p
       }
       else if (node->id > my_id && p->id < my_id){
         generate_share_message(&share_msg_to_node, p->id, node->nonce2, p->nonce1, NONCELEN); //发送给node
-        generate_share_message(&share_msg_to_p, node->id, p->nonce2, node->nonce1, NONCELEN); //发送给p
+        generate_share_message(&share_msg_to_p, node->id, p->nonce1, node->nonce2, NONCELEN); //发送给p
       }
 
       else if (node->id > my_id && p->id > my_id){

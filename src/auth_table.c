@@ -56,10 +56,10 @@ AuthNode* searchList(AuthNode* head, char id) {
 // 打印链表
 void printAuthtable(AuthNode *head) {
     AuthNode *p = head->next;
-    printf("| %-10s | %-10s | %-32s | %-32s | %-32s |\n", "id", "flag", "nonce1", "nonce2", "sessionkey");
+    printf("| %-10s | %-10s | %-32s | %-32s | %-32s |\n", "id", "Authed", "nonce1", "nonce2", "sessionkey");
     while (p != NULL) {
         printf("| %-10d ", p->id);
-        printf("| %-10d |", p->flag);
+        printf("| %-10s |", p->flag ? "True": "Fasle");
         print_char_arr1(p->nonce1, 16);printf("  |");
         print_char_arr1(p->nonce2, 16);printf("  |");
         print_char_arr1(p->sessionkey, 16);printf("  |");

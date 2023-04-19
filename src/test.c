@@ -8,6 +8,7 @@ void test(int cfd, Drone* alldrone, char MY_ID, AuthNode* head){
         return;
     }
     while(1){
+      sleep(MY_ID);
       if (MY_ID != 4){
         AuthNode* p = searchList(head, DEST_ID);
         if (p == NULL){
@@ -30,7 +31,6 @@ void test(int cfd, Drone* alldrone, char MY_ID, AuthNode* head){
           printf("Send Auth msg to drone-%d!\n", DEST_ID);
           free(mynonce);    
         }
-
         else if (p != NULL && p->flag != 1 && p->index == 0){
           unsigned char* mynonce = (unsigned char*) malloc(NONCELEN);
           AuthMsg auth_msg = {0};

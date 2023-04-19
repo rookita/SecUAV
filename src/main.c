@@ -40,7 +40,6 @@ int main()
   if (-1 == ret) print_err("pthread_create failed", __LINE__, errno);
   int flag = -1;
   test(cfd, alldrone, MY_ID, head);
-  return 0;
   while(1){
     printf("====================menu====================\n");
     printf("0:Print Auth Table\n");
