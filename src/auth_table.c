@@ -11,7 +11,7 @@ AuthNode *initList() {
 }
 
 // 插入节点
-AuthNode* insertNode(AuthNode *head, char id, __uint8_t* nonce1, __uint8_t* nonce2, char flag) {
+AuthNode* insertNode(AuthNode *head, char id, __uint8_t* nonce1, __uint8_t* nonce2, char flag, char index) {
     AuthNode *newNode = (AuthNode *)malloc(sizeof(AuthNode));
     newNode->id = id;
     if(nonce1 != NULL)
@@ -19,6 +19,7 @@ AuthNode* insertNode(AuthNode *head, char id, __uint8_t* nonce1, __uint8_t* nonc
     if (nonce2 != NULL)
         strncpy(newNode->nonce2, nonce2, 16);
     newNode->flag = flag;
+    newNode->index = index;
     newNode->next = head->next;
     head->next = newNode;
     return newNode;

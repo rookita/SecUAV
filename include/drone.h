@@ -6,7 +6,7 @@
 
 typedef struct drone{
   char id;
-  __uint8_t IP[13];
+  __uint8_t IP[14];
   int PORT;
 }Drone;
 

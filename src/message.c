@@ -81,14 +81,14 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
           __uint8_t mbuf[34];
           __uint8_t hmac[32];
           if (auth_msg.srcid < auth_msg.destid){  //nonce1-srcid,nonce2-destid
-            AuthNode* node = insertNode(rfa->head, auth_msg.srcid, auth_msg.nonce, NULL, 0);  //nonce1-srcid
+            AuthNode* node = insertNode(rfa->head, auth_msg.srcid, auth_msg.nonce, NULL, 0, 1);  //nonce1-srcid
             memset(nonce, 0, NONCELEN);memset(mbuf, 0, 2*NONCELEN+2);memset(hmac, 0, 32);
             rand_bytes(nonce, NONCELEN);
             strncpy(node->nonce2, nonce, NONCELEN);  //nonce2-destid
             strncat(mbuf, &auth_msg.srcid, 1);strncat(mbuf, &auth_msg.destid, 1);strncat(mbuf,node->nonce2, NONCELEN);strncat(mbuf, node->nonce1, NONCELEN);
           }
           else{ //srcid > destid
-            AuthNode* node = insertNode(rfa->head, auth_msg.srcid, NULL, auth_msg.nonce, 0);  //nonce1-destid
+            AuthNode* node = insertNode(rfa->head, auth_msg.srcid, NULL, auth_msg.nonce, 0, 1);  //nonce1-destid
             memset(nonce, 0, NONCELEN);memset(mbuf, 0, 2*NONCELEN+2);memset(hmac, 0, 32);
             rand_bytes(nonce, NONCELEN);
             strncpy(node->nonce1, nonce, NONCELEN);  //nonce2-srcid
@@ -106,7 +106,7 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
             printf("[info]>>>recive auth request.will send msg \n");
             printAuthMsg(&my_auth_msg);
           }
-          send_padding_msg(rfa->sock_fd, (void*)&my_auth_msg, sizeof(my_auth_msg), 0x1, rfa->alldrone[(int)(auth_msg.srcid)].IP, rfa->alldrone[(int)(auth_msg.srcid)].PORT);
+          send_padding_msg(rfa->sock_fd, (void*)&my_auth_msg, sizeof(my_auth_msg), 0x1, rfa->alldrone[auth_msg.srcid].IP, rfa->alldrone[auth_msg.srcid].PORT);
           //free(nonce2);free(mbuf);free(hmac);
           if (DEBUG)
             printf("##########CASE ONE DEBUG INFO END##########\n");
@@ -119,6 +119,7 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
           if (p2 != NULL){
             __uint8_t* mbuf = (__uint8_t*) malloc (2*NONCELEN+2);
             __uint8_t* hmac = (__uint8_t*) malloc (32);
+            memset(mbuf, 0, 2*NONCELEN+2);memset(hmac, 0, 32);
             if (auth_msg.srcid < auth_msg.destid){
               strncat(mbuf, &auth_msg.destid, 1);strncat(mbuf, &auth_msg.srcid, 1);strncat(mbuf, auth_msg.nonce, NONCELEN);strncat(mbuf, p2->nonce2, NONCELEN);
               strncpy(p2->nonce1, auth_msg.nonce, NONCELEN);
@@ -154,6 +155,7 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
                 generate_auth_message(&my_auth_msg, 3, auth_msg.destid, auth_msg.srcid, NULL, NONCELEN, hmac);                
                 generate_session_key(p2->sessionkey, p2->nonce1, p2->nonce2, NONCELEN);
                 p2->flag = 1;
+                p2->index = 2;
                 printf("[info]>>>drone's id = %d auth success!\n\n", auth_msg.srcid);
                 share(rfa->sock_fd, rfa->alldrone[rfa->my_id].id, rfa->head, rfa->alldrone, p2);
                 if (DEBUG){
@@ -184,9 +186,9 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
           if (DEBUG)
             printf("##########CASE THREE DEBUG INFO START##########\n");
           if (p3 != NULL){
-              __uint8_t* mbuf = (__uint8_t*) malloc (34);
+              __uint8_t* mbuf = (__uint8_t*) malloc (2*NONCELEN+2);
               __uint8_t* hmac = (__uint8_t*) malloc (32);
-              memset(mbuf, 0, 34);memset(hmac, 0, 32);
+              memset(mbuf, 0, 2*NONCELEN+2);memset(hmac, 0, 32);
             if (auth_msg.srcid < auth_msg.destid){
               strncat(mbuf, &auth_msg.srcid, 1);strncat(mbuf, &auth_msg.destid, 1);strncat(mbuf,p3->nonce1, NONCELEN);strncat(mbuf, p3->nonce2, NONCELEN);
             }
@@ -199,6 +201,7 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
                   printf("[info]>>> hmac right\n");
                 generate_session_key(p3->sessionkey, p3->nonce1, p3->nonce2, NONCELEN);
                 p3->flag = 1;
+                p3->index = 3;
                 printf("drone's id = %d auth success!\n\n", auth_msg.srcid);
                 share(rfa->sock_fd, rfa->alldrone[rfa->my_id].id, rfa->head, rfa->alldrone, p3);
                 if (DEBUG){
@@ -280,7 +283,7 @@ void share(int cfd, char my_id, AuthNode* head, Drone* alldrone, AuthNode* p){
       }
       send_share_message(cfd, my_id, &share_msg_to_node, sizeof(share_msg_to_node), alldrone[node->id ].IP, alldrone[node->id ].PORT, node->sessionkey);
       printf("Send Share Msg to drone-%d\n", node->id);
-      send_share_message(cfd, my_id, &share_msg_to_p, sizeof(share_msg_to_p), alldrone[p->id ].IP, alldrone[p->id ].PORT, p->sessionkey);
+      send_share_message(cfd, my_id, &share_msg_to_p, sizeof(share_msg_to_p), alldrone[p->id].IP, alldrone[p->id].PORT, p->sessionkey);
       printf("Send Share Msg to drone-%d\n", p->id);
     }
     //对刚认证节点分享已认证其他节点
@@ -345,10 +348,10 @@ void handle_share_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
   }
   else{   //未认证过
     if (share_msg.id < my_id){
-      p = insertNode(rfa->head, share_msg.id, share_msg.nonce2, share_msg.nonce1, 1);
+      p = insertNode(rfa->head, share_msg.id, share_msg.nonce2, share_msg.nonce1, 1, -1);
     }
     else{ //p->id > my_id
-      p = insertNode(rfa->head, share_msg.id, share_msg.nonce1, share_msg.nonce2, 1);
+      p = insertNode(rfa->head, share_msg.id, share_msg.nonce1, share_msg.nonce2, 1, -1);
     }
     generate_session_key(p->sessionkey, p->nonce1, p->nonce2, NONCELEN);
     printf("Recive Share Msg; Authed drone-%d\n", share_msg.id);
@@ -613,10 +616,10 @@ void handle_update_share_msg(void* msg, struct recive_func_arg* rfa, int DEBUG){
       }
       else{ //之前没认证
         if (tmp < my_id){
-          p = insertNode(rfa->head, tmp, update_share_msg.nonce + i*NONCELEN, mynonce, 1);
+          p = insertNode(rfa->head, tmp, update_share_msg.nonce + i*NONCELEN, mynonce, 1, -1);
         }
         else{
-           p = insertNode(rfa->head, tmp, mynonce, update_share_msg.nonce + i*NONCELEN, 1);
+           p = insertNode(rfa->head, tmp, mynonce, update_share_msg.nonce + i*NONCELEN, 1, -1);
         }
       }
       memset(p->sessionkey, 0, NONCELEN);

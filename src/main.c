@@ -4,7 +4,7 @@
 #include "../include/auth_table.h"
 #include "../include/drone.h"
 #include "../include/message.h"
-#include "../test/test.h"
+#include "../include/test.h"
 
 #define DEBUG 1
 
@@ -16,7 +16,7 @@ int main()
   response_init(response, 10);
   char local_ip[13];
   get_local_ip("ens18", local_ip);
-  char MY_ID = find_drone(alldrone, local_ip);
+  char MY_ID = find_drone_by_ip(alldrone, local_ip);
   if (MY_ID == -1){
     printf("error!\n");
     return 0;
@@ -40,6 +40,7 @@ int main()
   if (-1 == ret) print_err("pthread_create failed", __LINE__, errno);
   int flag = -1;
   test(cfd, alldrone, MY_ID, head);
+  return 0;
   while(1){
     printf("====================menu====================\n");
     printf("0:Print Auth Table\n");
@@ -53,7 +54,7 @@ int main()
       break;
     case 1:
       AuthNode* p = searchList(head, DEST_ID);
-      if (p->flag == 1){
+      if (p != NULL && p->flag == 1){
         printf("drone-%d already authed\n", DEST_ID);
         continue;
       }
@@ -67,10 +68,10 @@ int main()
       printf("mynonce is: ");
       print_char_arr(auth_msg.nonce, NONCELEN);
       if (auth_msg.srcid < auth_msg.destid){
-        insertNode(head, alldrone[DEST_ID].id, auth_msg.nonce, NULL, 0);
+        insertNode(head, alldrone[DEST_ID].id, auth_msg.nonce, NULL, 0, 0);
       }
       else{
-        insertNode(head, alldrone[DEST_ID].id, NULL, auth_msg.nonce, 0);
+        insertNode(head, alldrone[DEST_ID].id, NULL, auth_msg.nonce, 0, 0);
       }
       send_padding_msg(cfd, (void*)&auth_msg, sizeof(auth_msg), 0x1, alldrone[DEST_ID].IP, alldrone[DEST_ID].PORT);
       printf("Send Auth msg to drone-%d!\n", DEST_ID);
