@@ -52,14 +52,16 @@ void sfa_init(Send_func_arg* sfa){
 }
 
 void send_padding_msg_thread(int cfd, void* msg, int len, char padding, unsigned char* Dest_IP, int Dest_PORT){
-
   sfa_init(&Sendfunarg);
   pthread_t id;
   Sendfunarg.sock_fd = cfd;
-  strncpy(Sendfunarg.msg, msg, len);
+  mystrncpy(Sendfunarg.msg, msg, len);
+  printf("len:%d\n", len);
+  printf("msg:");print_char_arr(msg, len);
+  printf("Sendfunarg.msg:");print_char_arr(Sendfunarg.msg, len);
   Sendfunarg.len = len;
   Sendfunarg.padding = padding;
-  strncpy(Sendfunarg.Dest_IP, Dest_IP, 13);
+  mystrncpy(Sendfunarg.Dest_IP, Dest_IP, 13);
   Sendfunarg.Dest_PORT = Dest_PORT;
   int ret = pthread_create(&id,NULL,send_padding_msg,(void* )&Sendfunarg);
   if (-1 == ret) print_err("pthread_create failed", __LINE__, errno);

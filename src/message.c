@@ -84,14 +84,14 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
             AuthNode* node = insertNode(rfa->head, auth_msg.srcid, auth_msg.nonce, NULL, 0, 1);  //nonce1-srcid
             memset(nonce, 0, NONCELEN);memset(mbuf, 0, 2*NONCELEN+2);memset(hmac, 0, 32);
             rand_bytes(nonce, NONCELEN);
-            strncpy(node->nonce2, nonce, NONCELEN);  //nonce2-destid
+            mystrncpy(node->nonce2, nonce, NONCELEN);  //nonce2-destid
             strncat(mbuf, &auth_msg.srcid, 1);strncat(mbuf, &auth_msg.destid, 1);strncat(mbuf,node->nonce2, NONCELEN);strncat(mbuf, node->nonce1, NONCELEN);
           }
           else{ //srcid > destid
             AuthNode* node = insertNode(rfa->head, auth_msg.srcid, NULL, auth_msg.nonce, 0, 1);  //nonce1-destid
             memset(nonce, 0, NONCELEN);memset(mbuf, 0, 2*NONCELEN+2);memset(hmac, 0, 32);
             rand_bytes(nonce, NONCELEN);
-            strncpy(node->nonce1, nonce, NONCELEN);  //nonce2-srcid
+            mystrncpy(node->nonce1, nonce, NONCELEN);  //nonce2-srcid
             strncat(mbuf, &auth_msg.srcid, 1);strncat(mbuf, &auth_msg.destid, 1);strncat(mbuf,node->nonce1, NONCELEN);strncat(mbuf, node->nonce2, NONCELEN);
           }
           
@@ -122,11 +122,11 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
             memset(mbuf, 0, 2*NONCELEN+2);memset(hmac, 0, 32);
             if (auth_msg.srcid < auth_msg.destid){
               strncat(mbuf, &auth_msg.destid, 1);strncat(mbuf, &auth_msg.srcid, 1);strncat(mbuf, auth_msg.nonce, NONCELEN);strncat(mbuf, p2->nonce2, NONCELEN);
-              strncpy(p2->nonce1, auth_msg.nonce, NONCELEN);
+              mystrncpy(p2->nonce1, auth_msg.nonce, NONCELEN);
             }
             else{ //destid < srcid
               strncat(mbuf, &auth_msg.destid, 1);strncat(mbuf, &auth_msg.srcid, 1);strncat(mbuf, auth_msg.nonce, NONCELEN);strncat(mbuf, p2->nonce1, NONCELEN);
-              strncpy(p2->nonce2, auth_msg.nonce, NONCELEN);
+              mystrncpy(p2->nonce2, auth_msg.nonce, NONCELEN);
             }
              my_sm3_hmac(hmac_key, sizeof(*hmac_key), mbuf, sizeof(*mbuf), hmac);
              
@@ -238,8 +238,8 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
 void generate_share_message(ShareMsg* share_msg, char id, __uint8_t* nonce1, __uint8_t* nonce2, size_t len){
   share_msg->id[0] = id;
   share_msg->num = 1;
-  strncpy(share_msg->nonce1, nonce1, len);
-  strncpy(share_msg->nonce2, nonce2, len);
+  mystrncpy(share_msg->nonce1, nonce1, len);
+  mystrncpy(share_msg->nonce2, nonce2, len);
 }
 
 void send_share_message(int cfd, char dest_id, ShareMsg* share_msg, int mlen, unsigned char* Dest_IP, int Dest_PORT, __uint8_t* Sm4_key){
@@ -262,10 +262,10 @@ void share(int cfd, char my_id, AuthNode* head, Drone* alldrone, AuthNode* p){
   AuthNode* node = head->next;
   int i = 0;
   if (p->id < my_id){
-    strncpy(share_msg_to_p.nonce1, p->nonce1, NONCELEN);
+    mystrncpy(share_msg_to_p.nonce1, p->nonce1, NONCELEN);
   }
   else{
-    strncpy(share_msg_to_p.nonce1, p->nonce2, NONCELEN);
+    mystrncpy(share_msg_to_p.nonce1, p->nonce2, NONCELEN);
   }
   while(node != NULL){
     if (node != p && node->flag == 1){
@@ -355,12 +355,12 @@ void handle_share_message(void* msg, const struct recive_func_arg* rfa, const in
       else{
         memset(p->nonce1, 0, NONCELEN);memset(p->nonce2, 0, NONCELEN);
         if (p->id < my_id){
-          strncpy(p->nonce1, share_msg.nonce2 + i * NONCELEN, NONCELEN); //p的nonce
-          strncpy(p->nonce2, share_msg.nonce1, NONCELEN); //mynonce
+          mystrncpy(p->nonce1, share_msg.nonce2 + i * NONCELEN, NONCELEN); //p的nonce
+          mystrncpy(p->nonce2, share_msg.nonce1, NONCELEN); //mynonce
         }
         else{ //p->id > my_id
-          strncpy(p->nonce1, share_msg.nonce1, NONCELEN);
-          strncpy(p->nonce2, share_msg.nonce2 + i * NONCELEN, NONCELEN);
+          mystrncpy(p->nonce1, share_msg.nonce1, NONCELEN);
+          mystrncpy(p->nonce2, share_msg.nonce2 + i * NONCELEN, NONCELEN);
         }
         p->flag = 1;
         generate_session_key(p->sessionkey, p->nonce1, p->nonce2, NONCELEN);
@@ -388,7 +388,7 @@ void handle_share_message(void* msg, const struct recive_func_arg* rfa, const in
 void generate_update_msg(UpdateMsg* update_msg, char src_id, char dest_id, __uint8_t* newnonce, size_t noncelen){
   update_msg->src_id = src_id;
   update_msg->dest_id = dest_id;
-  strncpy(update_msg->newnonce, newnonce, noncelen);
+  mystrncpy(update_msg->newnonce, newnonce, noncelen);
 }
 
 void printUpdateMsg(UpdateMsg* update_msg){
@@ -424,7 +424,7 @@ void Update(int cfd, char src_id, Drone* alldrone, AuthNode* head, Response* res
       update_msg.src_id = src_id;
       update_msg.dest_id = node->id;
       update_msg.noncelen = NONCELEN;
-      strncpy(update_msg.newnonce, nonce, update_msg.noncelen); //触发节点对其他节点使用同一个随机数
+      mystrncpy(update_msg.newnonce, nonce, update_msg.noncelen); //触发节点对其他节点使用同一个随机数
       //printf("Update msg:\n");printUpdateMsg(&update_msg);
       send_update_msg(cfd, src_id, &update_msg, sizeof(update_msg), alldrone[node->id ].IP, alldrone[node->id ].PORT, node->sessionkey);
       
@@ -434,11 +434,11 @@ void Update(int cfd, char src_id, Drone* alldrone, AuthNode* head, Response* res
       
       if (node->id < src_id){ //id小的为nonce1
         memset(node->nonce2, 0, NONCELEN);
-        strncpy(node->nonce2, nonce, NONCELEN);
+        mystrncpy(node->nonce2, nonce, NONCELEN);
       }
       else {  //node->id > src_id
         memset(node->nonce1, 0, NONCELEN);
-        strncpy(node->nonce1, nonce, NONCELEN);
+        mystrncpy(node->nonce1, nonce, NONCELEN);
       }
     }
     memset((void* )&update_msg, 0, sizeof(update_msg));
@@ -486,18 +486,18 @@ void handle_update_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
     response_update_msg.dest_id = update_msg.src_id;
     response_update_msg.noncelen = NONCELEN;
     response_update_msg.index = 2;
-    strncpy(response_update_msg.newnonce, nonce, response_update_msg.noncelen);
+    mystrncpy(response_update_msg.newnonce, nonce, response_update_msg.noncelen);
     send_update_msg(rfa->sock_fd, update_msg.dest_id, &response_update_msg, sizeof(response_update_msg), rfa->alldrone[update_msg.src_id].IP, rfa->alldrone[update_msg.src_id].PORT, p->sessionkey);
     printf("send response update msg to drone-%d\n", update_msg.src_id);
     printf("response_msg:\n");printUpdateMsg(&response_update_msg);
     memset(p->nonce1, 0, NONCELEN);memset(p->nonce2, 0, NONCELEN);memset(p->sessionkey, 0, NONCELEN);
     if (p->id < my_id){
-      strncpy(p->nonce1, update_msg.newnonce,update_msg.noncelen);
-      strncpy(p->nonce2, nonce, NONCELEN);
+      mystrncpy(p->nonce1, update_msg.newnonce,update_msg.noncelen);
+      mystrncpy(p->nonce2, nonce, NONCELEN);
     }
     else{
-      strncpy(p->nonce1, nonce, NONCELEN);
-      strncpy(p->nonce2, update_msg.newnonce,update_msg.noncelen);
+      mystrncpy(p->nonce1, nonce, NONCELEN);
+      mystrncpy(p->nonce2, update_msg.newnonce,update_msg.noncelen);
     }
     generate_session_key(p->sessionkey, p->nonce1, p->nonce2, NONCELEN);
     p->flag = 1;
@@ -522,12 +522,12 @@ void handle_update_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
     printf("recieve update response message of drone-%d\n", update_msg.src_id);
     if (update_msg.src_id < update_msg.dest_id){
       memset(p->nonce1, 0, NONCELEN);
-      strncpy(p->nonce1, update_msg.newnonce, update_msg.noncelen);
+      mystrncpy(p->nonce1, update_msg.newnonce, update_msg.noncelen);
     }
 
     else{
       memset(p->nonce2, 0, NONCELEN);
-      strncpy(p->nonce2, update_msg.newnonce, update_msg.noncelen);
+      mystrncpy(p->nonce2, update_msg.newnonce, update_msg.noncelen);
     }
     generate_session_key(p->sessionkey, p->nonce1, p->nonce2, NONCELEN);
     printf("drone-%d update success\n", update_msg.src_id);
@@ -613,10 +613,10 @@ void handle_update_share_msg(void* msg, struct recive_func_arg* rfa, int DEBUG){
   }
   __uint8_t mynonce[NONCELEN];memset(mynonce, 0, NONCELEN);
   if (p->id < rfa->alldrone[rfa->my_id].id){
-    strncpy(mynonce, p->nonce2, NONCELEN);
+    mystrncpy(mynonce, p->nonce2, NONCELEN);
   }
   else{
-    strncpy(mynonce, p->nonce1, NONCELEN);
+    mystrncpy(mynonce, p->nonce1, NONCELEN);
   }
   p = NULL;
   int i = 0;char my_id = rfa->my_id;char tmp;
@@ -628,15 +628,15 @@ void handle_update_share_msg(void* msg, struct recive_func_arg* rfa, int DEBUG){
         p->flag = 1;
         if (tmp > my_id){ //nonce1为我的随机数
           memset(p->nonce2, 0, NONCELEN);
-          strncpy(p->nonce2, update_share_msg.nonce + i*NONCELEN, NONCELEN);
+          mystrncpy(p->nonce2, update_share_msg.nonce + i*NONCELEN, NONCELEN);
           memset(p->nonce1, 0, NONCELEN);
-          strncpy(p->nonce1, mynonce, NONCELEN);
+          mystrncpy(p->nonce1, mynonce, NONCELEN);
         }
         else if (tmp < my_id){
           memset(p->nonce1, 0, NONCELEN);
-          strncpy(p->nonce1, update_share_msg.nonce + i*NONCELEN, NONCELEN);
+          mystrncpy(p->nonce1, update_share_msg.nonce + i*NONCELEN, NONCELEN);
           memset(p->nonce2, 0, NONCELEN);
-          strncpy(p->nonce2, mynonce, NONCELEN);
+          mystrncpy(p->nonce2, mynonce, NONCELEN);
         }
       }
       else{ //之前没认证
