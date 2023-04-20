@@ -94,7 +94,6 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
             mystrncpy(node->nonce1, nonce, NONCELEN);  //nonce2-srcid
             strncat(mbuf, &auth_msg.srcid, 1);strncat(mbuf, &auth_msg.destid, 1);strncat(mbuf,node->nonce1, NONCELEN);strncat(mbuf, node->nonce2, NONCELEN);
           }
-          
           if (DEBUG){
             printf("[info]>>the mbuf of hmac is ");
             print_char_arr(mbuf, 2*NONCELEN+2);
@@ -133,6 +132,7 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
              if ( isEqual(auth_msg.hmac, hmac, 32) ){   //验证通过
                 if (DEBUG)
                   printf("[info]>>> hmac right\n");
+                p2->flag = 1;
                 memset(mbuf, 0, 2*NONCELEN+2);memset(hmac, 0, 32);
                 if (auth_msg.srcid < auth_msg.destid){
                   strncat(mbuf, &auth_msg.destid, 1);strncat(mbuf, &auth_msg.srcid, 1);strncat(mbuf, p2->nonce2, NONCELEN);strncat(mbuf, p2->nonce1, NONCELEN);
@@ -197,8 +197,7 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
                 generate_session_key(p3->sessionkey, p3->nonce1, p3->nonce2, NONCELEN);
                 p3->flag = 1;
                 p3->index = 3;
-                printf("drone's id = %d auth success!\n", auth_msg.srcid);
-                share(rfa->sock_fd, rfa->alldrone[rfa->my_id].id, rfa->head, rfa->alldrone, p3);
+                printf("drone's id = %d auth success!\n", auth_msg.srcid);                
                 __uint8_t m[2*NONCELEN];memset(m, 0, 2*NONCELEN);
                 strncat(m, p3->nonce1, NONCELEN);strncat(m, p3->nonce2, NONCELEN);
                 AuthMsg my_auth_msg = {0};
@@ -213,6 +212,7 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
                   printf("[info]>> auth table is \n");
                   printAuthtable(rfa->head);
                 }
+                share(rfa->sock_fd, rfa->alldrone[rfa->my_id].id, rfa->head, rfa->alldrone, p3);
              }
               else {
                 printf("[info]>>>case3 hmac is not equal!\n");
@@ -261,7 +261,7 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
             free(m);free(mm);
           }
           if (DEBUG)
-            printf("##########CASE FOUR DEBUG INFO START##########\n");
+            printf("##########CASE FOUR DEBUG INFO END##########\n");
           break;
       }
     }
@@ -319,6 +319,7 @@ void share(int cfd, char my_id, AuthNode* head, Drone* alldrone, AuthNode* p){
   if (i != 0){
     send_share_message(cfd, my_id, &share_msg_to_p, sizeof(share_msg_to_p), alldrone[p->id].IP, alldrone[p->id].PORT, p->sessionkey);
     printf("Send Share Msg to drone-%d\n", p->id);
+    printf("ip: %s, port: %d\n", alldrone[p->id].IP, alldrone[p->id].PORT);
   }
   node = head->next;
   //给其他分享刚认证节点
