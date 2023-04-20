@@ -8,7 +8,7 @@
                 "/usr/local/include",
                 "/usr/include/x86_64-linux-gnu",
                 "/usr/include",
-                "/home/rookia/Program/GmSSL/include"
+                "/home/rookia/SecUAV/include"
             ],
             "defines": []
         }
