@@ -72,7 +72,7 @@ int main()
       else{
         insertNode(head, alldrone[DEST_ID].id, NULL, auth_msg.nonce, 0, 0);
       }
-      send_padding_msg(cfd, (void*)&auth_msg, sizeof(auth_msg), 0x1, alldrone[DEST_ID].IP, alldrone[DEST_ID].PORT);
+      send_padding_msg_thread(cfd, (void*)&auth_msg, sizeof(auth_msg), 0x1, alldrone[DEST_ID].IP, alldrone[DEST_ID].PORT);
       printf("Send Auth msg to drone-%d!\n", DEST_ID);
       break;
     case 2:

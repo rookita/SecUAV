@@ -46,7 +46,7 @@ void generate_auth_message(AuthMsg* auth_msg, int index, char srcid, char destid
 }
 
 void send_auth_message(int cfd, AuthMsg* auth_msg, int len, unsigned char* Dest_IP, int Dest_PORT){
-  send_padding_msg(cfd, (void*) auth_msg, len, 0x1, Dest_IP, Dest_PORT);  //0x1表示auth_msg的类型
+  send_padding_msg_thread(cfd, (void*) auth_msg, len, 0x1, Dest_IP, Dest_PORT);  //0x1表示auth_msg的类型
 }
 
 void printAuthMsg(AuthMsg* auth_msg){
@@ -106,7 +106,7 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
             printf("[info]>>>recive auth request.will send msg \n");
             printAuthMsg(&my_auth_msg);
           }
-          send_padding_msg(rfa->sock_fd, (void*)&my_auth_msg, sizeof(my_auth_msg), 0x1, rfa->alldrone[auth_msg.srcid].IP, rfa->alldrone[auth_msg.srcid].PORT);
+          send_padding_msg_thread(rfa->sock_fd, (void*)&my_auth_msg, sizeof(my_auth_msg), 0x1, rfa->alldrone[auth_msg.srcid].IP, rfa->alldrone[auth_msg.srcid].PORT);
           //free(nonce2);free(mbuf);free(hmac);
           if (DEBUG)
             printf("##########CASE ONE DEBUG INFO END##########\n");
@@ -164,7 +164,7 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
                   printf("[info]>>>will send auth msg is \n");
                   printAuthMsg(&my_auth_msg);
                 }
-                send_padding_msg(rfa->sock_fd, (void*)&my_auth_msg, sizeof(my_auth_msg), 0x1, rfa->alldrone[(int)(auth_msg.srcid) ].IP, rfa->alldrone[(int)(auth_msg.srcid) ].PORT);
+                send_padding_msg_thread(rfa->sock_fd, (void*)&my_auth_msg, sizeof(my_auth_msg), 0x1, rfa->alldrone[(int)(auth_msg.srcid) ].IP, rfa->alldrone[(int)(auth_msg.srcid) ].PORT);
              }
           else {
             printf("[info]>>>case2 hmac is not equal!\n");
@@ -252,7 +252,7 @@ void send_share_message(int cfd, char dest_id, ShareMsg* share_msg, int mlen, un
   __uint8_t msg[clen+1];
   memset(msg, 0 , clen+1);
   add_byte(msg, (void*)ciphertext, clen, dest_id);
-  send_padding_msg(cfd, (void*)msg, clen+1, 0x2, Dest_IP, Dest_PORT);
+  send_padding_msg_thread(cfd, (void*)msg, clen+1, 0x2, Dest_IP, Dest_PORT);
   //free(msg);
 }
 
@@ -407,7 +407,7 @@ void send_update_msg(int cfd, char src_id, UpdateMsg* update_msg, int mlen, unsi
   __uint8_t msg[clen+1];
   memset(msg, 0 , clen+1);
   add_byte(msg, (void*)ciphertext, clen, src_id);
-  send_padding_msg(cfd, (void*)msg, clen+1, 0x3, Dest_IP, Dest_PORT);
+  send_padding_msg_thread(cfd, (void*)msg, clen+1, 0x3, Dest_IP, Dest_PORT);
   //free(msg);
 }
 
@@ -563,7 +563,7 @@ void send_update_share_msg(int cfd, char src_id, UpdateShareMsg* update_share_ms
   __uint8_t msg[clen+1];
   memset(msg, 0 , clen+1);
   add_byte(msg, (void*)ciphertext, clen, src_id);
-  send_padding_msg(cfd, (void*)msg, clen+1, 0x4, Dest_IP, Dest_PORT);
+  send_padding_msg_thread(cfd, (void*)msg, clen+1, 0x4, Dest_IP, Dest_PORT);
   //free(msg);
 }
 

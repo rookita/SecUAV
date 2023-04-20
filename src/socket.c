@@ -40,14 +40,38 @@ void *receive(void* arg) {
   free(msg);
 }
 
-void send_padding_msg(int cfd, void* msg, int len, char padding, unsigned char* Dest_IP, int Dest_PORT){
+void sfa_init(Send_func_arg* sfa){
+  sfa->sock_fd = -1;
+  sfa->padding = -1;
+  sfa->Dest_PORT = -1;
+  sfa->len = -1;
+  memset(sfa->msg, 0, 1024);
+  memset(sfa->Dest_IP, 0, 13);
+}
+
+void send_padding_msg_thread(int cfd, void* msg, int len, char padding, unsigned char* Dest_IP, int Dest_PORT){
+
+  sfa_init(&Sendfunarg);
+  pthread_t id;
+  Sendfunarg.sock_fd = cfd;
+  strncpy(Sendfunarg.msg, msg, len);
+  Sendfunarg.len = len;
+  Sendfunarg.padding = padding;
+  strncpy(Sendfunarg.Dest_IP, Dest_IP, 13);
+  Sendfunarg.Dest_PORT = Dest_PORT;
+  int ret = pthread_create(&id,NULL,send_padding_msg,(void* )&Sendfunarg);
+  if (-1 == ret) print_err("pthread_create failed", __LINE__, errno);
+}
+
+void* send_padding_msg(void* arg){
+  struct send_func_arg* sfa = (struct send_func_arg*)arg;
   struct sockaddr_in dest_addr;
-  Dest_Socket_init(&dest_addr, Dest_IP, Dest_PORT);
+  Dest_Socket_init(&dest_addr, sfa->Dest_IP, sfa->Dest_PORT);
   //__uint8_t* padding_msg = malloc((len + 1) * sizeof(char));
-  __uint8_t padding_msg[len+1];
-  memset(padding_msg, 0, len+1);
-  add_byte(padding_msg, msg, len, padding);
-  send_msg(cfd, (void*)padding_msg, len+1, (struct sockaddr*)&dest_addr);
+  __uint8_t padding_msg[sfa->len+1];
+  memset(padding_msg, 0, sfa->len+1);
+  add_byte(padding_msg, sfa->msg, sfa->len, sfa->padding);
+  send_msg(sfa->sock_fd, (void*)padding_msg, sfa->len+1, (struct sockaddr*)&dest_addr);
   //free(padding_msg);
 }
 
