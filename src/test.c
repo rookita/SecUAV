@@ -2,6 +2,7 @@
 #include <unistd.h>
 
 void test(int cfd, Drone* alldrone, char MY_ID, AuthNode* head){
+    printf("=============================START TEST!!! I am drone-%d=============================\n", MY_ID);
     char DEST_ID = MY_ID + 1;
     if (find_drone_by_id(alldrone, DEST_ID) == 0){ //无对应无人机
         sleep(10);
@@ -58,4 +59,5 @@ void test(int cfd, Drone* alldrone, char MY_ID, AuthNode* head){
         }
       }
     }
+    printf("=============================TEST END!!! I am drone-%d=============================\n", MY_ID);
 }
