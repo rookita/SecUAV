@@ -215,7 +215,7 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
                   printf("[info]>> auth table \n");
                   printAuthtable(rfa->head);
                 }
-                share(rfa->sock_fd, rfa->alldrone[rfa->my_id].id, rfa->head, rfa->alldrone, p3);
+                share(rfa->sock_fd, rfa->alldrone[rfa->my_id].id, rfa->head, rfa->alldrone, p3, 0, -1);
              }
               else {
                 printf("[info]>>>case3 hmac is not equal!\n");
@@ -250,7 +250,7 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
             if (strncmp(m, mm, 2*NONCELEN) == 0) {//相等
               p4->flag = 1;
               printf("drone-%d auth success!\n", auth_msg.srcid);
-              share(rfa->sock_fd, rfa->alldrone[rfa->my_id].id, rfa->head, rfa->alldrone, p2);
+              share(rfa->sock_fd, rfa->alldrone[rfa->my_id].id, rfa->head, rfa->alldrone, p2, 0, -1);
               if (DEBUG){
                 printf("[info]>> auth table is \n");
                 printAuthtable(rfa->head);
@@ -293,35 +293,37 @@ void send_share_message(int cfd, char dest_id, ShareMsg* share_msg, int mlen, un
 }
 
 //发送share消息, p为刚认证的节点
-void share(int cfd, char my_id, AuthNode* head, Drone* alldrone, AuthNode* p){
-  ShareMsg share_msg_to_node, share_msg_to_p = {0};
+void share(int cfd, char my_id, AuthNode* head, Drone* alldrone, AuthNode* p, char type, char dont_share){
   AuthNode* node = head->next;
-  int i = 0;
-  if (p->id < my_id){
-    mystrncpy(share_msg_to_p.nonce1, p->nonce1, NONCELEN);
-  }
-  else{
-    mystrncpy(share_msg_to_p.nonce1, p->nonce2, NONCELEN);
-  }
-  while(node != NULL){
-    if (node != p && node->flag == 1){
-      share_msg_to_p.id[i] = node->id;
-      if (node->id < my_id){
-      strncat(share_msg_to_p.nonce2, node->nonce1, NONCELEN);
-      }
-      else{
-        strncat(share_msg_to_p.nonce2, node->nonce2, NONCELEN);
-      }  
-      i++;
+  ShareMsg share_msg_to_node, share_msg_to_p = {0};
+  if (type == 0){
+    int i = 0;
+    if (p->id < my_id){
+      mystrncpy(share_msg_to_p.nonce1, p->nonce1, NONCELEN);
     }
-    node = node->next;
-  }
-  share_msg_to_p.num = i;
-  //分享给刚认证的节点
-  //printShareMsg(&share_msg_to_p);
-  if (i != 0){
-    send_share_message(cfd, my_id, &share_msg_to_p, sizeof(share_msg_to_p), alldrone[p->id].IP, alldrone[p->id].PORT, p->sessionkey);
-    printf("Send Share Msg to drone-%d\n", p->id);
+    else{
+      mystrncpy(share_msg_to_p.nonce1, p->nonce2, NONCELEN);
+    }
+    while(node != NULL){
+      if (node != p && node->flag == 1 && node->id != dont_share){
+        share_msg_to_p.id[i] = node->id;
+        if (node->id < my_id){
+        strncat(share_msg_to_p.nonce2, node->nonce1, NONCELEN);
+        }
+        else{
+          strncat(share_msg_to_p.nonce2, node->nonce2, NONCELEN);
+        }  
+        i++;
+      }
+      node = node->next;
+    }
+    share_msg_to_p.num = i;
+    //分享给刚认证的节点
+    //printShareMsg(&share_msg_to_p);
+    if (i != 0){
+      send_share_message(cfd, my_id, &share_msg_to_p, sizeof(share_msg_to_p), alldrone[p->id].IP, alldrone[p->id].PORT, p->sessionkey);
+      printf("Send Share Msg to drone-%d\n", p->id);
+    }
   }
   node = head->next;
   //给其他分享刚认证节点
@@ -368,7 +370,8 @@ void handle_share_message(void* msg, const struct recive_func_arg* rfa, const in
   __uint8_t* ciphertext = (__uint8_t*)malloc(clen);
   memset(ciphertext, 0, clen);
   pre_share_message(msg, ciphertext, clen, &id, DEBUG);
-  AuthNode* p = searchList(rfa->head, id);    
+  AuthNode* p = searchList(rfa->head, id);
+  AuthNode* pp = p;    
   if (p == NULL){
     printf("Dont find the id\n");
     return;
@@ -401,6 +404,8 @@ void handle_share_message(void* msg, const struct recive_func_arg* rfa, const in
         p->flag = 1;
         generate_session_key(p->sessionkey, p->nonce1, p->nonce2, NONCELEN);
         printf("Recive Share Msg; Authed drone-%d\n", share_msg.id[i]);
+        printf("Share drone-%d to Others\n", p->id);
+        share(rfa->sock_fd, my_id, rfa->head, rfa->alldrone, p, 1, pp->id);
         if (DEBUG)
           printAuthtable(rfa->head);
       }
@@ -414,6 +419,8 @@ void handle_share_message(void* msg, const struct recive_func_arg* rfa, const in
       }
       generate_session_key(p->sessionkey, p->nonce1, p->nonce2, NONCELEN);
       printf("Recive Share Msg; Authed drone-%d\n", share_msg.id[i]);
+      printf("Share drone-%d to Others\n", p->id);
+      share(rfa->sock_fd, my_id, rfa->head, rfa->alldrone, p, 1, pp->id);
       if (DEBUG)
         printAuthtable(rfa->head);
     }

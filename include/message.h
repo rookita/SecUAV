@@ -74,7 +74,7 @@ void generate_share_message(ShareMsg* share_msg, char id, __uint8_t* nonce1, __u
 void send_share_message(int cfd, char id, ShareMsg* share_msg, int mlen, unsigned char* Dest_IP, int Dest_PORT, __uint8_t* Sm4_key);
 void pre_share_message(void* msg, __uint8_t* ciphertext, int len, char* id, int DEBUG);
 void printShareMsg(ShareMsg* share_msg);
-void share(int cfd, char id, AuthNode* head, Drone* alldrone, AuthNode* p);
+void share(int cfd, char id, AuthNode* head, Drone* alldrone, AuthNode* p, char type, char dont_shar);
 void handle_share_message(void* msg, const struct recive_func_arg* rfa, const int DEBUG);
 
 

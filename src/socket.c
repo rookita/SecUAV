@@ -60,7 +60,7 @@ void send_padding_msg_thread(int cfd, void* msg, int len, char padding, unsigned
   mystrncpy(Sendfunarg.msg, msg, len);
   Sendfunarg.len = len;
   Sendfunarg.padding = padding;
-  printf("padding0: %d\n", padding);
+  //printf("padding0: %d\n", padding);
   mystrncpy(Sendfunarg.Dest_IP, Dest_IP, 13);
   Sendfunarg.Dest_PORT = Dest_PORT;
   int ret = pthread_create(&id,NULL,send_padding_msg,(void* )&Sendfunarg);
@@ -70,7 +70,7 @@ void send_padding_msg_thread(int cfd, void* msg, int len, char padding, unsigned
 void* send_padding_msg(void* arg){
   struct send_func_arg* sfa = (struct send_func_arg*)arg;
   struct sockaddr_in dest_addr;
-  printf("padding1: %d\n", sfa->padding);
+  //printf("padding1: %d\n", sfa->padding);
   Dest_Socket_init(&dest_addr, sfa->Dest_IP, sfa->Dest_PORT);
   //__uint8_t* padding_msg = malloc((len + 1) * sizeof(char));
   __uint8_t padding_msg[sfa->len+1];
