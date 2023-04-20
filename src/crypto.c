@@ -35,7 +35,7 @@ void my_sm4_cbc_encrypt(const unsigned char* Sm4_key, const unsigned char* Sm4_i
 	  print_char_arr(Sm4_key, KEYLEN);
 	  printf("iv: ");
 	  print_char_arr(Sm4_iv, KEYLEN);
-    printf("ciphertext: ");
+    printf("ciphertext: ");print_char_arr(ciphertext, mlen);
   }
 }
 

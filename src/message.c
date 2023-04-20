@@ -155,7 +155,6 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
                 generate_auth_message(&my_auth_msg, 3, auth_msg.destid, auth_msg.srcid, NULL, NONCELEN, hmac);                
                 generate_session_key(p2->sessionkey, p2->nonce1, p2->nonce2, NONCELEN);
                 p2->index = 2;
-                printf("[info]>>>drone's id = %d auth success!\n\n", auth_msg.srcid);
                 if (DEBUG){
                   printf("[info]>>>will send auth msg is \n");
                   printAuthMsg(&my_auth_msg);
@@ -198,7 +197,7 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
                 generate_session_key(p3->sessionkey, p3->nonce1, p3->nonce2, NONCELEN);
                 p3->flag = 1;
                 p3->index = 3;
-                printf("drone's id = %d auth success!\n\n", auth_msg.srcid);
+                printf("drone's id = %d auth success!\n", auth_msg.srcid);
                 share(rfa->sock_fd, rfa->alldrone[rfa->my_id].id, rfa->head, rfa->alldrone, p3);
                 __uint8_t m[2*NONCELEN];memset(m, 0, 2*NONCELEN);
                 strncat(m, p3->nonce1, NONCELEN);strncat(m, p3->nonce2, NONCELEN);
@@ -237,12 +236,12 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
           printf("##########CASE THREE DEBUG INFO END##########\n");
           break;
         case 4:
-          AuthNode* p4 = searchList(rfa->head, auth_msg.destid);
+          AuthNode* p4 = searchList(rfa->head, auth_msg.srcid);
           if (DEBUG)
             printf("##########CASE FOUR DEBUG INFO START##########\n");
           if (p4 != NULL){
             __uint8_t* m = (__uint8_t*)malloc(2*NONCELEN);memset(m, 0, 2*NONCELEN);
-            __uint8_t* mm = (__uint8_t*)malloc(2*NONCELEN);memset(m, 0, 2*NONCELEN);
+            __uint8_t* mm = (__uint8_t*)malloc(2*NONCELEN);memset(mm, 0, 2*NONCELEN);
             strncat(mm, p4->nonce1, NONCELEN);strncat(mm, p4->nonce2, NONCELEN);
             my_sm4_cbc_decrypt(p4->sessionkey, Sm4_iv, auth_msg.hmac, 2*NONCELEN, m, 1);
             if (strncmp(m, mm, 2*NONCELEN) == 0) {//相等
