@@ -35,7 +35,7 @@ typedef struct send_func_arg{
   int Dest_PORT;
 }Send_func_arg;
 
-struct send_func_arg Sendfunarg = {0};
+extern struct send_func_arg Sendfunarg;
 
 void sfa_init(Send_func_arg* sfa);
 void *receive(void* arg);

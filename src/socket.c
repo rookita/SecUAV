@@ -6,6 +6,8 @@
 #define MAXLEN 1024
 #define DEBUG 1
 
+struct send_func_arg Sendfunarg = {0};
+
 void *receive(void* arg) {
   struct recive_func_arg* rfa = (struct recive_func_arg *)arg;
   int ret = 0;
