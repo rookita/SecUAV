@@ -7,6 +7,7 @@
 #define DEBUG 1
 
 struct send_func_arg Sendfunarg = {0};
+pthread_mutex_t mutex; 
 
 void *receive(void* arg) {
   struct recive_func_arg* rfa = (struct recive_func_arg *)arg;
@@ -56,9 +57,6 @@ void send_padding_msg_thread(int cfd, void* msg, int len, char padding, unsigned
   pthread_t id;
   Sendfunarg.sock_fd = cfd;
   mystrncpy(Sendfunarg.msg, msg, len);
-  printf("len:%d\n", len);
-  printf("msg:");print_char_arr(msg, len);
-  printf("Sendfunarg.msg:");print_char_arr(Sendfunarg.msg, len);
   Sendfunarg.len = len;
   Sendfunarg.padding = padding;
   mystrncpy(Sendfunarg.Dest_IP, Dest_IP, 13);
@@ -68,6 +66,7 @@ void send_padding_msg_thread(int cfd, void* msg, int len, char padding, unsigned
 }
 
 void* send_padding_msg(void* arg){
+  pthread_mutex_lock(&mutex);
   struct send_func_arg* sfa = (struct send_func_arg*)arg;
   struct sockaddr_in dest_addr;
   Dest_Socket_init(&dest_addr, sfa->Dest_IP, sfa->Dest_PORT);
@@ -76,6 +75,7 @@ void* send_padding_msg(void* arg){
   memset(padding_msg, 0, sfa->len+1);
   add_byte(padding_msg, sfa->msg, sfa->len, sfa->padding);
   send_msg(sfa->sock_fd, (void*)padding_msg, sfa->len+1, (struct sockaddr*)&dest_addr);
+  pthread_mutex_unlock(&mutex);
   //free(padding_msg);
 }
 

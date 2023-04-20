@@ -8,8 +8,14 @@
 
 #define DEBUG 1
 
+
 int main()
 {  
+
+  if (pthread_mutex_init(&mutex, NULL) != 0) {
+    printf("Mutex initialization failed.\n");
+    return 1;
+  }
   Drone alldrone[20];
   drone_init(alldrone);
   Response response[DRONENUM];

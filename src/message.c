@@ -154,13 +154,9 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
                 AuthMsg my_auth_msg = {0};
                 generate_auth_message(&my_auth_msg, 3, auth_msg.destid, auth_msg.srcid, NULL, NONCELEN, hmac);                
                 generate_session_key(p2->sessionkey, p2->nonce1, p2->nonce2, NONCELEN);
-                p2->flag = 1;
                 p2->index = 2;
                 printf("[info]>>>drone's id = %d auth success!\n\n", auth_msg.srcid);
-                share(rfa->sock_fd, rfa->alldrone[rfa->my_id].id, rfa->head, rfa->alldrone, p2);
                 if (DEBUG){
-                  printf("[info]>> auth table is \n");
-                  printAuthtable(rfa->head);
                   printf("[info]>>>will send auth msg is \n");
                   printAuthMsg(&my_auth_msg);
                 }
@@ -204,6 +200,16 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
                 p3->index = 3;
                 printf("drone's id = %d auth success!\n\n", auth_msg.srcid);
                 share(rfa->sock_fd, rfa->alldrone[rfa->my_id].id, rfa->head, rfa->alldrone, p3);
+                __uint8_t m[2*NONCELEN];memset(m, 0, 2*NONCELEN);
+                strncat(m, p3->nonce1, NONCELEN);strncat(m, p3->nonce2, NONCELEN);
+                AuthMsg my_auth_msg = {0};
+                generate_auth_message(&my_auth_msg, 4, auth_msg.destid, auth_msg.srcid, NULL, NONCELEN, NULL); 
+                my_sm4_cbc_encrypt(p3->sessionkey, Sm4_iv, m, 2*NONCELEN, my_auth_msg.hmac, 1);
+                if (DEBUG){
+                  printf("[info]>>>will send auth msg is \n");
+                  printAuthMsg(&my_auth_msg);
+                }
+                send_padding_msg_thread(rfa->sock_fd, (void*)&my_auth_msg, sizeof(my_auth_msg), 0x1, rfa->alldrone[(int)(auth_msg.srcid) ].IP, rfa->alldrone[(int)(auth_msg.srcid) ].PORT);
                 if (DEBUG){
                   printf("[info]>> auth table is \n");
                   printAuthtable(rfa->head);
@@ -229,6 +235,34 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
             printf("[info]>>Dont found the id\n");
           }
           printf("##########CASE THREE DEBUG INFO END##########\n");
+          break;
+        case 4:
+          AuthNode* p4 = searchList(rfa->head, auth_msg.destid);
+          if (DEBUG)
+            printf("##########CASE FOUR DEBUG INFO START##########\n");
+          if (p4 != NULL){
+            __uint8_t* m = (__uint8_t*)malloc(2*NONCELEN);memset(m, 0, 2*NONCELEN);
+            __uint8_t* mm = (__uint8_t*)malloc(2*NONCELEN);memset(m, 0, 2*NONCELEN);
+            strncat(mm, p4->nonce1, NONCELEN);strncat(mm, p4->nonce2, NONCELEN);
+            my_sm4_cbc_decrypt(p4->sessionkey, Sm4_iv, auth_msg.hmac, 2*NONCELEN, m, 1);
+            if (strncmp(m, mm, 2*NONCELEN) == 0) {//相等
+              p4->flag = 1;
+              printf("drone-%d auth success!\n", auth_msg.srcid);
+              share(rfa->sock_fd, rfa->alldrone[rfa->my_id].id, rfa->head, rfa->alldrone, p2);
+              if (DEBUG){
+                printf("[info]>> auth table is \n");
+                printAuthtable(rfa->head);
+              }
+            }
+            else{
+              printf("case4 not equal!\n");
+              printf("m: ");print_char_arr(m, 2*NONCELEN);
+              printf("mm: ");print_char_arr(mm, 2*NONCELEN);
+            }
+            free(m);free(mm);
+          }
+          if (DEBUG)
+            printf("##########CASE FOUR DEBUG INFO START##########\n");
           break;
       }
     }
@@ -464,7 +498,7 @@ void handle_update_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
     return;
   }
   if(p->flag != 1){
-    printf("have not authed\n");
+    printf("dreone-%d have not authed\n", p->id);
     return;
   }
   my_sm4_cbc_padding_decrypt(p->sessionkey, Sm4_iv, ciphertext, clen, (__uint8_t*)&update_msg, &mlen, DEBUG);

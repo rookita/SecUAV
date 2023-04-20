@@ -23,6 +23,22 @@ void my_sm4_cbc_padding_encrypt(const unsigned char* Sm4_key, const unsigned cha
   }
 }
 
+void my_sm4_cbc_encrypt(const unsigned char* Sm4_key, const unsigned char* Sm4_iv, unsigned char* msg, size_t mlen, unsigned char* ciphertext, int DEBUG){
+	SM4_KEY sm4_key;
+	sm4_set_encrypt_key(&sm4_key, Sm4_key);
+	sm4_cbc_encrypt(&sm4_key, Sm4_iv, msg, mlen/SM4_BLOCK_SIZE, ciphertext);
+  if (DEBUG){
+    printf("-----------------encrypt---------------\n");
+    printf("plaintext: ");
+    print_char_arr(msg, mlen);
+	  printf("key: ");
+	  print_char_arr(Sm4_key, KEYLEN);
+	  printf("iv: ");
+	  print_char_arr(Sm4_iv, KEYLEN);
+    printf("ciphertext: ");
+  }
+}
+
 void my_sm4_cbc_padding_decrypt(const unsigned char* Sm4_key, const unsigned char* Sm4_iv, unsigned char* ciphertext, size_t clen, unsigned char* msg, size_t* mlen, int DEBUG){
 	SM4_KEY sm4_key;
   if (DEBUG){
@@ -38,6 +54,20 @@ void my_sm4_cbc_padding_decrypt(const unsigned char* Sm4_key, const unsigned cha
 	sm4_cbc_padding_decrypt(&sm4_key, Sm4_iv, ciphertext, clen, msg, mlen);
 }
 
+void my_sm4_cbc_decrypt(const unsigned char* Sm4_key, const unsigned char* Sm4_iv, unsigned char* ciphertext, size_t clen, unsigned char* msg, int DEBUG){
+	SM4_KEY sm4_key;
+  if (DEBUG){
+    printf("-----------------decrypt---------------\n");
+    printf("ciphertext: ");
+    print_char_arr(ciphertext, clen);
+    printf("key: ");
+	  print_char_arr(Sm4_key, KEYLEN);
+	  printf("iv: ");
+	  print_char_arr(Sm4_iv, KEYLEN);
+  }
+	sm4_set_decrypt_key(&sm4_key, Sm4_key);
+	sm4_cbc_decrypt(&sm4_key, Sm4_iv, ciphertext, clen/SM4_BLOCK_SIZE, msg);
+}
 
 void my_sm3_hmac(const __uint8_t* key, size_t keylen, const __uint8_t* msg, size_t msglen, __uint8_t* hmac){
   sm3_hmac(key, keylen, msg, msglen, hmac);

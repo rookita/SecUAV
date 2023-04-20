@@ -36,6 +36,7 @@ typedef struct send_func_arg{
 }Send_func_arg;
 
 extern struct send_func_arg Sendfunarg;
+extern pthread_mutex_t mutex; 
 
 void sfa_init(Send_func_arg* sfa);
 void *receive(void* arg);
