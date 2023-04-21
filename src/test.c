@@ -23,10 +23,10 @@ void test(int cfd, Drone* alldrone, char MY_ID, AuthNode* head){
           printf("mynonce is: ");
           print_char_arr(auth_msg.nonce, NONCELEN);
           if (auth_msg.srcid < auth_msg.destid){
-            insertNode(head, alldrone[DEST_ID].id, auth_msg.nonce, NULL, 0, 0);
+            insertNode(head, alldrone[DEST_ID].id, auth_msg.nonce, NULL, 0, 0, 0);
           }
           else{
-            insertNode(head, alldrone[DEST_ID].id, NULL, auth_msg.nonce, 0, 0);
+            insertNode(head, alldrone[DEST_ID].id, NULL, auth_msg.nonce, 0, 0,  0);
           }
           send_padding_msg_thread(cfd, (void*)&auth_msg, sizeof(auth_msg), 0x1, alldrone[DEST_ID].IP, alldrone[DEST_ID].PORT);
           printf("Send Auth msg to drone-%d!\n", DEST_ID);
