@@ -37,7 +37,7 @@ typedef struct update_msg { //32bytes
 }UpdateMsg;
 
 //密钥更新后的密钥共享消息
-typedef struct update_share_msg{ //32bytes
+typedef struct update_share_msg{ //144bytes
   char id[DRONENUM];
   __uint8_t nonce[NONCELEN*DRONENUM];
   size_t num; 
@@ -78,7 +78,7 @@ void share(int cfd, char id, AuthNode* head, Drone* alldrone, AuthNode* p, char 
 void handle_share_message(void* msg, const struct recive_func_arg* rfa, const int DEBUG);
 
 
-void generate_update_msg(UpdateMsg* update_msg, char src_id, char dest_id, __uint8_t* newnonce, size_t noncelen);
+void generate_update_msg(UpdateMsg* update_msg, char index, char src_id, char dest_id, __uint8_t* newnonce, size_t noncelen);
 void printUpdateMsg(UpdateMsg* update_msg);
 void send_update_msg(int cfd, char dest_id, UpdateMsg* update_msg, int mlen, unsigned char* Dest_IP, int Dest_PORT, __uint8_t* Sm4_key);
 void Update(int cfd, char src_id, Drone* alldrone, AuthNode* head, Response* response);

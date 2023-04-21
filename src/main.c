@@ -11,7 +11,6 @@
 
 int main()
 {  
-  
   if (pthread_mutex_init(&mutex, NULL) != 0) {
     printf("Mutex initialization failed.\n");
     return 1;

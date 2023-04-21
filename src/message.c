@@ -285,7 +285,7 @@ void send_share_message(int cfd, char dest_id, ShareMsg* share_msg, int mlen, un
   //__uint8_t* ciphertext = (__uint8_t*) malloc (clen);
   __uint8_t ciphertext[mlen];
   memset(ciphertext, 0, mlen);
-  my_sm4_cbc_encrypt(Sm4_key, Sm4_iv, (__uint8_t*)share_msg, mlen, ciphertext, 1);
+  my_sm4_cbc_encrypt(Sm4_key, Sm4_iv, (__uint8_t*)share_msg, mlen, ciphertext, 0);
   //my_sm4_cbc_padding_encrypt(Sm4_key, Sm4_iv, (__uint8_t*)share_msg, mlen, ciphertext, &clen, 0);
   //__uint8_t* msg = (__uint8_t*) malloc (clen+1);
   __uint8_t msg[mlen+1];
@@ -331,7 +331,7 @@ void share(int cfd, char my_id, AuthNode* head, Drone* alldrone, AuthNode* p, ch
   node = head->next;
   //给其他分享刚认证节点
   while (node != NULL){
-    if (node != p && node->flag == 1 && node->direct == 1){     //对其他节点分享刚认证节点
+    if (node != p && node->flag == 1 && node->direct == 1 && node->id != dont_share){     //对其他节点分享刚认证节点
       memset(&share_msg_to_node, sizeof(share_msg_to_node), 0);
       if (node->id < my_id && p->id < my_id){
         generate_share_message(&share_msg_to_node, p->id, node->nonce1, p->nonce1, NONCELEN); //发送给node
@@ -432,9 +432,11 @@ void handle_share_message(void* msg, const struct recive_func_arg* rfa, const in
   free(ciphertext);
 }
 
-void generate_update_msg(UpdateMsg* update_msg, char src_id, char dest_id, __uint8_t* newnonce, size_t noncelen){
+void generate_update_msg(UpdateMsg* update_msg, char index, char src_id, char dest_id, __uint8_t* newnonce, size_t noncelen){
+  update_msg->index = index;
   update_msg->src_id = src_id;
   update_msg->dest_id = dest_id;
+  update_msg->noncelen = NONCELEN;
   mystrncpy(update_msg->newnonce, newnonce, noncelen);
 }
 
@@ -445,11 +447,12 @@ void printUpdateMsg(UpdateMsg* update_msg){
 }
 
 void send_update_msg(int cfd, char src_id, UpdateMsg* update_msg, int mlen, unsigned char* Dest_IP, int Dest_PORT, __uint8_t* Sm4_key){
-  size_t clen = 64;
+  size_t clen = mlen;
   //__uint8_t* ciphertext = (__uint8_t*) malloc (clen);
   __uint8_t ciphertext[clen];
   memset(ciphertext, 0, clen);
-  my_sm4_cbc_padding_encrypt(Sm4_key, Sm4_iv, (__uint8_t*)update_msg, mlen, ciphertext, &clen, 0);
+  my_sm4_cbc_encrypt(Sm4_key, Sm4_iv, (__uint8_t*)update_msg, mlen, ciphertext, 0);
+  //my_sm4_cbc_padding_encrypt(Sm4_key, Sm4_iv, (__uint8_t*)update_msg, mlen, ciphertext, &clen, 0);
   //__uint8_t* msg = (__uint8_t*) malloc (clen+1);
   __uint8_t msg[clen+1];
   memset(msg, 0 , clen+1);
@@ -465,16 +468,12 @@ void Update(int cfd, char src_id, Drone* alldrone, AuthNode* head, Response* res
   update_msg.noncelen = NONCELEN;
   __uint8_t nonce[update_msg.noncelen];
   rand_bytes(nonce, update_msg.noncelen);
+  generate_update_msg(&update_msg, 0x1, src_id, node->id, nonce, NONCELEN); //触发节点对其他节点使用同一个随机数
   while(node != NULL){
     if (node->flag == 1){ //已认证节点
-      update_msg.index = 1;
-      update_msg.src_id = src_id;
       update_msg.dest_id = node->id;
-      update_msg.noncelen = NONCELEN;
-      mystrncpy(update_msg.newnonce, nonce, update_msg.noncelen); //触发节点对其他节点使用同一个随机数
-      //printf("Update msg:\n");printUpdateMsg(&update_msg);
-      send_update_msg(cfd, src_id, &update_msg, sizeof(update_msg), alldrone[node->id ].IP, alldrone[node->id ].PORT, node->sessionkey);
-      
+      printf("Update msg:\n");printUpdateMsg(&update_msg);
+      send_update_msg(cfd, src_id, &update_msg, sizeof(update_msg), alldrone[node->id].IP, alldrone[node->id].PORT, node->sessionkey);
       response[response[0].num].id = node->id;  //记录接收到的响应
       response[response[0].num].isresponsed = 0;
       response[0].num++;
@@ -488,7 +487,6 @@ void Update(int cfd, char src_id, Drone* alldrone, AuthNode* head, Response* res
         mystrncpy(node->nonce1, nonce, NONCELEN);
       }
     }
-    memset((void* )&update_msg, 0, sizeof(update_msg));
     node = node->next;
   }
 }
@@ -501,7 +499,7 @@ void pre_update_message(void* msg, __uint8_t* ciphertext, int len, char* id, int
 
 //处理密钥更新消息
 void handle_update_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
-  UpdateMsg update_msg = {0};char id;size_t clen = 64;size_t mlen;__uint8_t nonce[NONCELEN];
+  UpdateMsg update_msg = {0};char id;size_t clen = sizeof(update_msg);size_t mlen;__uint8_t nonce[NONCELEN];
   __uint8_t* ciphertext = (__uint8_t*)malloc(clen);
   memset(ciphertext, 0, clen);
   pre_update_message(msg, ciphertext, clen, &id, DEBUG);
@@ -514,7 +512,8 @@ void handle_update_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
     printf("dreone-%d have not authed\n", p->id);
     return;
   }
-  my_sm4_cbc_padding_decrypt(p->sessionkey, Sm4_iv, ciphertext, clen, (__uint8_t*)&update_msg, &mlen, DEBUG);
+  my_sm4_cbc_decrypt(p->sessionkey, Sm4_iv, ciphertext, clen, (__uint8_t*)&update_msg, DEBUG);
+  //my_sm4_cbc_padding_decrypt(p->sessionkey, Sm4_iv, ciphertext, clen, (__uint8_t*)&update_msg, &mlen, DEBUG);
   if (DEBUG){
     printf("Update_msg:\n");
     printUpdateMsg(&update_msg);
@@ -529,14 +528,11 @@ void handle_update_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
     rand_bytes(nonce, NONCELEN);
     char my_id = update_msg.dest_id;
     //response
-    response_update_msg.src_id = update_msg.dest_id;
-    response_update_msg.dest_id = update_msg.src_id;
-    response_update_msg.noncelen = NONCELEN;
-    response_update_msg.index = 2;
-    mystrncpy(response_update_msg.newnonce, nonce, response_update_msg.noncelen);
+    generate_update_msg(&response_update_msg, 0x2, update_msg.dest_id, update_msg.src_id, nonce, NONCELEN);
     send_update_msg(rfa->sock_fd, update_msg.dest_id, &response_update_msg, sizeof(response_update_msg), rfa->alldrone[update_msg.src_id].IP, rfa->alldrone[update_msg.src_id].PORT, p->sessionkey);
     printf("send response update msg to drone-%d\n", update_msg.src_id);
-    printf("response_msg:\n");printUpdateMsg(&response_update_msg);
+    if (DEBUG)
+      printf("response_msg:\n");printUpdateMsg(&response_update_msg);
     memset(p->nonce1, 0, NONCELEN);memset(p->nonce2, 0, NONCELEN);memset(p->sessionkey, 0, NONCELEN);
     if (p->id < my_id){
       mystrncpy(p->nonce1, update_msg.newnonce,update_msg.noncelen);
@@ -548,6 +544,7 @@ void handle_update_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
     }
     generate_session_key(p->sessionkey, p->nonce1, p->nonce2, NONCELEN);
     p->flag = 1;
+    p->direct = 1;
     printf("drone-%d update success\n", update_msg.src_id);
     printf("new session key is ");print_char_arr(p->sessionkey, NONCELEN);
     //printf("Auth Table:\n");
@@ -577,6 +574,7 @@ void handle_update_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
       mystrncpy(p->nonce2, update_msg.newnonce, update_msg.noncelen);
     }
     generate_session_key(p->sessionkey, p->nonce1, p->nonce2, NONCELEN);
+    p->direct = 1;
     printf("drone-%d update success\n", update_msg.src_id);
     printf("new session key is ");print_char_arr(p->sessionkey, NONCELEN);
     //printf("Auth Table:\n");
@@ -590,8 +588,9 @@ void handle_update_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
 }
 
 void printUpdateShareMsg(UpdateShareMsg* update_share_msg){
-  printf("id:");print_char_arr(update_share_msg->id, update_share_msg->num);
-  printf("nonce:");print_char_arr(update_share_msg->nonce, update_share_msg->num*NONCELEN);
+  printf("num: %ld\n", update_share_msg->num);
+  printf("id: ");print_char_arr(update_share_msg->id, update_share_msg->num);
+  printf("nonce: ");print_char_arr(update_share_msg->nonce, update_share_msg->num*NONCELEN);
 }
 
 void pre_update_share_message(void* msg, __uint8_t* ciphertext, int len, char* id, int DEBUG){
@@ -601,17 +600,16 @@ void pre_update_share_message(void* msg, __uint8_t* ciphertext, int len, char* i
 }
 
 void send_update_share_msg(int cfd, char src_id, UpdateShareMsg* update_share_msg, int mlen, unsigned char* Dest_IP, int Dest_PORT, __uint8_t* Sm4_key){
-  size_t clen = 192;
+  size_t clen = mlen;
   //__uint8_t* ciphertext = (__uint8_t*) malloc (clen);
   __uint8_t ciphertext[clen];
   memset(ciphertext, 0, clen);
-  my_sm4_cbc_padding_encrypt(Sm4_key, Sm4_iv, (__uint8_t*)update_share_msg, mlen, ciphertext, &clen, 1);
-  //__uint8_t* msg = (__uint8_t*) malloc (clen+1);
+  my_sm4_cbc_encrypt(Sm4_key, Sm4_iv, (__uint8_t*)update_share_msg, mlen, ciphertext, 0);
+  //my_sm4_cbc_padding_encrypt(Sm4_key, Sm4_iv, (__uint8_t*)update_share_msg, mlen, ciphertext, &clen, 1);
   __uint8_t msg[clen+1];
   memset(msg, 0 , clen+1);
   add_byte(msg, (void*)ciphertext, clen, src_id);
   send_padding_msg_thread(cfd, (void*)msg, clen+1, 0x4, Dest_IP, Dest_PORT);
-  //free(msg);
 }
 
 //密钥更新完成发送分享消息
@@ -619,7 +617,7 @@ void Share_after_Update(int cfd, char src_id, AuthNode* head, Drone* alldrone){
   UpdateShareMsg update_share_msg = {0};
   int i = 0;
   AuthNode* node = head->next;
-  while(node != NULL){
+  while(node != NULL){  //构造消息
     update_share_msg.id[i] = node->id;
     if(node->id < src_id){  //node的随机数为nonce1
       strncat(update_share_msg.nonce, node->nonce1, NONCELEN);
@@ -632,7 +630,8 @@ void Share_after_Update(int cfd, char src_id, AuthNode* head, Drone* alldrone){
   }
   update_share_msg.num = i;
   node = head->next;
-  while(node != NULL){
+
+  while(node != NULL){  //发送消息
     send_update_share_msg(cfd, src_id, &update_share_msg, sizeof(update_share_msg), alldrone[node->id].IP, alldrone[node->id].PORT, node->sessionkey);
     node = node->next;
   }
@@ -640,7 +639,7 @@ void Share_after_Update(int cfd, char src_id, AuthNode* head, Drone* alldrone){
 
 //处理密钥更新后的分享消息
 void handle_update_share_msg(void* msg, struct recive_func_arg* rfa, int DEBUG){
-  UpdateShareMsg update_share_msg = {0};char id;size_t clen = 192;size_t mlen;
+  UpdateShareMsg update_share_msg = {0};char id;size_t clen = sizeof(update_share_msg);
   __uint8_t* ciphertext = (__uint8_t*)malloc(clen);
   memset(ciphertext, 0, clen);
   pre_update_share_message(msg, ciphertext, clen, &id, DEBUG);
@@ -653,7 +652,8 @@ void handle_update_share_msg(void* msg, struct recive_func_arg* rfa, int DEBUG){
     printf("have not authed\n");
     return;
   }
-  my_sm4_cbc_padding_decrypt(p->sessionkey, Sm4_iv, ciphertext, clen, (__uint8_t*)&update_share_msg, &mlen, DEBUG);
+  my_sm4_cbc_decrypt(p->sessionkey, Sm4_iv, ciphertext, clen, (__uint8_t*)&update_share_msg, DEBUG);
+  //my_sm4_cbc_padding_decrypt(p->sessionkey, Sm4_iv, ciphertext, clen, (__uint8_t*)&update_share_msg, &mlen, DEBUG);
   if (DEBUG){
     printf("Update_Share_msg:\n");
     printUpdateShareMsg(&update_share_msg);
@@ -673,6 +673,7 @@ void handle_update_share_msg(void* msg, struct recive_func_arg* rfa, int DEBUG){
       p = searchList(rfa->head, tmp);
       if (p != NULL){ //之前认证过
         p->flag = 1;
+        p->direct = 0;  //只与发送消息者direct为1，方便后续Share
         if (tmp > my_id){ //nonce1为我的随机数
           memset(p->nonce2, 0, NONCELEN);
           mystrncpy(p->nonce2, update_share_msg.nonce + i*NONCELEN, NONCELEN);
