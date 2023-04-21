@@ -12,11 +12,12 @@ typedef struct authnode {
     unsigned char sessionkey[16];
     char flag;  //是否已经认证完成
     char index; //认证完成了几步
+    char direct;    //是否直接认证
     struct authnode *next;
 } AuthNode;
 
 AuthNode* initList();
-AuthNode* insertNode(AuthNode *head, char id, __uint8_t* nonce1, __uint8_t* nonce2, char flag, char index);
+AuthNode* insertNode(AuthNode *head, char id, __uint8_t* nonce1, __uint8_t* nonce2, char flag, char index, char direct);
 void deleteNode(AuthNode* head, char id);
 AuthNode* searchList(AuthNode* head, char id);
 void printAuthtable(AuthNode* head);

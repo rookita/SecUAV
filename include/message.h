@@ -10,7 +10,7 @@
 #define NONCELEN 16
 
 //认证消息
-typedef struct auth_msg {
+typedef struct auth_msg { //64bytes
   char index; //认证进行到第几步
   char srcid;
   char destid;
@@ -20,15 +20,15 @@ typedef struct auth_msg {
 }AuthMsg;
 
 //随机数分享消息
-typedef struct share_msg {
+typedef struct share_msg {  //160bytes
   char id[DRONENUM];
-  __uint8_t nonce1[NONCELEN];
-  __uint8_t nonce2[NONCELEN*DRONENUM];
+  __uint8_t nonce1[NONCELEN]; //16bytes
+  __uint8_t nonce2[NONCELEN*DRONENUM];  //
   size_t num;
 }ShareMsg;
 
 //密钥更新消息
-typedef struct update_msg {
+typedef struct update_msg { //32bytes
   char src_id;
   char dest_id;
   char index; //send or response??
@@ -37,7 +37,7 @@ typedef struct update_msg {
 }UpdateMsg;
 
 //密钥更新后的密钥共享消息
-typedef struct update_share_msg{
+typedef struct update_share_msg{ //32bytes
   char id[DRONENUM];
   __uint8_t nonce[NONCELEN*DRONENUM];
   size_t num; 
