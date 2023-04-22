@@ -1,42 +1,43 @@
-#include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <sys/time.h>
 
-void mystrncpy(char *__restrict __dest, const char *__restrict __src, size_t __n){
-    memset(__dest, 0, __n);
-    int i;
-    for (i = 0; i < __n; i++){
-        __dest[i] = __src[i];
-    }
+void timer_handler(int signum, siginfo_t *info, void *context)
+{
+    int *counter = (int *)info->si_value.sival_ptr;
+    printf("Timer expired %d times\n", ++(*counter));
 }
 
-char *strncpy1(char *dest, const char *src, size_t n) {
-    char *ret = dest;
-    while (n-- && (*dest++ = *src++));
-    if (n > 0) {
-        while (--n) *dest++ = '\0';
-    }
-    return ret;
-}
+int main()
+{
+    struct sigaction sa;
+    struct itimerval timer;
+    int counter = 0;
 
-char *strncpy2(char *dest, const char *src, size_t n) {
-    size_t i;
-    for (i = 0; i < n; i++) {
-        dest[i] = src[i];
+    // 设置信号处理函数
+    sa.sa_flags = SA_SIGINFO;
+    sa.sa_sigaction = timer_handler;
+    sigemptyset(&sa.sa_mask);
+    if (sigaction(SIGALRM, &sa, NULL) == -1) {
+        perror("sigaction");
+        exit(1);
     }
-    for (; i < n; i++) {
-        dest[i] = '\0';
-    }
-    return dest;
-}
 
-int main(){
-    char s[10] = {0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0};
-    char s1[10];
-    //mystrncpy(s1, s, 10);
-    strncpy2(s1, s, 10);
-    int i;
-    for (i = 0; i<10; i++ ){
-        printf("%02x",s1[i]);
+    // 设置定时器
+    timer.it_value.tv_sec = 1;
+    timer.it_value.tv_usec = 0;
+    timer.it_interval.tv_sec = 1;
+    timer.it_interval.tv_usec = 0;
+    if (setitimer(ITIMER_REAL, &timer, NULL) == -1) {
+        perror("setitimer");
+        exit(1);
     }
-    printf("\n");
+
+    // 等待定时器信号
+    while (1) {
+        pause();
+    }
+
+    return 0;
 }

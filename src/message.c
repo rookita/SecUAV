@@ -703,3 +703,43 @@ void handle_update_share_msg(void* msg, struct recive_func_arg* rfa, int DEBUG){
   }
   printf("Update %d drone\n", i);
 }
+
+
+void regularUpdate(int sigum){
+  char src_id = rfa->my_id;
+  Response* response = rfa->response;
+  AuthNode* node = rfa->head->next;
+  int sum = 0;
+  while (node != NULL){
+    sum = sum + node->nonce1[NONCELEN - 1] + node->nonce2[NONCELEN - 1];
+    node = node->next;
+  }
+  if (sum % DRONENUM != rfa->my_id){
+    return;
+  }
+  UpdateMsg update_msg = {0};
+  update_msg.noncelen = NONCELEN;
+  __uint8_t nonce[update_msg.noncelen];
+  rand_bytes(nonce, update_msg.noncelen);
+  generate_update_msg(&update_msg, 0x1, src_id, node->id, nonce, NONCELEN); //触发节点对其他节点使用同一个随机数
+  while(node != NULL){
+    if (node->flag == 1){ //已认证节点
+      update_msg.dest_id = node->id;
+      printf("Update msg:\n");printUpdateMsg(&update_msg);
+      send_update_msg(rfa->sock_fd, src_id, &update_msg, sizeof(update_msg), rfa->alldrone[node->id].IP, rfa->alldrone[node->id].PORT, node->sessionkey);
+      response[response[0].num].id = node->id;  //记录接收到的响应
+      response[response[0].num].isresponsed = 0;
+      response[0].num++;
+      
+      if (node->id < src_id){ //id小的为nonce1
+        memset(node->nonce2, 0, NONCELEN);
+        mystrncpy(node->nonce2, nonce, NONCELEN);
+      }
+      else {  //node->id > src_id
+        memset(node->nonce1, 0, NONCELEN);
+        mystrncpy(node->nonce1, nonce, NONCELEN);
+      }
+    }
+    node = node->next;
+  }
+}

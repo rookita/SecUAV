@@ -5,10 +5,11 @@
 #include "../include/drone.h"
 #include "../include/message.h"
 #include "../include/test.h"
+#include "../include/mytime.h"
 
 #define DEBUG 1
 
-
+Recive_func_arg* rfa; 
 int main()
 {  
   if (pthread_mutex_init(&mutex, NULL) != 0) {
@@ -41,10 +42,14 @@ int main()
   ReciveFunArg.head = head;
   ReciveFunArg.response = response;
 
+  rfa = &ReciveFunArg;
   int ret = pthread_create(&id,NULL,receive,(void* )&ReciveFunArg);
   if (-1 == ret) print_err("pthread_create failed", __LINE__, errno);
-  int flag = -1;
+  
+  wrapperOfUpdate(60, 60);
   test(cfd, alldrone, MY_ID, head);
+
+  int flag = -1;
   while(1){
     printf("====================menu====================\n");
     printf("0:Print Auth Table\n");

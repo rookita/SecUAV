@@ -50,6 +50,8 @@ typedef struct response{
   char num; 
 }Response;
 
+extern Recive_func_arg* rfa;
+
 /*
 generate_xxx_message():生成消息
 pre_xxx_message():对消息进行预处理，即将消息的前几个字节（表示类型或发送端id）与消息主体分离
@@ -90,4 +92,7 @@ void pre_update_share_message(void* msg, __uint8_t* ciphertext, int len, char* i
 void send_update_share_msg(int cfd, char src_id, UpdateShareMsg* update_share_msg, int mlen, unsigned char* Dest_IP, int Dest_PORT, __uint8_t* Sm4_key);
 void Share_after_Update(int cfd, char src_id, AuthNode* head, Drone* alldrone);
 void handle_update_share_msg(void* msg, struct recive_func_arg* rfa, int DEBUG);
+void regularUpdate(int sigum);
+
+
 #endif
