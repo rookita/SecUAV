@@ -83,7 +83,7 @@ int get_local_ip(const char *eth_inf, char* local_ip)
 }
 
 
-void *mystrncpy(char *dest, const char *src, size_t n) {
+void mystrncpy(char *dest, const char *src, size_t n) {
     size_t i;
     for (i = 0; i < n; i++) {
         dest[i] = src[i];

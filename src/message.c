@@ -386,7 +386,7 @@ void handle_share_message(void* msg, const struct recive_func_arg* rfa, const in
   }
   my_sm4_cbc_decrypt(p->sessionkey, Sm4_iv, ciphertext, clen, (__uint8_t*)&share_msg, DEBUG);
   //my_sm4_cbc_padding_decrypt(p->sessionkey, Sm4_iv, ciphertext, clen, (__uint8_t*)&share_msg, &mlen, DEBUG);
-  if (DEBUG){
+  if (1){
     printf("Share_msg:\n");
     printShareMsg(&share_msg);
   }
