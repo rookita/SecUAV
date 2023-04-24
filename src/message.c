@@ -217,7 +217,7 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
                   printf("[info]>> auth table \n");
                   printAuthtable(rfa->head);
                 }
-                share(rfa->sock_fd, rfa->alldrone[rfa->my_id].id, rfa->head, rfa->alldrone, p3, 0, -1);
+                share(rfa->sock_fd, rfa->alldrone[rfa->my_id].id, rfa->head, rfa->alldrone, p3, 0, -1, DEBUG);
              }
               else {
                 printf("[info]>>>case3 hmac is not equal!\n");
@@ -254,7 +254,7 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
               p4->direct = 1;
               p4->index = 4;
               printf("drone-%d auth success!\n", auth_msg.srcid);
-              share(rfa->sock_fd, rfa->alldrone[rfa->my_id].id, rfa->head, rfa->alldrone, p2, 0, -1);
+              share(rfa->sock_fd, rfa->alldrone[rfa->my_id].id, rfa->head, rfa->alldrone, p2, 0, -1, DEBUG);
               if (DEBUG){
                 printf("[info]>> auth table is \n");
                 printAuthtable(rfa->head);
@@ -282,11 +282,11 @@ void generate_share_message(ShareMsg* share_msg, char id, __uint8_t* nonce1, __u
   mystrncpy(share_msg->nonce2, nonce2, len);
 }
 
-void send_share_message(int cfd, char dest_id, ShareMsg* share_msg, int mlen, unsigned char* Dest_IP, int Dest_PORT, __uint8_t* Sm4_key){
+void send_share_message(int cfd, char dest_id, ShareMsg* share_msg, int mlen, unsigned char* Dest_IP, int Dest_PORT, __uint8_t* Sm4_key, char DEBUG){
   //__uint8_t* ciphertext = (__uint8_t*) malloc (clen);
   __uint8_t ciphertext[mlen];
   memset(ciphertext, 0, mlen);
-  my_sm4_cbc_encrypt(Sm4_key, Sm4_iv, (__uint8_t*)share_msg, mlen, ciphertext, 0);
+  my_sm4_cbc_encrypt(Sm4_key, Sm4_iv, (__uint8_t*)share_msg, mlen, ciphertext, DEBUG);
   //my_sm4_cbc_padding_encrypt(Sm4_key, Sm4_iv, (__uint8_t*)share_msg, mlen, ciphertext, &clen, 0);
   //__uint8_t* msg = (__uint8_t*) malloc (clen+1);
   __uint8_t msg[mlen+1];
@@ -297,7 +297,7 @@ void send_share_message(int cfd, char dest_id, ShareMsg* share_msg, int mlen, un
 }
 
 //发送share消息, p为刚认证的节点
-void share(int cfd, char my_id, AuthNode* head, Drone* alldrone, AuthNode* p, char type, char dont_share){
+void share(int cfd, char my_id, AuthNode* head, Drone* alldrone, AuthNode* p, char type, char dont_share, char DEBUG){
   AuthNode* node = head->next;
   ShareMsg share_msg_to_node, share_msg_to_p = {0};
   if (type == 0){
@@ -325,7 +325,7 @@ void share(int cfd, char my_id, AuthNode* head, Drone* alldrone, AuthNode* p, ch
     //分享给刚认证的节点
     //printShareMsg(&share_msg_to_p);
     if (i != 0){
-      send_share_message(cfd, my_id, &share_msg_to_p, sizeof(share_msg_to_p), alldrone[p->id].IP, alldrone[p->id].PORT, p->sessionkey);
+      send_share_message(cfd, my_id, &share_msg_to_p, sizeof(share_msg_to_p), alldrone[p->id].IP, alldrone[p->id].PORT, p->sessionkey, DEBUG);
       printf("Send Share Msg to drone-%d\n", p->id);
     }
   }
@@ -346,7 +346,7 @@ void share(int cfd, char my_id, AuthNode* head, Drone* alldrone, AuthNode* p, ch
       else if (node->id > my_id && p->id > my_id){
         generate_share_message(&share_msg_to_node, p->id, node->nonce2, p->nonce2, NONCELEN); //发送给node
       }
-      send_share_message(cfd, my_id, &share_msg_to_node, sizeof(share_msg_to_node), alldrone[node->id].IP, alldrone[node->id].PORT, node->sessionkey);
+      send_share_message(cfd, my_id, &share_msg_to_node, sizeof(share_msg_to_node), alldrone[node->id].IP, alldrone[node->id].PORT, node->sessionkey, DEBUG);
       printf("Send Share Msg to drone-%d\n", node->id);   
     }
     //对刚认证节点分享已认证其他节点
@@ -410,7 +410,7 @@ void handle_share_message(void* msg, const struct recive_func_arg* rfa, const in
         generate_session_key(p->sessionkey, p->nonce1, p->nonce2, NONCELEN);
         printf("Recive Share Msg; Authed drone-%d\n", share_msg.id[i]);
         printf("Share drone-%d to Others\n", p->id);
-        share(rfa->sock_fd, my_id, rfa->head, rfa->alldrone, p, 1, pp->id);
+        share(rfa->sock_fd, my_id, rfa->head, rfa->alldrone, p, 1, pp->id, DEBUG);
         if (DEBUG)
           printAuthtable(rfa->head);
       }
@@ -425,7 +425,7 @@ void handle_share_message(void* msg, const struct recive_func_arg* rfa, const in
       generate_session_key(p->sessionkey, p->nonce1, p->nonce2, NONCELEN);
       printf("Recive Share Msg; Authed drone-%d\n", share_msg.id[i]);
       printf("Share drone-%d to Others\n", p->id);
-      share(rfa->sock_fd, my_id, rfa->head, rfa->alldrone, p, 1, pp->id);
+      share(rfa->sock_fd, my_id, rfa->head, rfa->alldrone, p, 1, pp->id, DEBUG);
       if (DEBUG)
         printAuthtable(rfa->head);
     }
@@ -447,12 +447,12 @@ void printUpdateMsg(UpdateMsg* update_msg){
   printf("newnonce: ");print_char_arr(update_msg->newnonce, update_msg->noncelen);
 }
 
-void send_update_msg(int cfd, char src_id, UpdateMsg* update_msg, int mlen, unsigned char* Dest_IP, int Dest_PORT, __uint8_t* Sm4_key){
+void send_update_msg(int cfd, char src_id, UpdateMsg* update_msg, int mlen, unsigned char* Dest_IP, int Dest_PORT, __uint8_t* Sm4_key, char DEBUG){
   size_t clen = mlen;
   //__uint8_t* ciphertext = (__uint8_t*) malloc (clen);
   __uint8_t ciphertext[clen];
   memset(ciphertext, 0, clen);
-  my_sm4_cbc_encrypt(Sm4_key, Sm4_iv, (__uint8_t*)update_msg, mlen, ciphertext, 0);
+  my_sm4_cbc_encrypt(Sm4_key, Sm4_iv, (__uint8_t*)update_msg, mlen, ciphertext, DEBUG);
   //my_sm4_cbc_padding_encrypt(Sm4_key, Sm4_iv, (__uint8_t*)update_msg, mlen, ciphertext, &clen, 0);
   //__uint8_t* msg = (__uint8_t*) malloc (clen+1);
   __uint8_t msg[clen+1];
@@ -463,7 +463,7 @@ void send_update_msg(int cfd, char src_id, UpdateMsg* update_msg, int mlen, unsi
 }
 
 //发送心跳包，进行密钥更新
-void Update(int cfd, char src_id, Drone* alldrone, AuthNode* head, Response* response){
+void Update(int cfd, char src_id, Drone* alldrone, AuthNode* head, Response* response, char DEBUG){
   AuthNode* node = head->next;
   UpdateMsg update_msg = {0};
   update_msg.noncelen = NONCELEN;
@@ -474,7 +474,7 @@ void Update(int cfd, char src_id, Drone* alldrone, AuthNode* head, Response* res
     if (node->flag == 1){ //已认证节点
       update_msg.dest_id = node->id;
       //printf("Update msg:\n");printUpdateMsg(&update_msg);
-      send_update_msg(cfd, src_id, &update_msg, sizeof(update_msg), alldrone[node->id].IP, alldrone[node->id].PORT, node->sessionkey);
+      send_update_msg(cfd, src_id, &update_msg, sizeof(update_msg), alldrone[node->id].IP, alldrone[node->id].PORT, node->sessionkey, DEBUG);
       response[response[0].num].id = node->id;  //记录接收到的响应
       response[response[0].num].isresponsed = 0;
       response[0].num++;
@@ -538,7 +538,7 @@ void handle_update_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
     char my_id = update_msg.dest_id;
     //response
     generate_update_msg(&response_update_msg, 0x2, update_msg.dest_id, update_msg.src_id, nonce, NONCELEN);
-    send_update_msg(rfa->sock_fd, update_msg.dest_id, &response_update_msg, sizeof(response_update_msg), rfa->alldrone[update_msg.src_id].IP, rfa->alldrone[update_msg.src_id].PORT, p->sessionkey);
+    send_update_msg(rfa->sock_fd, update_msg.dest_id, &response_update_msg, sizeof(response_update_msg), rfa->alldrone[update_msg.src_id].IP, rfa->alldrone[update_msg.src_id].PORT, p->sessionkey, DEBUG);
     printf("send response update msg to drone-%d\n", update_msg.src_id);
     if (DEBUG)
       printf("response_msg:\n");printUpdateMsg(&response_update_msg);
@@ -593,7 +593,7 @@ void handle_update_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
       printf("recived all response. Start Sharing\n");
       response_init(rfa->response, 10);
       rfa->head->flag += 1;
-      Share_after_Update(rfa->sock_fd, rfa->my_id, rfa->head, rfa->alldrone);
+      Share_after_Update(rfa->sock_fd, rfa->my_id, rfa->head, rfa->alldrone, DEBUG);
     }
   }
 }
@@ -610,12 +610,12 @@ void pre_update_share_message(void* msg, __uint8_t* ciphertext, int len, char* i
   memmove(ciphertext, src, len);
 }
 
-void send_update_share_msg(int cfd, char src_id, UpdateShareMsg* update_share_msg, int mlen, unsigned char* Dest_IP, int Dest_PORT, __uint8_t* Sm4_key){
+void send_update_share_msg(int cfd, char src_id, UpdateShareMsg* update_share_msg, int mlen, unsigned char* Dest_IP, int Dest_PORT, __uint8_t* Sm4_key, char DEBUG){
   size_t clen = mlen;
   //__uint8_t* ciphertext = (__uint8_t*) malloc (clen);
   __uint8_t ciphertext[clen];
   memset(ciphertext, 0, clen);
-  my_sm4_cbc_encrypt(Sm4_key, Sm4_iv, (__uint8_t*)update_share_msg, mlen, ciphertext, 0);
+  my_sm4_cbc_encrypt(Sm4_key, Sm4_iv, (__uint8_t*)update_share_msg, mlen, ciphertext, DEBUG);
   //my_sm4_cbc_padding_encrypt(Sm4_key, Sm4_iv, (__uint8_t*)update_share_msg, mlen, ciphertext, &clen, 1);
   __uint8_t msg[clen+1];
   memset(msg, 0 , clen+1);
@@ -624,7 +624,7 @@ void send_update_share_msg(int cfd, char src_id, UpdateShareMsg* update_share_ms
 }
 
 //密钥更新完成发送分享消息
-void Share_after_Update(int cfd, char src_id, AuthNode* head, Drone* alldrone){
+void Share_after_Update(int cfd, char src_id, AuthNode* head, Drone* alldrone, char DEBUG){
   UpdateShareMsg update_share_msg = {0};
   int i = 0;
   AuthNode* node = head->next;
@@ -643,7 +643,7 @@ void Share_after_Update(int cfd, char src_id, AuthNode* head, Drone* alldrone){
   node = head->next;
 
   while(node != NULL){  //发送消息
-    send_update_share_msg(cfd, src_id, &update_share_msg, sizeof(update_share_msg), alldrone[node->id].IP, alldrone[node->id].PORT, node->sessionkey);
+    send_update_share_msg(cfd, src_id, &update_share_msg, sizeof(update_share_msg), alldrone[node->id].IP, alldrone[node->id].PORT, node->sessionkey, DEBUG);
     node = node->next;
   }
   printf("Share after update success!\n");
@@ -762,7 +762,7 @@ void regularUpdate(int sigum){
       if (node->flag == 1){ //已认证节点
         update_msg.dest_id = node->id;
         //printf("Update msg:\n");printUpdateMsg(&update_msg);
-        send_update_msg(rfa->sock_fd, src_id, &update_msg, sizeof(update_msg), rfa->alldrone[node->id].IP, rfa->alldrone[node->id].PORT, node->sessionkey);
+        send_update_msg(rfa->sock_fd, src_id, &update_msg, sizeof(update_msg), rfa->alldrone[node->id].IP, rfa->alldrone[node->id].PORT, node->sessionkey, 1);
         response[response[0].num].id = node->id;  //记录接收到的响应
         response[response[0].num].isresponsed = 0;
         response[0].num++;

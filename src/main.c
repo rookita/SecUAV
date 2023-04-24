@@ -86,7 +86,7 @@ int main()
       printf("Send Auth msg to drone-%d!\n", DEST_ID);
       break;
     case 2:
-      Update(cfd, alldrone[MY_ID].id, alldrone, head, response);
+      Update(cfd, alldrone[MY_ID].id, alldrone, head, response, DEBUG);
       break;
     default:
       break;

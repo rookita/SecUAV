@@ -4,7 +4,7 @@
 #include "../include/message.h"
 
 #define MAXLEN 1024
-#define DEBUG 0
+#define DEBUG 1
 
 struct send_func_arg Sendfunarg = {0};
 pthread_mutex_t mutex; 
