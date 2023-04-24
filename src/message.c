@@ -734,7 +734,7 @@ void regularUpdate(int sigum){
       update_id = rfa->my_id;
     }
   }
-  sleep(3);
+  sleep(10);
   printf("update id: %d\n", update_id);
   if (update_id == rfa->my_id){
     node = rfa->head->next;
