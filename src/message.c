@@ -713,7 +713,7 @@ void regularUpdate(int sigum){
   char src_id = rfa->my_id;
   Response* response = rfa->response;
   AuthNode* node = rfa->head->next;
-  char update_id = 128;
+  char update_id = rfa->my_id;
   if (rfa->head->flag == 0){  //第一次更新选择认证表中ID最小的
     while(node != NULL){
       if (node->id <= update_id)
@@ -734,7 +734,7 @@ void regularUpdate(int sigum){
       update_id = rfa->my_id;
     }
   }
-  
+  sleep(3);
   printf("update id: %d\n", update_id);
   if (update_id == rfa->my_id){
     node = rfa->head->next;
@@ -746,7 +746,7 @@ void regularUpdate(int sigum){
     while(node != NULL){
       if (node->flag == 1){ //已认证节点
         update_msg.dest_id = node->id;
-        printf("Update msg:\n");printUpdateMsg(&update_msg);
+        //printf("Update msg:\n");printUpdateMsg(&update_msg);
         send_update_msg(rfa->sock_fd, src_id, &update_msg, sizeof(update_msg), rfa->alldrone[node->id].IP, rfa->alldrone[node->id].PORT, node->sessionkey);
         response[response[0].num].id = node->id;  //记录接收到的响应
         response[response[0].num].isresponsed = 0;
