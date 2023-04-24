@@ -46,7 +46,7 @@ int main()
   int ret = pthread_create(&id,NULL,receive,(void* )&ReciveFunArg);
   if (-1 == ret) print_err("pthread_create failed", __LINE__, errno);
   
-  wrapperOfUpdate(30, 600);
+  wrapperOfUpdate(10, 5);
   test(cfd, alldrone, MY_ID, head);
 
   int flag = -1;
