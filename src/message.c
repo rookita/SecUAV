@@ -41,9 +41,9 @@ void generate_auth_message(AuthMsg* auth_msg, int index, char srcid, char destid
     auth_msg->destid = destid;
     auth_msg->noncelen = len;
     if (nonce != NULL)
-        strncpy(auth_msg->nonce, nonce, len);
+        mystrncpy(auth_msg->nonce, nonce, len);
     if (hmac != NULL)
-        strncpy(auth_msg->hmac, hmac, 32);
+        mystrncpy(auth_msg->hmac, hmac, 32);
 }
 
 void send_auth_message(int cfd, AuthMsg* auth_msg, int len, unsigned char* Dest_IP, int Dest_PORT){

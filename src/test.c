@@ -10,7 +10,7 @@ void test(int cfd, Drone* alldrone, char MY_ID, AuthNode* head){
     }
     while(1){
       sleep(MY_ID);
-      if (MY_ID != 10){
+      if (MY_ID != 4){
         AuthNode* p = searchList(head, DEST_ID);
         if (p == NULL){
           unsigned char* mynonce = (unsigned char*) malloc(NONCELEN);
