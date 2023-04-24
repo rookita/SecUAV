@@ -312,10 +312,10 @@ void share(int cfd, char my_id, AuthNode* head, Drone* alldrone, AuthNode* p, ch
       if (node != p && node->flag == 1 && node->id != dont_share){
         share_msg_to_p.id[i] = node->id;
         if (node->id < my_id){
-        mystrncpy(share_msg_to_p.nonce2, node->nonce1, NONCELEN);
+        mystrncat(share_msg_to_p.nonce2, node->nonce1, i*NONCELEN, NONCELEN);
         }
         else{
-          mystrncpy(share_msg_to_p.nonce2, node->nonce2, NONCELEN);
+          mystrncat(share_msg_to_p.nonce2, node->nonce2, i*NONCELEN, NONCELEN);
         }  
         i++;
       }
@@ -386,7 +386,7 @@ void handle_share_message(void* msg, const struct recive_func_arg* rfa, const in
   }
   my_sm4_cbc_decrypt(p->sessionkey, Sm4_iv, ciphertext, clen, (__uint8_t*)&share_msg, DEBUG);
   //my_sm4_cbc_padding_decrypt(p->sessionkey, Sm4_iv, ciphertext, clen, (__uint8_t*)&share_msg, &mlen, DEBUG);
-  if (1){
+  if (DEBUG){
     printf("Share_msg:\n");
     printShareMsg(&share_msg);
   }
@@ -544,12 +544,12 @@ void handle_update_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
       printf("response_msg:\n");printUpdateMsg(&response_update_msg);
     memset(p->nonce1, 0, NONCELEN);memset(p->nonce2, 0, NONCELEN);memset(p->sessionkey, 0, NONCELEN);
     if (p->id < my_id){
-      mystrncpy(p->nonce1, update_msg.newnonce,update_msg.noncelen);
+      mystrncpy(p->nonce1, update_msg.newnonce,NONCELEN);
       mystrncpy(p->nonce2, nonce, NONCELEN);
     }
     else{
       mystrncpy(p->nonce1, nonce, NONCELEN);
-      mystrncpy(p->nonce2, update_msg.newnonce,update_msg.noncelen);
+      mystrncpy(p->nonce2, update_msg.newnonce,NONCELEN);
     }
     generate_session_key(p->sessionkey, p->nonce1, p->nonce2, NONCELEN);
     p->flag = 1;
