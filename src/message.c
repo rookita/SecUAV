@@ -576,12 +576,12 @@ void handle_update_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
     printf("recieve update response message of drone-%d\n", update_msg.src_id);
     if (update_msg.src_id < update_msg.dest_id){
       memset(p->nonce1, 0, NONCELEN);
-      mystrncpy(p->nonce1, update_msg.newnonce, update_msg.noncelen);
+      mystrncpy(p->nonce1, update_msg.newnonce, NONCELEN);
     }
 
     else{
       memset(p->nonce2, 0, NONCELEN);
-      mystrncpy(p->nonce2, update_msg.newnonce, update_msg.noncelen);
+      mystrncpy(p->nonce2, update_msg.newnonce, NONCELEN);
     }
     generate_session_key(p->sessionkey, p->nonce1, p->nonce2, NONCELEN);
     p->direct = 1;
@@ -714,6 +714,10 @@ void handle_update_share_msg(void* msg, struct recive_func_arg* rfa, int DEBUG){
     tmp = -1;
   }
   printf("Update %d drones\n", i);
+  if (DEBUG){
+    printf("Auth table\n");
+    printAuthtable(rfa->head);
+  }
 }
 
 
