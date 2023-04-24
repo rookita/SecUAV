@@ -7,6 +7,7 @@
 AuthNode *initList() {
     AuthNode *head = (AuthNode *)malloc(sizeof(AuthNode));
     head->id = -1; // 头节点不存储数据
+    head->flag = 0;   //头节点flag存储密钥更新次数
     head->next = NULL;
     return head;
 }

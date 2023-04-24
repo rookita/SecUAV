@@ -472,7 +472,7 @@ void Update(int cfd, char src_id, Drone* alldrone, AuthNode* head, Response* res
   while(node != NULL){
     if (node->flag == 1){ //已认证节点
       update_msg.dest_id = node->id;
-      printf("Update msg:\n");printUpdateMsg(&update_msg);
+      //printf("Update msg:\n");printUpdateMsg(&update_msg);
       send_update_msg(cfd, src_id, &update_msg, sizeof(update_msg), alldrone[node->id].IP, alldrone[node->id].PORT, node->sessionkey);
       response[response[0].num].id = node->id;  //记录接收到的响应
       response[response[0].num].isresponsed = 0;
@@ -547,6 +547,7 @@ void handle_update_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
     p->direct = 1;
     printf("drone-%d update success\n", update_msg.src_id);
     printf("new session key is ");print_char_arr(p->sessionkey, NONCELEN);
+    rfa->head->flag += 1;
     //printf("Auth Table:\n");
     //printAuthtable(rfa->head);
   }
@@ -582,6 +583,7 @@ void handle_update_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
     if (response_check(rfa->response)){
       printf("recived all response. Start Sharing\n");
       response_init(rfa->response, 10);
+      rfa->head->flag += 1;
       Share_after_Update(rfa->sock_fd, rfa->my_id, rfa->head, rfa->alldrone);
     }
   }
@@ -705,41 +707,62 @@ void handle_update_share_msg(void* msg, struct recive_func_arg* rfa, int DEBUG){
 }
 
 
+//定时发送节点检测和密钥更新消息
 void regularUpdate(int sigum){
+  printf("update times: %d\n", rfa->head->flag);
   char src_id = rfa->my_id;
   Response* response = rfa->response;
   AuthNode* node = rfa->head->next;
-  int sum = 0;
-  while (node != NULL){
-    sum = sum + node->nonce1[NONCELEN - 1] + node->nonce2[NONCELEN - 1];
-    node = node->next;
-  }
-  if (sum % DRONENUM != rfa->my_id){
-    return;
-  }
-  UpdateMsg update_msg = {0};
-  update_msg.noncelen = NONCELEN;
-  __uint8_t nonce[update_msg.noncelen];
-  rand_bytes(nonce, update_msg.noncelen);
-  generate_update_msg(&update_msg, 0x1, src_id, node->id, nonce, NONCELEN); //触发节点对其他节点使用同一个随机数
-  while(node != NULL){
-    if (node->flag == 1){ //已认证节点
-      update_msg.dest_id = node->id;
-      printf("Update msg:\n");printUpdateMsg(&update_msg);
-      send_update_msg(rfa->sock_fd, src_id, &update_msg, sizeof(update_msg), rfa->alldrone[node->id].IP, rfa->alldrone[node->id].PORT, node->sessionkey);
-      response[response[0].num].id = node->id;  //记录接收到的响应
-      response[response[0].num].isresponsed = 0;
-      response[0].num++;
-      
-      if (node->id < src_id){ //id小的为nonce1
-        memset(node->nonce2, 0, NONCELEN);
-        mystrncpy(node->nonce2, nonce, NONCELEN);
-      }
-      else {  //node->id > src_id
-        memset(node->nonce1, 0, NONCELEN);
-        mystrncpy(node->nonce1, nonce, NONCELEN);
-      }
+  char update_id = 128;
+  if (rfa->head->flag == 0){  //第一次更新选择认证表中ID最小的
+    while(node != NULL){
+      if (node->id <= update_id)
+        update_id = node->id;
+      node = node->next;
     }
-    node = node->next;
   }
+
+  else{ //其他情况随机指定
+    node = rfa->head->next;
+    int sum  = 0;
+    while (node != NULL){
+      sum += node->sessionkey[NONCELEN - 1];
+      node = node->next;
+    }
+    printf("sum: %d\n",sum);
+    if (sum % DRONENUM + 1== rfa->my_id){
+      update_id = rfa->my_id;
+    }
+  }
+  
+  printf("update id: %d\n", update_id);
+  if (update_id == rfa->my_id){
+    node = rfa->head->next;
+    UpdateMsg update_msg = {0};
+    update_msg.noncelen = NONCELEN;
+    __uint8_t nonce[update_msg.noncelen];
+    rand_bytes(nonce, update_msg.noncelen);
+    generate_update_msg(&update_msg, 0x1, src_id, node->id, nonce, NONCELEN); //触发节点对其他节点使用同一个随机数
+    while(node != NULL){
+      if (node->flag == 1){ //已认证节点
+        update_msg.dest_id = node->id;
+        printf("Update msg:\n");printUpdateMsg(&update_msg);
+        send_update_msg(rfa->sock_fd, src_id, &update_msg, sizeof(update_msg), rfa->alldrone[node->id].IP, rfa->alldrone[node->id].PORT, node->sessionkey);
+        response[response[0].num].id = node->id;  //记录接收到的响应
+        response[response[0].num].isresponsed = 0;
+        response[0].num++;
+
+        if (node->id < src_id){ //id小的为nonce1
+          memset(node->nonce2, 0, NONCELEN);
+          mystrncpy(node->nonce2, nonce, NONCELEN);
+        }
+        else {  //node->id > src_id
+          memset(node->nonce1, 0, NONCELEN);
+          mystrncpy(node->nonce1, nonce, NONCELEN);
+        }
+      }
+      node = node->next;
+    }
+  }
+  
 }
