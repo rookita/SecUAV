@@ -9,3 +9,4 @@ int isEqual(unsigned char arr1[], unsigned char arr2[], int len);
 void add_byte(__uint8_t* padding_msg, void* msg, int msg_len, char padding);
 int get_local_ip(const char *eth_inf, char* local_ip);
 void *mystrncpy(char *dest, const char *src, size_t n);
+void mystrncat(char *dest, const char *src, size_t n1, size_t n2);

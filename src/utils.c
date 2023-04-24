@@ -92,3 +92,12 @@ void *mystrncpy(char *dest, const char *src, size_t n) {
         dest[i] = '\0';
     }
 }
+
+void mystrncat(char *dest, const char *src, size_t n1, size_t n2) {
+    size_t dest_len = n1;
+    size_t i;
+    for (i = 0; i < n2 && src[i] != '\0'; i++) {
+        dest[dest_len + i] = src[i];
+    }
+    dest[dest_len + i] = '\0';
+}

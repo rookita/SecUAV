@@ -1,43 +1,25 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <signal.h>
-#include <sys/time.h>
+#include <stdio.h>
+#include <string.h>
 
-void timer_handler(int signum, siginfo_t *info, void *context)
-{
-    int *counter = (int *)info->si_value.sival_ptr;
-    printf("Timer expired %d times\n", ++(*counter));
+void mystrncat(char *dest, const char *src, size_t n1, size_t n2) {
+    size_t dest_len = n1;
+    size_t i;
+    for (i = 0; i < n2 && src[i] != '\0'; i++) {
+        dest[dest_len + i] = src[i];
+    }
+    dest[dest_len + i] = '\0';
+    return dest;
 }
 
-int main()
-{
-    struct sigaction sa;
-    struct itimerval timer;
-    int counter = 0;
 
-    // 设置信号处理函数
-    sa.sa_flags = SA_SIGINFO;
-    sa.sa_sigaction = timer_handler;
-    sigemptyset(&sa.sa_mask);
-    if (sigaction(SIGALRM, &sa, NULL) == -1) {
-        perror("sigaction");
-        exit(1);
+int main(){
+    char s1[10] = {0x1, 0x1, 0x2};
+    char s2[10] = {0x1, 0x0, 0x2};
+    mystrncat(s2, s1, 2, 5);
+    int i = 0;
+    for (i = 0; i < 10; i++){
+        printf("%02x", s2[i]);
     }
 
-    // 设置定时器
-    timer.it_value.tv_sec = 1;
-    timer.it_value.tv_usec = 0;
-    timer.it_interval.tv_sec = 1;
-    timer.it_interval.tv_usec = 0;
-    if (setitimer(ITIMER_REAL, &timer, NULL) == -1) {
-        perror("setitimer");
-        exit(1);
-    }
-
-    // 等待定时器信号
-    while (1) {
-        pause();
-    }
-
-    return 0;
 }

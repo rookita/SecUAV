@@ -41,9 +41,9 @@ void generate_auth_message(AuthMsg* auth_msg, int index, char srcid, char destid
     auth_msg->destid = destid;
     auth_msg->noncelen = len;
     if (nonce != NULL)
-        strncat(auth_msg->nonce, nonce, len);
+        strncpy(auth_msg->nonce, nonce, len);
     if (hmac != NULL)
-        strncat(auth_msg->hmac, hmac, 32);
+        strncpy(auth_msg->hmac, hmac, 32);
 }
 
 void send_auth_message(int cfd, AuthMsg* auth_msg, int len, unsigned char* Dest_IP, int Dest_PORT){
@@ -86,7 +86,7 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
             memset(nonce, 0, NONCELEN);memset(mbuf, 0, 2*NONCELEN+2);memset(hmac, 0, 32);
             rand_bytes(nonce, NONCELEN);
             mystrncpy(node->nonce2, nonce, NONCELEN);  //nonce2-destid
-            strncat(mbuf, &auth_msg.srcid, 1);strncat(mbuf, &auth_msg.destid, 1);strncat(mbuf,node->nonce2, NONCELEN);strncat(mbuf, node->nonce1, NONCELEN);
+            mystrncat(mbuf, &auth_msg.srcid, 0, 1);mystrncat(mbuf, &auth_msg.destid, 1, 1);mystrncat(mbuf,node->nonce2, 2, NONCELEN);mystrncat(mbuf, node->nonce1, 2+NONCELEN, NONCELEN);
           }
 
           else{ //srcid > destid
@@ -94,7 +94,7 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
             memset(nonce, 0, NONCELEN);memset(mbuf, 0, 2*NONCELEN+2);memset(hmac, 0, 32);
             rand_bytes(nonce, NONCELEN);
             mystrncpy(node->nonce1, nonce, NONCELEN);  //nonce2-srcid
-            strncat(mbuf, &auth_msg.srcid, 1);strncat(mbuf, &auth_msg.destid, 1);strncat(mbuf,node->nonce1, NONCELEN);strncat(mbuf, node->nonce2, NONCELEN);
+            mystrncat(mbuf, &auth_msg.srcid, 0, 1);mystrncat(mbuf, &auth_msg.destid, 1, 1);mystrncat(mbuf,node->nonce1, 2, NONCELEN);mystrncat(mbuf, node->nonce2, 2+NONCELEN, NONCELEN);
           }
 
           if (DEBUG){
@@ -124,11 +124,11 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
             __uint8_t* hmac = (__uint8_t*) malloc (32);
             memset(mbuf, 0, 2*NONCELEN+2);memset(hmac, 0, 32);
             if (auth_msg.srcid < auth_msg.destid){
-              strncat(mbuf, &auth_msg.destid, 1);strncat(mbuf, &auth_msg.srcid, 1);strncat(mbuf, auth_msg.nonce, NONCELEN);strncat(mbuf, p2->nonce2, NONCELEN);
+              mystrncat(mbuf, &auth_msg.destid, 0, 1);mystrncat(mbuf, &auth_msg.srcid, 1, 1);mystrncat(mbuf, auth_msg.nonce, 2, NONCELEN);mystrncat(mbuf, p2->nonce2, 2+NONCELEN, NONCELEN);
               mystrncpy(p2->nonce1, auth_msg.nonce, NONCELEN);
             }
             else{ //destid < srcid
-              strncat(mbuf, &auth_msg.destid, 1);strncat(mbuf, &auth_msg.srcid, 1);strncat(mbuf, auth_msg.nonce, NONCELEN);strncat(mbuf, p2->nonce1, NONCELEN);
+               mystrncat(mbuf, &auth_msg.destid, 0, 1);mystrncat(mbuf, &auth_msg.srcid, 1, 1);mystrncat(mbuf, auth_msg.nonce, 2, NONCELEN);mystrncat(mbuf, p2->nonce1, 2+NONCELEN, NONCELEN);
               mystrncpy(p2->nonce2, auth_msg.nonce, NONCELEN);
             }
              my_sm3_hmac(hmac_key, sizeof(*hmac_key), mbuf, sizeof(*mbuf), hmac);
@@ -139,10 +139,10 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
                 p2->flag = 1;
                 memset(mbuf, 0, 2*NONCELEN+2);memset(hmac, 0, 32);
                 if (auth_msg.srcid < auth_msg.destid){
-                  strncat(mbuf, &auth_msg.destid, 1);strncat(mbuf, &auth_msg.srcid, 1);strncat(mbuf, p2->nonce2, NONCELEN);strncat(mbuf, p2->nonce1, NONCELEN);
+                  mystrncat(mbuf, &auth_msg.destid, 0, 1);mystrncat(mbuf, &auth_msg.srcid, 1, 1);mystrncat(mbuf, p2->nonce2, 2, NONCELEN);mystrncat(mbuf, p2->nonce1, 2+NONCELEN, NONCELEN);
                 }
                 else{ //srcid > destid
-                  strncat(mbuf, &auth_msg.destid, 1);strncat(mbuf, &auth_msg.srcid, 1);strncat(mbuf, p2->nonce1, NONCELEN);strncat(mbuf, p2->nonce2, NONCELEN);
+                  mystrncat(mbuf, &auth_msg.destid, 0, 1);mystrncat(mbuf, &auth_msg.srcid, 1, 1);mystrncat(mbuf, p2->nonce1, 2, NONCELEN);mystrncat(mbuf, p2->nonce2, 2+NONCELEN, NONCELEN);
                 }
                 my_sm3_hmac(hmac_key, sizeof(*hmac_key), mbuf, sizeof(*mbuf), hmac);
                 /*
@@ -189,10 +189,10 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
               __uint8_t* hmac = (__uint8_t*) malloc (32);
               memset(mbuf, 0, 2*NONCELEN+2);memset(hmac, 0, 32);
             if (auth_msg.srcid < auth_msg.destid){
-              strncat(mbuf, &auth_msg.srcid, 1);strncat(mbuf, &auth_msg.destid, 1);strncat(mbuf,p3->nonce1, NONCELEN);strncat(mbuf, p3->nonce2, NONCELEN);
+              mystrncat(mbuf, &auth_msg.srcid, 0, 1);mystrncat(mbuf, &auth_msg.destid, 1, 1);mystrncat(mbuf,p3->nonce1, 2, NONCELEN);mystrncat(mbuf, p3->nonce2, 2+NONCELEN, NONCELEN);
             }
             else{
-              strncat(mbuf, &auth_msg.srcid, 1);strncat(mbuf, &auth_msg.destid, 1);strncat(mbuf,p3->nonce2, NONCELEN);strncat(mbuf, p3->nonce1, NONCELEN);
+              mystrncat(mbuf, &auth_msg.srcid, 0, 1);mystrncat(mbuf, &auth_msg.destid, 1, 1);mystrncat(mbuf,p3->nonce2, 2, NONCELEN);mystrncat(mbuf, p3->nonce1, 2+NONCELEN, NONCELEN);
             }
              my_sm3_hmac(hmac_key, sizeof(*hmac_key), mbuf, sizeof(*mbuf), hmac);
              if ( isEqual(auth_msg.hmac, hmac, 32) ){   //验证通过
@@ -204,7 +204,7 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
                 p3->direct = 1;
                 printf("drone-%d auth success!\n", auth_msg.srcid);                
                 __uint8_t m[2*NONCELEN];memset(m, 0, 2*NONCELEN);
-                strncat(m, p3->nonce1, NONCELEN);strncat(m, p3->nonce2, NONCELEN);
+                mystrncat(m, p3->nonce1, 0, NONCELEN);mystrncat(m, p3->nonce2, NONCELEN, NONCELEN);
                 AuthMsg my_auth_msg = {0};
                 generate_auth_message(&my_auth_msg, 4, auth_msg.destid, auth_msg.srcid, NULL, NONCELEN, NULL); 
                 my_sm4_cbc_encrypt(p3->sessionkey, Sm4_iv, m, 2*NONCELEN, my_auth_msg.hmac, DEBUG);
@@ -247,7 +247,7 @@ void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
           if (p4 != NULL){
             __uint8_t* m = (__uint8_t*)malloc(2*NONCELEN);memset(m, 0, 2*NONCELEN);
             __uint8_t* mm = (__uint8_t*)malloc(2*NONCELEN);memset(mm, 0, 2*NONCELEN);
-            strncat(mm, p4->nonce1, NONCELEN);strncat(mm, p4->nonce2, NONCELEN);
+            mystrncat(mm, p4->nonce1, 0, NONCELEN);mystrncat(mm, p4->nonce2, NONCELEN, NONCELEN);
             my_sm4_cbc_decrypt(p4->sessionkey, Sm4_iv, auth_msg.hmac, 2*NONCELEN, m, DEBUG);
             if (strncmp(m, mm, 2*NONCELEN) == 0) {//相等
               p4->flag = 1;
@@ -312,10 +312,10 @@ void share(int cfd, char my_id, AuthNode* head, Drone* alldrone, AuthNode* p, ch
       if (node != p && node->flag == 1 && node->id != dont_share){
         share_msg_to_p.id[i] = node->id;
         if (node->id < my_id){
-        strncat(share_msg_to_p.nonce2, node->nonce1, NONCELEN);
+        mystrncpy(share_msg_to_p.nonce2, node->nonce1, NONCELEN);
         }
         else{
-          strncat(share_msg_to_p.nonce2, node->nonce2, NONCELEN);
+          mystrncpy(share_msg_to_p.nonce2, node->nonce2, NONCELEN);
         }  
         i++;
       }
@@ -527,6 +527,12 @@ void handle_update_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
     }
     timer.it_value.tv_sec = 20;
     timer.it_value.tv_usec = 0;
+    timer.it_interval.tv_sec = 20; 
+    timer.it_interval.tv_usec = 0;
+    if (setitimer(ITIMER_REAL, &timer, NULL) == -1) {
+        perror("setitimer");
+        exit(EXIT_FAILURE);
+    }
     UpdateMsg response_update_msg = {0};
     rand_bytes(nonce, NONCELEN);
     char my_id = update_msg.dest_id;
@@ -625,10 +631,10 @@ void Share_after_Update(int cfd, char src_id, AuthNode* head, Drone* alldrone){
   while(node != NULL){  //构造消息
     update_share_msg.id[i] = node->id;
     if(node->id < src_id){  //node的随机数为nonce1
-      strncat(update_share_msg.nonce, node->nonce1, NONCELEN);
+      mystrncat(update_share_msg.nonce, node->nonce1, i*NONCELEN, NONCELEN);
     }
     else{
-      strncat(update_share_msg.nonce, node->nonce2, NONCELEN);
+      mystrncat(update_share_msg.nonce, node->nonce2, i*NONCELEN, NONCELEN);
     }
     i++;
     node = node->next;
@@ -640,6 +646,7 @@ void Share_after_Update(int cfd, char src_id, AuthNode* head, Drone* alldrone){
     send_update_share_msg(cfd, src_id, &update_share_msg, sizeof(update_share_msg), alldrone[node->id].IP, alldrone[node->id].PORT, node->sessionkey);
     node = node->next;
   }
+  printf("Share after update success!\n");
 }
 
 //处理密钥更新后的分享消息
@@ -706,7 +713,7 @@ void handle_update_share_msg(void* msg, struct recive_func_arg* rfa, int DEBUG){
     }
     tmp = -1;
   }
-  printf("Update %d drone\n", i);
+  printf("Update %d drones\n", i);
 }
 
 
@@ -727,15 +734,20 @@ void regularUpdate(int sigum){
 
   else{ //其他情况随机指定
     node = rfa->head->next;
-    int sum  = 0;
+    int sum;
+    if (node != NULL && node->id < rfa->my_id)
+      sum = node->nonce2[NONCELEN - 1];
+    else if (node != NULL && node->id > rfa->my_id)
+      sum = node->nonce1[NONCELEN - 1];
     while (node != NULL){
-      sum += node->sessionkey[NONCELEN - 1];
+      if (node->id < rfa->my_id)
+        sum += node->nonce1[NONCELEN - 1];
+      else
+        sum += node->nonce2[NONCELEN - 1];
       node = node->next;
     }
     printf("sum: %d\n",sum);
-    if (sum % DRONENUM + 1== rfa->my_id){
-      update_id = rfa->my_id;
-    }
+    update_id = sum % DRONENUM + 1;
   }
   //sleep(1);
   printf("update id: %d\n", update_id);
@@ -767,5 +779,4 @@ void regularUpdate(int sigum){
       node = node->next;
     }
   }
-  
 }
