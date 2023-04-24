@@ -1,5 +1,6 @@
 #include "../include/message.h"
 #include "../include/gmssl/rand.h"
+#include "../include/mytime.h"
 #include <string.h>
 
 
@@ -524,6 +525,8 @@ void handle_update_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
       printf("update error!\n");
       return;
     }
+    timer.it_value.tv_sec = 20;
+    timer.it_value.tv_usec = 0;
     UpdateMsg response_update_msg = {0};
     rand_bytes(nonce, NONCELEN);
     char my_id = update_msg.dest_id;
@@ -734,7 +737,7 @@ void regularUpdate(int sigum){
       update_id = rfa->my_id;
     }
   }
-  sleep(10);
+  //sleep(1);
   printf("update id: %d\n", update_id);
   if (update_id == rfa->my_id){
     node = rfa->head->next;
