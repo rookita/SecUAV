@@ -751,7 +751,7 @@ void regularUpdate(int sigum){
       node = node->next;
     }
     printf("sum: %d\n",sum);
-    update_id = sum % 4 + 1;
+    update_id = sum % DRONENUM + 1;
   }
   //sleep(1);
   printf("update id: %d\n", update_id);
