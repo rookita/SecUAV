@@ -525,9 +525,9 @@ void handle_update_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
       printf("update error!\n");
       return;
     }
-    timer.it_value.tv_sec = 5;
+    timer.it_value.tv_sec = 10;
     timer.it_value.tv_usec = 0;
-    timer.it_interval.tv_sec = 5; 
+    timer.it_interval.tv_sec = 10; 
     timer.it_interval.tv_usec = 0;
     if (setitimer(ITIMER_REAL, &timer, NULL) == -1) {
         perror("setitimer");
