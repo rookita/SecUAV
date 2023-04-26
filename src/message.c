@@ -526,7 +526,7 @@ void handle_update_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
       return;
     }
 
-    mysetittimer(value, interval);
+    mysetittimer(rfa->updateinterval, rfa->updateinterval);
 
     UpdateMsg response_update_msg = {0};
     rand_bytes(nonce, NONCELEN);

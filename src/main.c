@@ -33,11 +33,8 @@ int main()
   AuthNode* head = initList();
   __uint8_t* mynonce = (__uint8_t*) malloc(NONCELEN);
   __uint8_t* othernonce = (__uint8_t*) malloc(NONCELEN);
-  char DEBUG = *confGet(conf, "debug") - '0';
-  int updateinterval = *confGet(conf, "updateinterval") - '0';
-  value = updateinterval;
-  interval = updateinterval;
-  wrapperOfUpdate(value, interval);
+  char DEBUG = atoi(confGet(conf, "debug"));
+  int updateinterval = atoi(confGet(conf, "updateinterval"));
 
   pthread_t id;
   Recive_func_arg ReciveFunArg;
@@ -47,11 +44,12 @@ int main()
   ReciveFunArg.head = head;
   ReciveFunArg.response = response;
   ReciveFunArg.DEBUG = DEBUG;
+  ReciveFunArg.updateinterval = updateinterval;
 
   rfa = &ReciveFunArg;
   int ret = pthread_create(&id,NULL,receive,(void* )&ReciveFunArg);
   if (-1 == ret) print_err("pthread_create failed", __LINE__, errno);
-  
+  wrapperOfUpdate(updateinterval, updateinterval);
   test(cfd, alldrone, MY_ID, head);
 
   int flag = -1;

@@ -5,8 +5,6 @@
 #include <sys/time.h>
 
 extern struct itimerval timer;
-extern int value;
-extern int interval;
 
 void mysetittimer(int value, int interval);
 void wrapperOfUpdate(int value, int interval);
