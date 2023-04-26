@@ -15,6 +15,15 @@ void response_init(Response* response, size_t len){
   }
 }
 
+//recieve_update初始化
+void receiveupdate_init(ReceiveUpdate* receiveupdate, size_t len){
+  int i = 0;
+  for (i = 0; i<len; i++){
+    receiveupdate[i].id = rfa->alldrone[i].id;
+    receiveupdate[i].flag = 0;
+  }
+}
+
 //寻找drone-{id}的response
 Response* response_find(Response* response, char id){
   int i = 0;
@@ -24,6 +33,17 @@ Response* response_find(Response* response, char id){
   }
   return NULL;
 }
+
+//寻找drone-{id}的response
+ReceiveUpdate* receiveupdate_find(ReceiveUpdate* receiveupdate, char id){
+  int i = 0;
+  for (i = 0; i < DRONENUM; i++){
+    if (receiveupdate[i].id == id)
+      return &(receiveupdate[i]);
+  }
+  return NULL;
+}
+
 
 //判断是否所有drone已经回复
 char response_check(Response* response){
@@ -553,6 +573,13 @@ void handle_update_message(void* msg, int DEBUG){
     printf("Update_msg:\n");
     printUpdateMsg(&update_msg);
   }
+  ReceiveUpdate* ru = receiveupdate_find(updateif->receiveupdate, id);
+  if (ru == NULL){
+    printf("illegal drone-%d!\n",id);
+  }
+  else{
+    ru->flag = 1;
+  }
   if (update_msg.index == 1){
     p = searchList(rfa->head, update_msg.src_id);
     if (p == NULL){
@@ -742,6 +769,7 @@ void handle_update_share_msg(void* msg, int DEBUG){
   }
   printf("Update %d drones\n", i);
   mysetittimer(updateif->updateinterval, updateif->updateinterval); //非触发节点重置密钥更新时间
+  receiveupdate_init(updateif->receiveupdate, DRONENUM);
   if (DEBUG){
     printf("Auth table\n");
     printAuthtable(rfa->head);
@@ -823,6 +851,23 @@ void regularUpdate(int sigum){
     int ret = pthread_create(&id,NULL,listenUpdateResponse,NULL);
     if (-1 == ret) print_err("pthread_create failed", __LINE__, errno);
   }
+  else{ //其他无人机更新
+    int i = 0;
+    int frequency = 5;  //5秒钟检查一次
+    int times = 3;  //3次过后直接认为该无人机丢失
+    char flag = 0;
+    ReceiveUpdate* ru = receiveupdate_find(updateif->receiveupdate, update_id);
+    for (i = 0; i<times; i++){
+      sleep(frequency);
+      flag = ru->flag;
+      if (flag == 1)
+        return;
+    }
+    if (flag == 0){
+      printf("drone-%d lost\n", update_id);
+    }
+
+  }
 }
 
 void* listenUpdateResponse(void* args){
@@ -832,6 +877,7 @@ void* listenUpdateResponse(void* args){
   char DEBUG = 1;
   int i = 0, j = 0, flag = 1;
   for (i = 0; i < times; i++){
+    sleep(frequency);
     flag = 1;
     for (j = 0; j < uinfo->response[0].num; j++){
       if (uinfo->response[j].isresponsed != 1){
@@ -842,12 +888,12 @@ void* listenUpdateResponse(void* args){
     }
     if (flag == 1){
       return NULL;
-    }
-    sleep(frequency); 
+    } 
   }
-  for (j = 0; i < uinfo->response[0].num; j++){
+  for (j = 0; j < uinfo->response[0].num; j++){
     if (uinfo->response[j].isresponsed != 1){
       printf("drone-%d lost!\n", uinfo->response[j].id);
     }
   }
+  return NULL;
 }

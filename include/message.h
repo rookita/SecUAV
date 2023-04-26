@@ -51,10 +51,16 @@ typedef struct response{
   char num; 
 }Response;
 
+typedef struct receive_update{ //用于判断触发节点是否丢失
+  char id;
+  char flag;  //flag = 1表示收到触发节点的更新消息
+}ReceiveUpdate;
+
 typedef struct update_info{
   int updateinterval;
   Response* response;
   __uint8_t nonce[NONCELEN];
+  ReceiveUpdate* receiveupdate;
 }UpdateInfo;
 
 extern Recive_func_arg* rfa;
@@ -71,8 +77,11 @@ Update():密钥更新消息
 Share_after_Update():触发节点进行密钥更新后的密钥共享
 */
 void response_init(Response* response, size_t len);
+void receiveupdate_init(ReceiveUpdate* receiveupdate, size_t len);
 Response* response_find(Response* response, char id);
+ReceiveUpdate* receiveupdate_find(ReceiveUpdate* receiveupdate, char id);
 char response_check(Response* response);
+
 
 void generate_auth_message(AuthMsg* auth_msg, int index, char srcid, char destid, __uint8_t* nonce, int len, __uint8_t* hmac);
 void send_auth_message(int cfd, AuthMsg* auth_msg, int len, unsigned char* Dest_IP, int Dest_PORT);

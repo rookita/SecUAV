@@ -19,8 +19,13 @@ int main()
   config_t* conf = confRead("./config");
   Drone alldrone[20];
   drone_init(alldrone);
+  
   Response response[DRONENUM];
   response_init(response, DRONENUM);
+
+  ReceiveUpdate receiveupdate[DRONENUM];
+  receiveupdate_init(receiveupdate, DRONENUM);
+  
   char local_ip[13];
   get_local_ip("ens18", local_ip);
   char MY_ID = find_drone_by_ip(alldrone, local_ip);
