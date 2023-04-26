@@ -8,7 +8,8 @@
 #include "../include/mytime.h"
 #include "../include/config.h"
 
-Recive_func_arg* rfa; 
+Recive_func_arg* rfa;
+UpdateInfo* updateif;
 int main()
 {  
   if (pthread_mutex_init(&mutex, NULL) != 0) {
@@ -33,9 +34,11 @@ int main()
   AuthNode* head = initList();
   __uint8_t* mynonce = (__uint8_t*) malloc(NONCELEN);
   __uint8_t* othernonce = (__uint8_t*) malloc(NONCELEN);
+
   char DEBUG = atoi(confGet(conf, "debug"));
   int updateinterval = atoi(confGet(conf, "updateinterval"));
   printf("updateinterval: %d\n", updateinterval);
+
   pthread_t id;
 
   Recive_func_arg ReciveFunArg;
@@ -43,14 +46,17 @@ int main()
   ReciveFunArg.alldrone = alldrone;
   ReciveFunArg.sock_fd = cfd;
   ReciveFunArg.head = head;
-  ReciveFunArg.response = response;
   ReciveFunArg.DEBUG = DEBUG;
-  ReciveFunArg.updateinterval = updateinterval;
   rfa = &ReciveFunArg;
   
   int ret = pthread_create(&id,NULL,receive,(void* )&ReciveFunArg);
   if (-1 == ret) print_err("pthread_create failed", __LINE__, errno);
   wrapperOfUpdate(updateinterval, updateinterval);
+  UpdateInfo ui= {0};
+  ui.updateinterval =  updateinterval;
+  ui.response = response;
+  updateif = &ui;
+
   test(cfd, alldrone, MY_ID, head);
 
   int flag = -1;

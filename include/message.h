@@ -51,7 +51,14 @@ typedef struct response{
   char num; 
 }Response;
 
+typedef struct update_info{
+  int updateinterval;
+  Response* response;
+  __uint8_t nonce[NONCELEN];
+}UpdateInfo;
+
 extern Recive_func_arg* rfa;
+extern UpdateInfo* updateif;
 
 /*
 generate_xxx_message():生成消息
@@ -84,6 +91,7 @@ void handle_share_message(void* msg, const int DEBUG);
 void generate_update_msg(UpdateMsg* update_msg, char index, char src_id, char dest_id, __uint8_t* newnonce, size_t noncelen);
 void printUpdateMsg(UpdateMsg* update_msg);
 void send_update_msg(int cfd, char dest_id, UpdateMsg* update_msg, int mlen, unsigned char* Dest_IP, int Dest_PORT, __uint8_t* Sm4_key, char DEBUG);
+void updateToOne(char dest_id, char DEBUG);
 void Update(int cfd, char src_id, Drone* alldrone, AuthNode* head, Response* response, char DEBUG);
 void pre_update_message(void* msg, __uint8_t* ciphertext, int len, char* id, int DEBUG);
 void handle_update_message(void* msg, int DEBUG);
@@ -94,6 +102,6 @@ void send_update_share_msg(int cfd, char src_id, UpdateShareMsg* update_share_ms
 void Share_after_Update(int cfd, char src_id, AuthNode* head, Drone* alldrone, char DEBUG);
 void handle_update_share_msg(void* msg, int DEBUG);
 void regularUpdate(int sigum);
-
+void* listenUpdateResponse(void* args);
 
 #endif

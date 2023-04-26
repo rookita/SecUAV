@@ -18,13 +18,12 @@
 
 struct response;
 
+
 typedef struct recive_func_arg{
   int sock_fd;
   int my_id;
   char DEBUG;
-  int updateinterval;
   Drone* alldrone;
-  struct response* response;
   AuthNode* head;
 }Recive_func_arg;
 

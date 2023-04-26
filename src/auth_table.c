@@ -17,9 +17,9 @@ AuthNode* insertNode(AuthNode *head, char id, __uint8_t* nonce1, __uint8_t* nonc
     AuthNode *newNode = (AuthNode *)malloc(sizeof(AuthNode));
     newNode->id = id;
     if(nonce1 != NULL)
-        strncpy(newNode->nonce1, nonce1, NONCELEN);
+        mystrncpy(newNode->nonce1, nonce1, NONCELEN);
     if (nonce2 != NULL)
-        strncpy(newNode->nonce2, nonce2, NONCELEN);
+        mystrncpy(newNode->nonce2, nonce2, NONCELEN);
     newNode->flag = flag;
     newNode->index = index;
     newNode->direct = direct;

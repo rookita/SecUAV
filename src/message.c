@@ -2,6 +2,7 @@
 #include "../include/gmssl/rand.h"
 #include "../include/mytime.h"
 #include <string.h>
+#include <unistd.h>
 
 
 //response初始化
@@ -463,6 +464,24 @@ void send_update_msg(int cfd, char src_id, UpdateMsg* update_msg, int mlen, unsi
   //free(msg);
 }
 
+//对某一特定无人机发送密钥更新消息,不对response作修改
+void updateToOne(char dest_id, char DEBUG){
+  AuthNode* node = rfa->head->next;
+  UpdateMsg update_msg = {0};
+  update_msg.noncelen = NONCELEN;
+  generate_update_msg(&update_msg, 0x1, rfa->my_id, node->id, updateif->nonce, NONCELEN);
+  while(node != NULL){
+    if (node->id == dest_id){
+      send_update_msg(rfa->sock_fd, rfa->my_id, &update_msg, sizeof(update_msg), rfa->alldrone[dest_id].IP, rfa->alldrone[dest_id].PORT, node->sessionkey, DEBUG);
+      break;
+    }
+    node = node -> next;
+  }
+  if (DEBUG){
+    printf("send update msg to drone-%d success\n", dest_id);
+  }
+}
+
 //发送心跳包，进行密钥更新
 void Update(int cfd, char src_id, Drone* alldrone, AuthNode* head, Response* response, char DEBUG){
   AuthNode* node = head->next;
@@ -470,6 +489,8 @@ void Update(int cfd, char src_id, Drone* alldrone, AuthNode* head, Response* res
   update_msg.noncelen = NONCELEN;
   __uint8_t nonce[update_msg.noncelen];
   rand_bytes(nonce, update_msg.noncelen);
+  memset(updateif->nonce, 0, NONCELEN);
+  mystrncpy(updateif->nonce, nonce, NONCELEN);
   generate_update_msg(&update_msg, 0x1, src_id, node->id, nonce, NONCELEN); //触发节点对其他节点使用同一个随机数
   int i = 0;
   while (node != NULL){
@@ -500,6 +521,9 @@ void Update(int cfd, char src_id, Drone* alldrone, AuthNode* head, Response* res
     }
     node = node->next;
   }
+  pthread_t id;
+  int ret = pthread_create(&id,NULL,listenUpdateResponse,NULL);
+  if (-1 == ret) print_err("pthread_create failed", __LINE__, errno);
 }
 
 void pre_update_message(void* msg, __uint8_t* ciphertext, int len, char* id, int DEBUG){
@@ -535,9 +559,6 @@ void handle_update_message(void* msg, int DEBUG){
       printf("update error!\n");
       return;
     }
-
-    mysetittimer(rfa->updateinterval, rfa->updateinterval);
-
     UpdateMsg response_update_msg = {0};
     rand_bytes(nonce, NONCELEN);
     char my_id = update_msg.dest_id;
@@ -572,7 +593,7 @@ void handle_update_message(void* msg, int DEBUG){
       printf("update error!\n");
       return;
     }
-    Response* response = response_find(rfa->response, update_msg.src_id);
+    Response* response = response_find(updateif->response, update_msg.src_id);
     if (response == NULL){
       printf("response error!\n");
       return;
@@ -594,9 +615,9 @@ void handle_update_message(void* msg, int DEBUG){
     printf("new session key is ");print_char_arr(p->sessionkey, NONCELEN);
     //printf("Auth Table:\n");
     //printAuthtable(rfa->head);
-    if (response_check(rfa->response)){
+    if (response_check(updateif->response)){
       printf("recived all response. Start Sharing\n");
-      response_init(rfa->response, 10);
+      response_init(updateif->response, 10);
       rfa->head->flag += 1;
       Share_after_Update(rfa->sock_fd, rfa->my_id, rfa->head, rfa->alldrone, DEBUG);
     }
@@ -652,6 +673,7 @@ void Share_after_Update(int cfd, char src_id, AuthNode* head, Drone* alldrone, c
     node = node->next;
   }
   printf("Share after update success!\n");
+  mysetittimer(updateif->updateinterval, updateif->updateinterval); //触发节点重置密钥更新时间
 }
 
 //处理密钥更新后的分享消息
@@ -719,6 +741,7 @@ void handle_update_share_msg(void* msg, int DEBUG){
     tmp = -1;
   }
   printf("Update %d drones\n", i);
+  mysetittimer(updateif->updateinterval, updateif->updateinterval); //非触发节点重置密钥更新时间
   if (DEBUG){
     printf("Auth table\n");
     printAuthtable(rfa->head);
@@ -730,7 +753,7 @@ void handle_update_share_msg(void* msg, int DEBUG){
 void regularUpdate(int sigum){
   printf("update times: %d\n", rfa->head->flag);
   char src_id = rfa->my_id;
-  Response* response = rfa->response;
+  Response* response = updateif->response;
   AuthNode* node = rfa->head->next;
   char update_id = rfa->my_id;
   if (rfa->head->flag == 0){  //第一次更新选择认证表中ID最小的
@@ -767,15 +790,24 @@ void regularUpdate(int sigum){
     __uint8_t nonce[update_msg.noncelen];
     rand_bytes(nonce, update_msg.noncelen);
     generate_update_msg(&update_msg, 0x1, src_id, node->id, nonce, NONCELEN); //触发节点对其他节点使用同一个随机数
+
+    int i = 0;
+    while (node != NULL){
+      if (node -> flag == 1)
+        i++;
+      node = node -> next;
+    }
+    node = rfa->head->next;
+    response[0].num = i;
+    i = 0;
     while(node != NULL){
       if (node->flag == 1){ //已认证节点
         update_msg.dest_id = node->id;
         //printf("Update msg:\n");printUpdateMsg(&update_msg);
         send_update_msg(rfa->sock_fd, src_id, &update_msg, sizeof(update_msg), rfa->alldrone[node->id].IP, rfa->alldrone[node->id].PORT, node->sessionkey, 1);
-        response[response[0].num].id = node->id;  //记录接收到的响应
-        response[response[0].num].isresponsed = 0;
-        response[0].num++;
-
+        response[i].id = node->id;  //记录接收到的响应
+        response[i].isresponsed = 0;
+        i++;
         if (node->id < src_id){ //id小的为nonce1
           memset(node->nonce2, 0, NONCELEN);
           mystrncpy(node->nonce2, nonce, NONCELEN);
@@ -786,6 +818,36 @@ void regularUpdate(int sigum){
         }
       }
       node = node->next;
+    }
+    pthread_t id;
+    int ret = pthread_create(&id,NULL,listenUpdateResponse,NULL);
+    if (-1 == ret) print_err("pthread_create failed", __LINE__, errno);
+  }
+}
+
+void* listenUpdateResponse(void* args){
+  int frequency = 5;  //5秒钟检查一次
+  int times = 3;  //3次过后直接认为该无人机丢失
+  UpdateInfo* uinfo = updateif;
+  char DEBUG = 1;
+  int i = 0, j = 0, flag = 1;
+  for (i = 0; i < times; i++){
+    flag = 1;
+    for (j = 0; j < uinfo->response[0].num; j++){
+      if (uinfo->response[j].isresponsed != 1){
+        printf("Resend update msg to drone-%d\n", uinfo->response[j].id);
+        updateToOne(uinfo->response[j].id, DEBUG);
+        flag = 0;
+      }
+    }
+    if (flag == 1){
+      return NULL;
+    }
+    sleep(frequency); 
+  }
+  for (j = 0; i < uinfo->response[0].num; j++){
+    if (uinfo->response[j].isresponsed != 1){
+      printf("drone-%d lost!\n", uinfo->response[j].id);
     }
   }
 }
