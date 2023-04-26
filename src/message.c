@@ -8,9 +8,9 @@
 void response_init(Response* response, size_t len){
   int i = 0;
   for (i = 0; i<len; i++){
-    response->id = -1;
-    response->isresponsed = -1;
-    response->num = 0;
+    response[i].id = -1;
+    response[i].isresponsed = -1;
+    response[i].num = 0;
   }
 }
 
@@ -474,11 +474,11 @@ void Update(int cfd, char src_id, Drone* alldrone, AuthNode* head, Response* res
     if (node->flag == 1){ //已认证节点
       update_msg.dest_id = node->id;
       //printf("Update msg:\n");printUpdateMsg(&update_msg);
-      send_update_msg(cfd, src_id, &update_msg, sizeof(update_msg), alldrone[node->id].IP, alldrone[node->id].PORT, node->sessionkey, DEBUG);
       response[response[0].num].id = node->id;  //记录接收到的响应
       response[response[0].num].isresponsed = 0;
       response[0].num++;
-      
+      send_update_msg(cfd, src_id, &update_msg, sizeof(update_msg), alldrone[node->id].IP, alldrone[node->id].PORT, node->sessionkey, DEBUG);
+      printf("send update msg to drone-%d\n", node->id);
       if (node->id < src_id){ //id小的为nonce1
         memset(node->nonce2, 0, NONCELEN);
         mystrncpy(node->nonce2, nonce, NONCELEN);
@@ -525,14 +525,9 @@ void handle_update_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
       printf("update error!\n");
       return;
     }
-    timer.it_value.tv_sec = 10;
-    timer.it_value.tv_usec = 0;
-    timer.it_interval.tv_sec = 10; 
-    timer.it_interval.tv_usec = 0;
-    if (setitimer(ITIMER_REAL, &timer, NULL) == -1) {
-        perror("setitimer");
-        exit(EXIT_FAILURE);
-    }
+
+    mysetittimer(value, interval);
+
     UpdateMsg response_update_msg = {0};
     rand_bytes(nonce, NONCELEN);
     char my_id = update_msg.dest_id;

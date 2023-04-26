@@ -6,8 +6,7 @@
 #include "../include/message.h"
 #include "../include/test.h"
 #include "../include/mytime.h"
-
-#define DEBUG 1
+#include "../include/config.h"
 
 Recive_func_arg* rfa; 
 int main()
@@ -16,6 +15,7 @@ int main()
     printf("Mutex initialization failed.\n");
     return 1;
   }
+  config_t* conf = confRead("./config");
   Drone alldrone[20];
   drone_init(alldrone);
   Response response[DRONENUM];
@@ -33,6 +33,8 @@ int main()
   AuthNode* head = initList();
   __uint8_t* mynonce = (__uint8_t*) malloc(NONCELEN);
   __uint8_t* othernonce = (__uint8_t*) malloc(NONCELEN);
+  char DEBUG = *confGet(conf, "debug") - '0';
+  printf("DEBUG:%d\n", DEBUG);
 
   pthread_t id;
   Recive_func_arg ReciveFunArg;
@@ -41,12 +43,13 @@ int main()
   ReciveFunArg.sock_fd = cfd;
   ReciveFunArg.head = head;
   ReciveFunArg.response = response;
+  ReciveFunArg.DEBUG = DEBUG;
 
   rfa = &ReciveFunArg;
   int ret = pthread_create(&id,NULL,receive,(void* )&ReciveFunArg);
   if (-1 == ret) print_err("pthread_create failed", __LINE__, errno);
   
-  wrapperOfUpdate(10, 5);
+  wrapperOfUpdate(value, interval);
   test(cfd, alldrone, MY_ID, head);
 
   int flag = -1;

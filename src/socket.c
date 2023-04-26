@@ -4,7 +4,7 @@
 #include "../include/message.h"
 
 #define MAXLEN 1024
-#define DEBUG 1
+
 
 struct send_func_arg Sendfunarg = {0};
 pthread_mutex_t mutex; 
@@ -26,16 +26,16 @@ void *receive(void* arg) {
       int msg_type = *(char*)msg;
       switch(msg_type){
         case 1:   //auth msg
-          handle_auth_message(msg, rfa, DEBUG);
+          handle_auth_message(msg, rfa, rfa->DEBUG);
           break;
         case 2:   //share msg
-          handle_share_message(msg, rfa, DEBUG);
+          handle_share_message(msg, rfa, rfa->DEBUG);
           break;
         case 3:
-          handle_update_message(msg, rfa, DEBUG);
+          handle_update_message(msg, rfa, rfa->DEBUG);
           break;
         case 4:
-          handle_update_share_msg(msg, rfa, DEBUG);
+          handle_update_share_msg(msg, rfa, rfa->DEBUG);
           break;
       }
     }

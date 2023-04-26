@@ -9,6 +9,7 @@
 
 #define NONCELEN 16
 
+
 //认证消息
 typedef struct auth_msg { //64bytes
   char index; //认证进行到第几步

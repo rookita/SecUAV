@@ -21,6 +21,7 @@ struct response;
 typedef struct recive_func_arg{
   int sock_fd;
   int my_id;
+  char DEBUG;
   Drone* alldrone;
   struct response* response;
   AuthNode* head;

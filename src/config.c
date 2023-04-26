@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "include/config.h"
+#include "../include/config.h"
 
 static void freeConfigOne(struct config **one)
 {
