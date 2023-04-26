@@ -34,7 +34,10 @@ int main()
   __uint8_t* mynonce = (__uint8_t*) malloc(NONCELEN);
   __uint8_t* othernonce = (__uint8_t*) malloc(NONCELEN);
   char DEBUG = *confGet(conf, "debug") - '0';
-  printf("DEBUG:%d\n", DEBUG);
+  int updateinterval = *confGet(conf, "updateinterval") - '0';
+  value = updateinterval;
+  interval = updateinterval;
+  wrapperOfUpdate(value, interval);
 
   pthread_t id;
   Recive_func_arg ReciveFunArg;
@@ -49,7 +52,6 @@ int main()
   int ret = pthread_create(&id,NULL,receive,(void* )&ReciveFunArg);
   if (-1 == ret) print_err("pthread_create failed", __LINE__, errno);
   
-  wrapperOfUpdate(value, interval);
   test(cfd, alldrone, MY_ID, head);
 
   int flag = -1;
