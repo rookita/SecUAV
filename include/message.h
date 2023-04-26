@@ -71,14 +71,14 @@ void generate_auth_message(AuthMsg* auth_msg, int index, char srcid, char destid
 void send_auth_message(int cfd, AuthMsg* auth_msg, int len, unsigned char* Dest_IP, int Dest_PORT);
 void pre_auth_message(void*msg, AuthMsg* auth_msg, int auth_msg_len, int DEBUG);
 void printAuthMsg(AuthMsg* auth_msg);
-void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG);
+void handle_auth_message(void* msg, int DEBUG);
 
 void generate_share_message(ShareMsg* share_msg, char id, __uint8_t* nonce1, __uint8_t* nonce2, size_t len);
 void send_share_message(int cfd, char id, ShareMsg* share_msg, int mlen, unsigned char* Dest_IP, int Dest_PORT, __uint8_t* Sm4_key, char DEBUG);
 void pre_share_message(void* msg, __uint8_t* ciphertext, int len, char* id, int DEBUG);
 void printShareMsg(ShareMsg* share_msg);
 void share(int cfd, char id, AuthNode* head, Drone* alldrone, AuthNode* p, char type, char dont_shar, char DEBUG);
-void handle_share_message(void* msg, const struct recive_func_arg* rfa, const int DEBUG);
+void handle_share_message(void* msg, const int DEBUG);
 
 
 void generate_update_msg(UpdateMsg* update_msg, char index, char src_id, char dest_id, __uint8_t* newnonce, size_t noncelen);
@@ -86,13 +86,13 @@ void printUpdateMsg(UpdateMsg* update_msg);
 void send_update_msg(int cfd, char dest_id, UpdateMsg* update_msg, int mlen, unsigned char* Dest_IP, int Dest_PORT, __uint8_t* Sm4_key, char DEBUG);
 void Update(int cfd, char src_id, Drone* alldrone, AuthNode* head, Response* response, char DEBUG);
 void pre_update_message(void* msg, __uint8_t* ciphertext, int len, char* id, int DEBUG);
-void handle_update_message(void* msg, struct recive_func_arg* rfa, int DEBUG);
+void handle_update_message(void* msg, int DEBUG);
 
 void printUpdateShareMsg(UpdateShareMsg* update_share_msg);
 void pre_update_share_message(void* msg, __uint8_t* ciphertext, int len, char* id, int DEBUG);
 void send_update_share_msg(int cfd, char src_id, UpdateShareMsg* update_share_msg, int mlen, unsigned char* Dest_IP, int Dest_PORT, __uint8_t* Sm4_key, char DEBUG);
 void Share_after_Update(int cfd, char src_id, AuthNode* head, Drone* alldrone, char DEBUG);
-void handle_update_share_msg(void* msg, struct recive_func_arg* rfa, int DEBUG);
+void handle_update_share_msg(void* msg, int DEBUG);
 void regularUpdate(int sigum);
 
 

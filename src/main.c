@@ -35,8 +35,9 @@ int main()
   __uint8_t* othernonce = (__uint8_t*) malloc(NONCELEN);
   char DEBUG = atoi(confGet(conf, "debug"));
   int updateinterval = atoi(confGet(conf, "updateinterval"));
-
+  printf("updateinterval: %d\n", updateinterval);
   pthread_t id;
+
   Recive_func_arg ReciveFunArg;
   ReciveFunArg.my_id = MY_ID;
   ReciveFunArg.alldrone = alldrone;
@@ -45,8 +46,8 @@ int main()
   ReciveFunArg.response = response;
   ReciveFunArg.DEBUG = DEBUG;
   ReciveFunArg.updateinterval = updateinterval;
-
   rfa = &ReciveFunArg;
+  
   int ret = pthread_create(&id,NULL,receive,(void* )&ReciveFunArg);
   if (-1 == ret) print_err("pthread_create failed", __LINE__, errno);
   wrapperOfUpdate(updateinterval, updateinterval);

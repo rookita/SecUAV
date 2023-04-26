@@ -26,6 +26,7 @@ Response* response_find(Response* response, char id){
 
 //判断是否所有drone已经回复
 char response_check(Response* response){
+  printf("num: %d\n", response[0].num);
   int i = 0;
   for (i = 0; i < response[0].num; i++){
     if (response[i].isresponsed != 1)
@@ -66,7 +67,7 @@ void pre_auth_message(void*msg, AuthMsg* auth_msg, int auth_msg_len, int DEBUG){
     }
 } 
 
-void handle_auth_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
+void handle_auth_message(void* msg, int DEBUG){
     AuthMsg auth_msg = {0};
     pre_auth_message(msg, &auth_msg, sizeof(auth_msg), DEBUG); //预处理
     if (auth_msg.destid == rfa->alldrone[rfa->my_id].id){
@@ -368,7 +369,7 @@ void printShareMsg(ShareMsg* share_msg){
 }
 
 //处理share消息
-void handle_share_message(void* msg, const struct recive_func_arg* rfa, const int DEBUG){
+void handle_share_message(void* msg, const int DEBUG){
   ShareMsg share_msg = {0};char id;size_t clen = sizeof(share_msg);size_t mlen;
   char my_id = rfa->alldrone[rfa->my_id].id;
   __uint8_t* ciphertext = (__uint8_t*)malloc(clen);
@@ -470,13 +471,22 @@ void Update(int cfd, char src_id, Drone* alldrone, AuthNode* head, Response* res
   __uint8_t nonce[update_msg.noncelen];
   rand_bytes(nonce, update_msg.noncelen);
   generate_update_msg(&update_msg, 0x1, src_id, node->id, nonce, NONCELEN); //触发节点对其他节点使用同一个随机数
+  int i = 0;
+  while (node != NULL){
+    if (node -> flag == 1)
+      i++;
+    node = node -> next;
+  }
+  node = head->next;
+  response[0].num = i;
+  i = 0;
   while(node != NULL){
     if (node->flag == 1){ //已认证节点
       update_msg.dest_id = node->id;
       //printf("Update msg:\n");printUpdateMsg(&update_msg);
-      response[response[0].num].id = node->id;  //记录接收到的响应
-      response[response[0].num].isresponsed = 0;
-      response[0].num++;
+      response[i].id = node->id;  //记录接收到的响应
+      response[i].isresponsed = 0;
+      i++;
       send_update_msg(cfd, src_id, &update_msg, sizeof(update_msg), alldrone[node->id].IP, alldrone[node->id].PORT, node->sessionkey, DEBUG);
       printf("send update msg to drone-%d\n", node->id);
       if (node->id < src_id){ //id小的为nonce1
@@ -499,7 +509,7 @@ void pre_update_message(void* msg, __uint8_t* ciphertext, int len, char* id, int
 }
 
 //处理密钥更新消息
-void handle_update_message(void* msg, struct recive_func_arg* rfa, int DEBUG){
+void handle_update_message(void* msg, int DEBUG){
   UpdateMsg update_msg = {0};char id;size_t clen = sizeof(update_msg);size_t mlen;__uint8_t nonce[NONCELEN];
   __uint8_t* ciphertext = (__uint8_t*)malloc(clen);
   memset(ciphertext, 0, clen);
@@ -645,7 +655,7 @@ void Share_after_Update(int cfd, char src_id, AuthNode* head, Drone* alldrone, c
 }
 
 //处理密钥更新后的分享消息
-void handle_update_share_msg(void* msg, struct recive_func_arg* rfa, int DEBUG){
+void handle_update_share_msg(void* msg, int DEBUG){
   UpdateShareMsg update_share_msg = {0};char id;size_t clen = sizeof(update_share_msg);
   __uint8_t* ciphertext = (__uint8_t*)malloc(clen);
   memset(ciphertext, 0, clen);

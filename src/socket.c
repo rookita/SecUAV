@@ -26,16 +26,16 @@ void *receive(void* arg) {
       int msg_type = *(char*)msg;
       switch(msg_type){
         case 1:   //auth msg
-          handle_auth_message(msg, rfa, rfa->DEBUG);
+          handle_auth_message(msg, rfa->DEBUG);
           break;
         case 2:   //share msg
-          handle_share_message(msg, rfa, rfa->DEBUG);
+          handle_share_message(msg, rfa->DEBUG);
           break;
         case 3:
-          handle_update_message(msg, rfa, rfa->DEBUG);
+          handle_update_message(msg, rfa->DEBUG);
           break;
         case 4:
-          handle_update_share_msg(msg, rfa, rfa->DEBUG);
+          handle_update_share_msg(msg, rfa->DEBUG);
           break;
       }
     }

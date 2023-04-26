@@ -1,2 +1,2 @@
-debug = 0
-updateinterval = 10
+debug = 1
+updateinterval = 30
