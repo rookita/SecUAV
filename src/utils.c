@@ -10,6 +10,7 @@
 #include <sys/ioctl.h>  
 #include <sys/types.h>  
 #include <sys/time.h> 
+#include <ifaddrs.h>
 
 void print_char_arr(const unsigned char* a, size_t len){
   int i = 0;
@@ -53,33 +54,24 @@ void add_byte(__uint8_t* padding_msg, void* msg, int msg_len, char padding){
   memmove((void* )dest, msg, msg_len);
 }
 
-int get_local_ip(const char *eth_inf, char* local_ip)
-{
-    int sd;
-    struct sockaddr_in sin;
-    struct ifreq ifr;
- 
-    sd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (-1 == sd)
-    {
-        printf("socket error: %s\n", strerror(errno));
-        return -1;
-    }
- 
-    strncpy(ifr.ifr_name, eth_inf, IFNAMSIZ);
-    ifr.ifr_name[IFNAMSIZ - 1] = 0;
- 
-    // if error: No such device  
-    if (ioctl(sd, SIOCGIFADDR, &ifr) < 0)
-    {
-        printf("ioctl error: %s\n", strerror(errno));
-        close(sd);
-        return -1;
-    }
-    
-    strncpy(local_ip, inet_ntoa(((struct sockaddr_in*)&ifr.ifr_addr)->sin_addr), 13);
-    close(sd);
-    return 0;
+
+int get_local_ip(char *ip) {
+    struct ifaddrs *ifAddrStruct;
+    void *tmpAddrPtr=NULL;
+    getifaddrs(&ifAddrStruct);
+    while (ifAddrStruct != NULL) {
+        if (ifAddrStruct->ifa_addr->sa_family==AF_INET) {
+            tmpAddrPtr=&((struct sockaddr_in *)ifAddrStruct->ifa_addr)->sin_addr;
+			if (strncmp(ifAddrStruct->ifa_name, "eth0@if", 7) == 0){
+                inet_ntop(AF_INET, tmpAddrPtr, ip, INET_ADDRSTRLEN);
+                //printf("%s IP Address:%s\n", ifAddrStruct->ifa_name, ip);
+            }
+        }
+        ifAddrStruct=ifAddrStruct->ifa_next;
+        }
+        //free ifaddrs
+        freeifaddrs(ifAddrStruct);
+        return 0;
 }
 
 

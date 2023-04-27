@@ -1,25 +1,58 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include <unistd.h>
 
-void* func(void* args){
-	char* a = (char* )args;
-	char c = *a;
-	while(1)
-		printf("s: %c\n", c);
+#include <ifaddrs.h>
+
+#include <netinet/in.h>
+
+#include <string.h>
+
+#include <arpa/inet.h>
+
+
+int get_local_ip(char *ip) {
+
+        struct ifaddrs *ifAddrStruct;
+
+        void *tmpAddrPtr=NULL;
+
+        getifaddrs(&ifAddrStruct);
+
+        while (ifAddrStruct != NULL) {
+
+                if (ifAddrStruct->ifa_addr->sa_family==AF_INET) {
+
+                        tmpAddrPtr=&((struct sockaddr_in *)ifAddrStruct->ifa_addr)->sin_addr;
+
+                        inet_ntop(AF_INET, tmpAddrPtr, ip, INET_ADDRSTRLEN);
+						
+						if (strncmp(ifAddrStruct->ifa_name, "eth0@if", 7) == 0)
+                        	printf("%s IP Address:%s\n", ifAddrStruct->ifa_name, ip);
+
+                }
+
+                ifAddrStruct=ifAddrStruct->ifa_next;
+
+        }
+
+        //free ifaddrs
+
+        freeifaddrs(ifAddrStruct);
+
+        return 0;
+
 }
 
-void func1(char* aa){
 
-}
+int main()
 
-int main(){
-	pthread_t id;
-	char s = 'a';
-	char* ps = &s;
-	int ret = pthread_create(&id, NULL, func, (void*)&s);
-	sleep(10);
-	*ps = 'b';
-	while(1);
+{
+
+        char ip[16];
+
+        memset(ip, 0, sizeof(ip));
+
+        get_local_ip(ip);
+
+        return 0;
+
 }

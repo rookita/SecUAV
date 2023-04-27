@@ -24,7 +24,7 @@ int main()
   response_init(response, DRONENUM);
 
   char local_ip[13];
-  get_local_ip("ens18", local_ip);
+  get_local_ip(local_ip);
   char MY_ID = find_drone_by_ip(alldrone, local_ip);
   if (MY_ID == -1){
     printf("error!\n");

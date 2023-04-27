@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
 // 定义链表节点结构体
 typedef struct authnode {
     char id;         
