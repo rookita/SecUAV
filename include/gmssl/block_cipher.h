@@ -17,8 +17,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <gmssl/aes.h>
-#include <gmssl/sm4.h>
+#include "aes.h"
+#include "sm4.h"
 
 
 #ifdef __cplusplus

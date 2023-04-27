@@ -13,7 +13,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-#include <gmssl/api.h>
+#include "api.h"
 
 #ifdef __cplusplus
 extern "C" {

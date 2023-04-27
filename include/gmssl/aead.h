@@ -12,10 +12,10 @@
 
 #include <string.h>
 #include <stdint.h>
-#include <gmssl/sm3.h>
-#include <gmssl/sm4.h>
-#include <gmssl/gcm.h>
-#include <gmssl/api.h>
+#include "sm3.h"
+#include "sm4.h"
+#include "gcm.h"
+#include "api.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -1,7 +1,7 @@
 # 定义编译器和编译选项
 CC = gcc
 CFLAGS = 
-LIB = -L../lib -lgmssl
+LIB = -Llib -lgmssl
 
 # 定义源文件和目标文件所在的目录
 SRCDIR := src

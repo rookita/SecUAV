@@ -15,8 +15,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <gmssl/gf128.h>
-#include <gmssl/block_cipher.h>
+#include "gf128.h"
+#include "block_cipher.h"
 
 
 #ifdef __cplusplus

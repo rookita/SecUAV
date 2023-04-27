@@ -22,7 +22,7 @@ References:
 #include <string.h>
 #include <stdint.h>
 #include <sys/types.h>
-#include <gmssl/x509.h>
+#include "x509.h"
 
 
 #ifdef __cplusplus

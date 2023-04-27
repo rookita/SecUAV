@@ -15,12 +15,12 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-#include <gmssl/sm3.h>
+#include "sm3.h"
 #ifdef ENABLE_BROKEN_CRYPTO
-#include <gmssl/md5.h>
-#include <gmssl/sha1.h>
+#include "md5.h"
+#include "sha1.h"
 #endif
-#include <gmssl/sha2.h>
+#include "sha2.h"
 
 
 #ifdef __cplusplus

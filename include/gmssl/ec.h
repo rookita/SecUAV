@@ -16,9 +16,9 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <gmssl/sm2.h>
-#include <gmssl/oid.h>
-#include <gmssl/asn1.h>
+#include "sm2.h"
+#include "oid.h"
+#include "asn1.h"
 
 #ifdef __cplusplus
 extern "C" {

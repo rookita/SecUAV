@@ -13,8 +13,8 @@
 #define GMSSL_HKDF_H
 
 #include <string.h>
-#include <gmssl/digest.h>
-#include <gmssl/hmac.h>
+#include "digest.h"
+#include "hmac.h"
 
 
 #ifdef  __cplusplus

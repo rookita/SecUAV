@@ -17,7 +17,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-#include <gmssl/digest.h>
+#include "digest.h"
 
 
 /* seedlen for hash_drgb, table 2 of nist sp 800-90a rev.1 */

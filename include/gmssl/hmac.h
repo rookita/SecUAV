@@ -12,7 +12,7 @@
 #define GMSSL_HMAC_H
 
 #include <string.h>
-#include <gmssl/digest.h>
+#include "digest.h"
 
 
 #ifdef  __cplusplus
