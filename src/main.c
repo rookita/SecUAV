@@ -23,9 +23,6 @@ int main()
   Response response[DRONENUM];
   response_init(response, DRONENUM);
 
-  ReceiveUpdate receiveupdate[DRONENUM];
-  receiveupdate_init(receiveupdate, DRONENUM);
-  
   char local_ip[13];
   get_local_ip("ens18", local_ip);
   char MY_ID = find_drone_by_ip(alldrone, local_ip);
@@ -57,13 +54,16 @@ int main()
   int ret = pthread_create(&id,NULL,receive,(void* )&ReciveFunArg);
   if (-1 == ret) print_err("pthread_create failed", __LINE__, errno);
   wrapperOfUpdate(updateinterval, updateinterval);
+  
+  ReceiveUpdate receiveupdate[DRONENUM];
+  receiveupdate_init(receiveupdate, DRONENUM);
   UpdateInfo ui= {0};
   ui.updateinterval =  updateinterval;
   ui.response = response;
+  ui.receiveupdate = (ReceiveUpdate*)&receiveupdate;
   updateif = &ui;
 
   test(cfd, alldrone, MY_ID, head);
-
   int flag = -1;
   while(1){
     printf("====================menu====================\n");
