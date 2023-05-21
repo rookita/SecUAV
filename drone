@@ -1,0 +1,18 @@
+#!/bin/bash
+
+droneNum=$2
+i=1
+if [ $1 == "start" ];then 
+    bash generate_docker-compose $droneNum
+    docker-compose up -d
+
+elif [ $1 == "stop" ];then
+    while [ $i -le $droneNum ]
+    do
+        droneName="${droneName} drone${i}"
+        i=`expr $i + 1`
+    done
+    #echo ${droneName}
+    docker stop ${droneName}
+    #docker rm ${droneName}
+fi

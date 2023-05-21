@@ -1,58 +1,20 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <unistd.h>
 
-#include <ifaddrs.h>
-
-#include <netinet/in.h>
-
-#include <string.h>
-
-#include <arpa/inet.h>
-
-
-int get_local_ip(char *ip) {
-
-        struct ifaddrs *ifAddrStruct;
-
-        void *tmpAddrPtr=NULL;
-
-        getifaddrs(&ifAddrStruct);
-
-        while (ifAddrStruct != NULL) {
-
-                if (ifAddrStruct->ifa_addr->sa_family==AF_INET) {
-
-                        tmpAddrPtr=&((struct sockaddr_in *)ifAddrStruct->ifa_addr)->sin_addr;
-
-                        inet_ntop(AF_INET, tmpAddrPtr, ip, INET_ADDRSTRLEN);
-						
-						if (strncmp(ifAddrStruct->ifa_name, "eth0@if", 7) == 0)
-                        	printf("%s IP Address:%s\n", ifAddrStruct->ifa_name, ip);
-
-                }
-
-                ifAddrStruct=ifAddrStruct->ifa_next;
-
-        }
-
-        //free ifaddrs
-
-        freeifaddrs(ifAddrStruct);
-
-        return 0;
-
+void func(){
+    printf("start_time: %ld\n", clock());
+    sleep(20);
+    printf("end_time: %ld\n", clock());
 }
 
-
-int main()
-
-{
-
-        char ip[16];
-
-        memset(ip, 0, sizeof(ip));
-
-        get_local_ip(ip);
-
-        return 0;
-
+int main(){
+    printf("%ld\n", CLOCKS_PER_SEC);
+    clock_t start_time, end_time;
+    double total_time;
+    start_time = 4266; end_time = 56016;
+    total_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+    printf("程序运行时间为 %f 秒\n", total_time);
+    //func();
 }

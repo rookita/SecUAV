@@ -3,11 +3,8 @@
 #include "../include/crypto.h"
 #include "../include/message.h"
 
-#define MAXLEN 1024
+#define MAXLEN 2000
 
-
-struct send_func_arg Sendfunarg = {0};
-pthread_mutex_t mutex; 
 
 void *receive(void* arg) {
   struct recive_func_arg* rfa = (struct recive_func_arg *)arg;
@@ -48,37 +45,45 @@ void sfa_init(Send_func_arg* sfa){
   sfa->padding = -1;
   sfa->Dest_PORT = -1;
   sfa->len = -1;
-  memset(sfa->msg, 0, 1024);
+  memset(sfa->msg, 0, MAXLEN);
   memset(sfa->Dest_IP, 0, 13);
 }
 
+
 void send_padding_msg_thread(int cfd, void* msg, int len, char padding, unsigned char* Dest_IP, int Dest_PORT){
-  pthread_mutex_lock(&mutex);
-  sfa_init(&Sendfunarg);
+  Send_func_arg* sfa = (Send_func_arg*) malloc(sizeof(Send_func_arg));
+  //printf("len: %ld\n", sizeof(Send_func_arg));
+  if (sfa == NULL){
+    printf("sfa malloc error!\n");
+    return;
+  }
   pthread_t id;
-  Sendfunarg.sock_fd = cfd;
-  mystrncpy(Sendfunarg.msg, msg, len);
-  Sendfunarg.len = len;
-  Sendfunarg.padding = padding;
+  sfa->sock_fd = cfd;
+  mystrncpy(sfa->msg, msg, len);
+  //printf("msg0: ");print_char_arr(sfa->msg, 100);
+  sfa->len = len;
+  sfa->padding = padding;
   //printf("padding0: %d\n", padding);
-  mystrncpy(Sendfunarg.Dest_IP, Dest_IP, 13);
-  Sendfunarg.Dest_PORT = Dest_PORT;
-  int ret = pthread_create(&id,NULL,send_padding_msg,(void* )&Sendfunarg);
+  mystrncpy(sfa->Dest_IP, Dest_IP, 13);
+  sfa->Dest_PORT = Dest_PORT;
+  int ret = pthread_create(&id,NULL,send_padding_msg,(void* )sfa);
   if (-1 == ret) print_err("pthread_create failed", __LINE__, errno);
 }
 
+
 void* send_padding_msg(void* arg){
   struct send_func_arg* sfa = (struct send_func_arg*)arg;
+  //printf("msg: ");print_char_arr(sfa->msg, 2048);
   struct sockaddr_in dest_addr;
-  //printf("padding1: %d\n", sfa->padding);
   Dest_Socket_init(&dest_addr, sfa->Dest_IP, sfa->Dest_PORT);
   //__uint8_t* padding_msg = malloc((len + 1) * sizeof(char));
   __uint8_t padding_msg[sfa->len+1];
   memset(padding_msg, 0, sfa->len+1);
   add_byte(padding_msg, sfa->msg, sfa->len, sfa->padding);
+  //printf("dest_addr: %s\n", sfa->Dest_IP);
   send_msg(sfa->sock_fd, (void*)padding_msg, sfa->len+1, (struct sockaddr*)&dest_addr);
-  pthread_mutex_unlock(&mutex);
-  //free(padding_msg);
+  if (sfa != NULL)
+    free(sfa);
 }
 
 int send_msg(int cfd, void* msg, int len, struct sockaddr* addr){

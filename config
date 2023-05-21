@@ -1,2 +1,3 @@
-debug = 1
-updateinterval = 30
+debug = 0
+dronenum = 88
+updateinterval = 10000

@@ -19,8 +19,10 @@ typedef struct authnode {
 
 AuthNode* initList();
 AuthNode* insertNode(AuthNode *head, char id, __uint8_t* nonce1, __uint8_t* nonce2, char flag, char index, char direct);
-void deleteNode(AuthNode* head, char id);
+void deleteNode(AuthNode* head, AuthNode* node);
+void cleanTable(AuthNode* head);
 AuthNode* searchList(AuthNode* head, char id);
-void printAuthtable(AuthNode* head);
+void printAuthtable(AuthNode* head, char onlyNum);
+
 
 #endif

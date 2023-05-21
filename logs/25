@@ -1,0 +1,202 @@
+my_ip : 10.10.0.35, my_id : 25
+updateinterval: 400
+=============================START TEST!!! I am drone-25=============================
+start_time: 1565
+count: 6
+start: 1; interval: 2
+mynonce is: 6F402DA336974A18FE314A9868763B07
+Send Auth msg to drone-26!
+drone-26 auth success!
+Recive Share Msg; Authed drone-28
+Share drone-28 to Others
+Recive Share Msg; Authed drone-27
+Share drone-27 to Others
+NUM: 3
+SUM: 476
+
+end_time: 2608
+start: 2; interval: 4
+Recive Share Msg; Authed drone-29
+Share drone-29 to Others
+NUM: 4
+SUM: 678
+
+end_time: 2811
+Recive Share Msg; Authed drone-34
+Share drone-34 to Others
+NUM: 5
+SUM: 891
+
+end_time: 2954
+Recive Share Msg; Authed drone-33
+Share drone-33 to Others
+NUM: 6
+SUM: 1048
+
+end_time: 3073
+Recive Share Msg; Authed drone-32
+Share drone-32 to Others
+NUM: 7
+SUM: 1115
+
+end_time: 3155
+Recive Share Msg; Authed drone-31
+Share drone-31 to Others
+NUM: 8
+SUM: 1184
+
+end_time: 3266
+Recive Share Msg; Authed drone-30
+Share drone-30 to Others
+NUM: 9
+SUM: 1298
+
+end_time: 3382
+Recive Share Msg; Authed drone-35
+Share drone-35 to Others
+NUM: 10
+SUM: 1497
+
+end_time: 3511
+Recive Share Msg; Authed drone-36
+Share drone-36 to Others
+NUM: 11
+SUM: 1507
+
+end_time: 3607
+start: 4; interval: 8
+Recive Share Msg; Authed drone-37
+Share drone-37 to Others
+NUM: 12
+SUM: 1638
+
+end_time: 3805
+start: 8; interval: 16
+Recive Share Msg; Authed drone-38
+Share drone-38 to Others
+NUM: 13
+SUM: 1694
+
+end_time: 3979
+Recive Share Msg; Authed drone-42
+Share drone-42 to Others
+NUM: 14
+SUM: 1834
+
+end_time: 4068
+Recive Share Msg; Authed drone-39
+Share drone-39 to Others
+NUM: 15
+SUM: 1863
+
+end_time: 4142
+Recive Share Msg; Authed drone-47
+Share drone-47 to Others
+NUM: 16
+SUM: 1990
+
+end_time: 4214
+Recive Share Msg; Authed drone-48
+Share drone-48 to Others
+NUM: 17
+SUM: 2223
+
+end_time: 4292
+Recive Share Msg; Authed drone-44
+Share drone-44 to Others
+NUM: 18
+SUM: 2465
+
+end_time: 4381
+Recive Share Msg; Authed drone-45
+Share drone-45 to Others
+NUM: 19
+SUM: 2532
+
+end_time: 4463
+Recive Share Msg; Authed drone-43
+Share drone-43 to Others
+NUM: 20
+SUM: 2604
+
+end_time: 4565
+Recive Share Msg; Authed drone-41
+Share drone-41 to Others
+NUM: 21
+SUM: 2692
+
+end_time: 4642
+Recive Share Msg; Authed drone-40
+Share drone-40 to Others
+NUM: 22
+SUM: 2783
+
+end_time: 4710
+Recive Share Msg; Authed drone-46
+Share drone-46 to Others
+NUM: 23
+SUM: 2828
+
+end_time: 4777
+start: 16; interval: 32
+start: 32; interval: 64
+drone-24 auth success!
+Send Share Msg to drone-24
+Send Share Msg to drone-26
+##########CASE THREE DEBUG INFO END##########
+Recive Share Msg; Authed drone-19
+Share drone-19 to Others
+Send Share Msg to drone-26
+Recive Share Msg; Authed drone-9
+Share drone-9 to Others
+Send Share Msg to drone-26
+Recive Share Msg; Authed drone-10
+Share drone-10 to Others
+Send Share Msg to drone-26
+Recive Share Msg; Authed drone-17
+Share drone-17 to Others
+Send Share Msg to drone-26
+Recive Share Msg; Authed drone-12
+Share drone-12 to Others
+Send Share Msg to drone-26
+Recive Share Msg; Authed drone-16
+Share drone-16 to Others
+Send Share Msg to drone-26
+Recive Share Msg; Authed drone-5
+Share drone-5 to Others
+Send Share Msg to drone-26
+Recive Share Msg; Authed drone-13
+Share drone-13 to Others
+Send Share Msg to drone-26
+Recive Share Msg; Authed drone-11
+Share drone-11 to Others
+Send Share Msg to drone-26
+Recive Share Msg; Authed drone-18
+Share drone-18 to Others
+Send Share Msg to drone-26
+Recive Share Msg; Authed drone-14
+Share drone-14 to Others
+Send Share Msg to drone-26
+Recive Share Msg; Authed drone-15
+Share drone-15 to Others
+Send Share Msg to drone-26
+Recive Share Msg; Authed drone-8
+Share drone-8 to Others
+Send Share Msg to drone-26
+Recive Share Msg; Authed drone-6
+Share drone-6 to Others
+Send Share Msg to drone-26
+Recive Share Msg; Authed drone-3
+Share drone-3 to Others
+Send Share Msg to drone-26
+Recive Share Msg; Authed drone-2
+Share drone-2 to Others
+Send Share Msg to drone-26
+Recive Share Msg; Authed drone-1
+Share drone-1 to Others
+Send Share Msg to drone-26
+Recive Share Msg; Authed drone-4
+Share drone-4 to Others
+Send Share Msg to drone-26
+Recive Share Msg; Authed drone-7
+Share drone

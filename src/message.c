@@ -191,7 +191,7 @@ void handle_auth_message(void* msg, int DEBUG){
             printf("[info]>>>case2 hmac is not equal!\n");
             printf("[info]>>>compute_hmac is ");print_char_arr(hmac, 32);
             printf("[info]>>>recive_hmac is ");print_char_arr(auth_msg.hmac, 32);
-            deleteNode(rfa->head, auth_msg.srcid);
+            deleteNode(rfa->head, p2);
             }
           free(mbuf);free(hmac);
           }
@@ -222,6 +222,7 @@ void handle_auth_message(void* msg, int DEBUG){
                   printf("[info]>>> hmac right\n");
                 generate_session_key(p3->sessionkey, p3->nonce1, p3->nonce2, NONCELEN);
                 p3->flag = 1;
+                //printf("end_time: %ld\n", clock());
                 p3->index = 3;
                 p3->direct = 1;
                 printf("drone-%d auth success!\n", auth_msg.srcid);                
@@ -237,7 +238,7 @@ void handle_auth_message(void* msg, int DEBUG){
                 send_padding_msg_thread(rfa->sock_fd, (void*)&my_auth_msg, sizeof(my_auth_msg), 0x1, rfa->alldrone[(int)(auth_msg.srcid) ].IP, rfa->alldrone[(int)(auth_msg.srcid) ].PORT);
                 if (DEBUG){
                   printf("[info]>> auth table \n");
-                  printAuthtable(rfa->head);
+                  printAuthtable(rfa->head, 0);
                 }
                 share(rfa->sock_fd, rfa->alldrone[rfa->my_id].id, rfa->head, rfa->alldrone, p3, 0, -1, DEBUG);
              }
@@ -253,7 +254,7 @@ void handle_auth_message(void* msg, int DEBUG){
                   printf("nonce2: ");print_char_arr(p3->nonce2, NONCELEN);
                   printf("hmac: ");print_char_arr(hmac, 32);
                 }
-                deleteNode(rfa->head, auth_msg.srcid);
+                deleteNode(rfa->head, p3);
               }
               free(mbuf);free(hmac);
           }
@@ -273,13 +274,14 @@ void handle_auth_message(void* msg, int DEBUG){
             my_sm4_cbc_decrypt(p4->sessionkey, Sm4_iv, auth_msg.hmac, 2*NONCELEN, m, DEBUG);
             if (strncmp(m, mm, 2*NONCELEN) == 0) {//相等
               p4->flag = 1;
+              //printf("end_time: %ld\n", clock());
               p4->direct = 1;
               p4->index = 4;
               printf("drone-%d auth success!\n", auth_msg.srcid);
               share(rfa->sock_fd, rfa->alldrone[rfa->my_id].id, rfa->head, rfa->alldrone, p2, 0, -1, DEBUG);
               if (DEBUG){
                 printf("[info]>> auth table is \n");
-                printAuthtable(rfa->head);
+                printAuthtable(rfa->head, 0);
               }
             }
             else{
@@ -311,6 +313,7 @@ void send_share_message(int cfd, char dest_id, ShareMsg* share_msg, int mlen, un
   my_sm4_cbc_encrypt(Sm4_key, Sm4_iv, (__uint8_t*)share_msg, mlen, ciphertext, DEBUG);
   //my_sm4_cbc_padding_encrypt(Sm4_key, Sm4_iv, (__uint8_t*)share_msg, mlen, ciphertext, &clen, 0);
   //__uint8_t* msg = (__uint8_t*) malloc (clen+1);
+  //printf("mlen: %d\n", mlen);
   __uint8_t msg[mlen+1];
   memset(msg, 0 , mlen+1);
   add_byte(msg, (void*)ciphertext, mlen, dest_id);
@@ -322,7 +325,7 @@ void send_share_message(int cfd, char dest_id, ShareMsg* share_msg, int mlen, un
 void share(int cfd, char my_id, AuthNode* head, Drone* alldrone, AuthNode* p, char type, char dont_share, char DEBUG){
   AuthNode* node = head->next;
   ShareMsg share_msg_to_node, share_msg_to_p = {0};
-  if (type == 0){
+  if (type == 0){ //是否对p分享
     int i = 0;
     if (p->id < my_id){
       mystrncpy(share_msg_to_p.nonce1, p->nonce1, NONCELEN);
@@ -352,7 +355,7 @@ void share(int cfd, char my_id, AuthNode* head, Drone* alldrone, AuthNode* p, ch
     }
   }
   node = head->next;
-  //给其他分享刚认证节点
+  //给其他节点分享p
   while (node != NULL){
     if (node != p && node->flag == 1 && node->direct == 1 && node->id != dont_share){     //对其他节点分享刚认证节点
       memset(&share_msg_to_node, sizeof(share_msg_to_node), 0);
@@ -392,6 +395,7 @@ void printShareMsg(ShareMsg* share_msg){
 //处理share消息
 void handle_share_message(void* msg, const int DEBUG){
   ShareMsg share_msg = {0};char id;size_t clen = sizeof(share_msg);size_t mlen;
+  //printf("clen: %d\n", clen);
   char my_id = rfa->alldrone[rfa->my_id].id;
   __uint8_t* ciphertext = (__uint8_t*)malloc(clen);
   memset(ciphertext, 0, clen);
@@ -410,6 +414,7 @@ void handle_share_message(void* msg, const int DEBUG){
   //my_sm4_cbc_padding_decrypt(p->sessionkey, Sm4_iv, ciphertext, clen, (__uint8_t*)&share_msg, &mlen, DEBUG);
   if (DEBUG){
     printf("Share_msg:\n");
+    //print_char_arr((__uint8_t*)&share_msg, clen);
     printShareMsg(&share_msg);
   }
   int i = 0;
@@ -433,8 +438,6 @@ void handle_share_message(void* msg, const int DEBUG){
         printf("Recive Share Msg; Authed drone-%d\n", share_msg.id[i]);
         printf("Share drone-%d to Others\n", p->id);
         share(rfa->sock_fd, my_id, rfa->head, rfa->alldrone, p, 1, pp->id, DEBUG);
-        if (DEBUG)
-          printAuthtable(rfa->head);
       }
     }
     else{
@@ -448,10 +451,14 @@ void handle_share_message(void* msg, const int DEBUG){
       printf("Recive Share Msg; Authed drone-%d\n", share_msg.id[i]);
       printf("Share drone-%d to Others\n", p->id);
       share(rfa->sock_fd, my_id, rfa->head, rfa->alldrone, p, 1, pp->id, DEBUG);
-      if (DEBUG)
-        printAuthtable(rfa->head);
     }
   }
+  if (DEBUG){
+    printf("Auth table\n");
+    printAuthtable(rfa->head, 0);
+  }
+  printAuthtable(rfa->head, 1);
+  printf("end_time: %ld\n", clock());
   free(ciphertext);
 }
 
@@ -504,6 +511,7 @@ void updateToOne(char dest_id, char DEBUG){
 
 //发送心跳包，进行密钥更新
 void Update(int cfd, char src_id, Drone* alldrone, AuthNode* head, Response* response, char DEBUG){
+  cleanTable(rfa->head);
   AuthNode* node = head->next;
   UpdateMsg update_msg = {0};
   update_msg.noncelen = NONCELEN;
@@ -573,6 +581,7 @@ void handle_update_message(void* msg, int DEBUG){
     printf("Update_msg:\n");
     printUpdateMsg(&update_msg);
   }
+  
   ReceiveUpdate* ru = receiveupdate_find(updateif->receiveupdate, id);
   if (ru == NULL){
     printf("illegal drone-%d!\n",id);
@@ -580,6 +589,7 @@ void handle_update_message(void* msg, int DEBUG){
   else{
     ru->flag = 1;
   }
+  
   if (update_msg.index == 1){
     p = searchList(rfa->head, update_msg.src_id);
     if (p == NULL){
@@ -611,7 +621,7 @@ void handle_update_message(void* msg, int DEBUG){
     printf("new session key is ");print_char_arr(p->sessionkey, NONCELEN);
     rfa->head->flag += 1;
     //printf("Auth Table:\n");
-    //printAuthtable(rfa->head);
+    //printAuthtable(rfa->head, 0);
   }
 
   else if (update_msg.index == 2){  //response
@@ -641,9 +651,10 @@ void handle_update_message(void* msg, int DEBUG){
     printf("drone-%d update success\n", update_msg.src_id);
     printf("new session key is ");print_char_arr(p->sessionkey, NONCELEN);
     //printf("Auth Table:\n");
-    //printAuthtable(rfa->head);
+    //printAuthtable(rfa->head, 0);
     if (response_check(updateif->response)){
       printf("recived all response. Start Sharing\n");
+      printf("end1_time: %ld\n", clock());
       response_init(updateif->response, 10);
       rfa->head->flag += 1;
       Share_after_Update(rfa->sock_fd, rfa->my_id, rfa->head, rfa->alldrone, DEBUG);
@@ -700,6 +711,7 @@ void Share_after_Update(int cfd, char src_id, AuthNode* head, Drone* alldrone, c
     node = node->next;
   }
   printf("Share after update success!\n");
+  printf("end2_time: %ld\n", clock());
   mysetittimer(updateif->updateinterval, updateif->updateinterval); //触发节点重置密钥更新时间
 }
 
@@ -768,12 +780,15 @@ void handle_update_share_msg(void* msg, int DEBUG){
     tmp = -1;
   }
   printf("Update %d drones\n", i);
+  cleanTable(rfa->head);
   mysetittimer(updateif->updateinterval, updateif->updateinterval); //非触发节点重置密钥更新时间
   receiveupdate_init(updateif->receiveupdate, DRONENUM);
   if (DEBUG){
     printf("Auth table\n");
-    printAuthtable(rfa->head);
+    printAuthtable(rfa->head, 0);
   }
+    printAuthtable(rfa->head, 1);
+    printf("end_time: %ld\n", clock());
 }
 
 
@@ -812,6 +827,7 @@ void regularUpdate(int sigum){
   //sleep(1);
   printf("update id: %d\n", update_id);
   if (update_id == rfa->my_id){
+    printf("satrt_time: %ld\n", clock());
     node = rfa->head->next;
     UpdateMsg update_msg = {0};
     update_msg.noncelen = NONCELEN;
@@ -852,6 +868,7 @@ void regularUpdate(int sigum){
     if (-1 == ret) print_err("pthread_create failed", __LINE__, errno);
   }
   else{ //其他无人机更新
+    printf("satrt_time: %ld\n", clock());
     int i = 0;
     int frequency = 5;  //5秒钟检查一次
     int times = 3;  //3次过后直接认为该无人机丢失
@@ -866,7 +883,6 @@ void regularUpdate(int sigum){
     if (flag == 0){
       printf("drone-%d lost\n", update_id);
     }
-
   }
 }
 

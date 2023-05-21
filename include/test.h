@@ -6,6 +6,9 @@
 #include "utils.h"
 #include <stdlib.h>
 
-void test(int cfd, Drone* alldrone, char MY_ID, AuthNode* head);
+void testWorstGroupCreate(int cfd, Drone* alldrone, char MY_ID, AuthNode* head, int droneNum);
+void testBestGroupCreate(int cfd, Drone* alldrone, char MY_ID, AuthNode* head);
+void testCertificationTime(int cfd, Drone* alldrone, char MY_ID, AuthNode* head);
+void testJoinTime(int cfd, Drone* alldrone, char MY_ID, AuthNode* head, int droneNum);
 
 #endif

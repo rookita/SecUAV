@@ -29,15 +29,14 @@ typedef struct recive_func_arg{
 
 typedef struct send_func_arg{
   int sock_fd;
-  unsigned char msg[1024];
+  unsigned char msg[2000];
   int len;
   char padding;
   unsigned char Dest_IP[13];
   int Dest_PORT;
 }Send_func_arg;
 
-extern struct send_func_arg Sendfunarg;
-extern pthread_mutex_t mutex; 
+
 
 void sfa_init(Send_func_arg* sfa);
 void *receive(void* arg);

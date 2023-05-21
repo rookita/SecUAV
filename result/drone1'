@@ -1,0 +1,1022 @@
+my_ip : 10.10.0.11, my_id : 1
+updateinterval: 10000
+start_time: 1581
+=============================START TEST!!! I am drone-1=============================
+mynonce is: A978676E8F410F421F835C4EAF9E3B07
+Send Auth msg to drone-2!
+drone-2 auth success!
+Recive Share Msg; Authed drone-54
+Share drone-54 to Others
+Recive Share Msg; Authed drone-55
+Share drone-55 to Others
+Recive Share Msg; Authed drone-53
+Share drone-53 to Others
+Recive Share Msg; Authed drone-51
+Share drone-51 to Others
+Recive Share Msg; Authed drone-47
+Share drone-47 to Others
+Recive Share Msg; Authed drone-52
+Share drone-52 to Others
+Recive Share Msg; Authed drone-43
+Share drone-43 to Others
+Recive Share Msg; Authed drone-44
+Share drone-44 to Others
+Recive Share Msg; Authed drone-50
+Share drone-50 to Others
+Recive Share Msg; Authed drone-45
+Share drone-45 to Others
+Recive Share Msg; Authed drone-48
+Share drone-48 to Others
+Recive Share Msg; Authed drone-46
+Share drone-46 to Others
+Recive Share Msg; Authed drone-49
+Share drone-49 to Others
+Recive Share Msg; Authed drone-42
+Share drone-42 to Others
+Recive Share Msg; Authed drone-41
+Share drone-41 to Others
+Recive Share Msg; Authed drone-40
+Share drone-40 to Others
+Recive Share Msg; Authed drone-32
+Share drone-32 to Others
+Recive Share Msg; Authed drone-34
+Share drone-34 to Others
+Recive Share Msg; Authed drone-37
+Share drone-37 to Others
+Recive Share Msg; Authed drone-39
+Share drone-39 to Others
+Recive Share Msg; Authed drone-33
+Share drone-33 to Others
+Recive Share Msg; Authed drone-35
+Share drone-35 to Others
+Recive Share Msg; Authed drone-38
+Share drone-38 to Others
+Recive Share Msg; Authed drone-36
+Share drone-36 to Others
+Recive Share Msg; Authed drone-31
+Share drone-31 to Others
+Recive Share Msg; Authed drone-30
+Share drone-30 to Others
+Recive Share Msg; Authed drone-26
+Share drone-26 to Others
+Recive Share Msg; Authed drone-29
+Share drone-29 to Others
+Recive Share Msg; Authed drone-25
+Share drone-25 to Others
+Recive Share Msg; Authed drone-27
+Share drone-27 to Others
+Recive Share Msg; Authed drone-28
+Share drone-28 to Others
+Recive Share Msg; Authed drone-23
+Share drone-23 to Others
+Recive Share Msg; Authed drone-24
+Share drone-24 to Others
+Recive Share Msg; Authed drone-20
+Share drone-20 to Others
+Recive Share Msg; Authed drone-21
+Share drone-21 to Others
+Recive Share Msg; Authed drone-22
+Share drone-22 to Others
+Recive Share Msg; Authed drone-19
+Share drone-19 to Others
+Recive Share Msg; Authed drone-18
+Share drone-18 to Others
+Recive Share Msg; Authed drone-17
+Share drone-17 to Others
+Recive Share Msg; Authed drone-7
+Share drone-7 to Others
+Recive Share Msg; Authed drone-14
+Share drone-14 to Others
+Recive Share Msg; Authed drone-9
+Share drone-9 to Others
+Recive Share Msg; Authed drone-12
+Share drone-12 to Others
+Recive Share Msg; Authed drone-8
+Share drone-8 to Others
+Recive Share Msg; Authed drone-10
+Share drone-10 to Others
+Recive Share Msg; Authed drone-11
+Share drone-11 to Others
+Recive Share Msg; Authed drone-13
+Share drone-13 to Others
+Recive Share Msg; Authed drone-16
+Share drone-16 to Others
+Recive Share Msg; Authed drone-15
+Share drone-15 to Others
+Recive Share Msg; Authed drone-6
+Share drone-6 to Others
+Recive Share Msg; Authed drone-5
+Share drone-5 to Others
+Recive Share Msg; Authed drone-4
+Share drone-4 to Others
+Recive Share Msg; Authed drone-3
+Share drone-3 to Others
+NUM: 54
+SUM: 6627
+
+end_time: 5441
+Recive Share Msg; Authed drone-60
+Share drone-60 to Others
+NUM: 55
+SUM: 6637
+
+end_time: 5616
+Recive Share Msg; Authed drone-56
+Share drone-56 to Others
+NUM: 56
+SUM: 6850
+
+end_time: 5764
+Recive Share Msg; Authed drone-64
+Share drone-64 to Others
+NUM: 57
+SUM: 7101
+
+end_time: 5920
+Recive Share Msg; Authed drone-58
+Share drone-58 to Others
+NUM: 58
+SUM: 7339
+
+end_time: 6067
+Recive Share Msg; Authed drone-59
+Share drone-59 to Others
+NUM: 59
+SUM: 7560
+
+end_time: 6222
+Recive Share Msg; Authed drone-57
+Share drone-57 to Others
+NUM: 60
+SUM: 7758
+
+end_time: 6369
+Recive Share Msg; Authed drone-63
+Share drone-63 to Others
+NUM: 61
+SUM: 7759
+
+end_time: 6507
+Recive Share Msg; Authed drone-65
+Share drone-65 to Others
+NUM: 62
+SUM: 7988
+
+end_time: 6636
+Recive Share Msg; Authed drone-61
+Share drone-61 to Others
+NUM: 63
+SUM: 8164
+
+end_time: 6783
+Recive Share Msg; Authed drone-62
+Share drone-62 to Others
+NUM: 64
+SUM: 8218
+
+end_time: 6924
+Recive Share Msg; Authed drone-66
+Share drone-66 to Others
+NUM: 65
+SUM: 8219
+
+end_time: 7116
+Recive Share Msg; Authed drone-67
+Share drone-67 to Others
+NUM: 66
+SUM: 8315
+
+end_time: 7312
+Recive Share Msg; Authed drone-70
+Share drone-70 to Others
+NUM: 67
+SUM: 8483
+
+end_time: 7456
+Recive Share Msg; Authed drone-69
+Share drone-69 to Others
+NUM: 68
+SUM: 8592
+
+end_time: 7608
+Recive Share Msg; Authed drone-77
+Share drone-77 to Others
+NUM: 69
+SUM: 8689
+
+end_time: 7748
+Recive Share Msg; Authed drone-74
+Share drone-74 to Others
+NUM: 70
+SUM: 8745
+
+end_time: 7903
+Recive Share Msg; Authed drone-76
+Share drone-76 to Others
+NUM: 71
+SUM: 8860
+
+end_time: 8046
+Recive Share Msg; Authed drone-68
+Share drone-68 to Others
+NUM: 72
+SUM: 9113
+
+end_time: 8175
+Recive Share Msg; Authed drone-75
+Share drone-75 to Others
+NUM: 73
+SUM: 9212
+
+end_time: 8303
+Recive Share Msg; Authed drone-72
+Share drone-72 to Others
+NUM: 74
+SUM: 9235
+
+end_time: 8430
+Recive Share Msg; Authed drone-73
+Share drone-73 to Others
+NUM: 75
+SUM: 9250
+
+end_time: 8567
+Recive Share Msg; Authed drone-71
+Share drone-71 to Others
+NUM: 76
+SUM: 9341
+
+end_time: 8722
+Recive Share Msg; Authed drone-78
+Share drone-78 to Others
+NUM: 77
+SUM: 9368
+
+end_time: 8889
+Recive Share Msg; Authed drone-79
+Share drone-79 to Others
+NUM: 78
+SUM: 9481
+
+end_time: 9044
+Recive Share Msg; Authed drone-80
+Share drone-80 to Others
+NUM: 79
+SUM: 9693
+
+end_time: 9238
+my_ip : 10.10.0.11, my_id : 1
+updateinterval: 10000
+start_time: 1305
+=============================START TEST!!! I am drone-1=============================
+mynonce is: 8AE3A14AB8800924C17E6E475CC278C9
+Send Auth msg to drone-2!
+drone-2 auth success!
+Recive Share Msg; Authed drone-80
+Share drone-80 to Others
+Recive Share Msg; Authed drone-79
+Share drone-79 to Others
+Recive Share Msg; Authed drone-73
+Share drone-73 to Others
+Recive Share Msg; Authed drone-77
+Share drone-77 to Others
+Recive Share Msg; Authed drone-71
+Share drone-71 to Others
+Recive Share Msg; Authed drone-76
+Share drone-76 to Others
+Recive Share Msg; Authed drone-75
+Share drone-75 to Others
+Recive Share Msg; Authed drone-69
+Share drone-69 to Others
+Recive Share Msg; Authed drone-78
+Share drone-78 to Others
+Recive Share Msg; Authed drone-72
+Share drone-72 to Others
+Recive Share Msg; Authed drone-70
+Share drone-70 to Others
+Recive Share Msg; Authed drone-74
+Share drone-74 to Others
+Recive Share Msg; Authed drone-68
+Share drone-68 to Others
+Recive Share Msg; Authed drone-67
+Share drone-67 to Others
+Recive Share Msg; Authed drone-66
+Share drone-66 to Others
+Recive Share Msg; Authed drone-57
+Share drone-57 to Others
+Recive Share Msg; Authed drone-64
+Share drone-64 to Others
+Recive Share Msg; Authed drone-62
+Share drone-62 to Others
+Recive Share Msg; Authed drone-60
+Share drone-60 to Others
+Recive Share Msg; Authed drone-58
+Share drone-58 to Others
+Recive Share Msg; Authed drone-59
+Share drone-59 to Others
+Recive Share Msg; Authed drone-63
+Share drone-63 to Others
+Recive Share Msg; Authed drone-65
+Share drone-65 to Others
+Recive Share Msg; Authed drone-61
+Share drone-61 to Others
+Recive Share Msg; Authed drone-56
+Share drone-56 to Others
+Recive Share Msg; Authed drone-55
+Share drone-55 to Others
+Recive Share Msg; Authed drone-54
+Share drone-54 to Others
+Recive Share Msg; Authed drone-48
+Share drone-48 to Others
+Recive Share Msg; Authed drone-52
+Share drone-52 to Others
+Recive Share Msg; Authed drone-47
+Share drone-47 to Others
+Recive Share Msg; Authed drone-49
+Share drone-49 to Others
+Recive Share Msg; Authed drone-53
+Share drone-53 to Others
+Recive Share Msg; Authed drone-50
+Share drone-50 to Others
+Recive Share Msg; Authed drone-51
+Share drone-51 to Others
+Recive Share Msg; Authed drone-46
+Share drone-46 to Others
+Recive Share Msg; Authed drone-42
+Share drone-42 to Others
+Recive Share Msg; Authed drone-43
+Share drone-43 to Others
+Recive Share Msg; Authed drone-45
+Share drone-45 to Others
+Recive Share Msg; Authed drone-41
+Share drone-41 to Others
+Recive Share Msg; Authed drone-44
+Share drone-44 to Others
+Recive Share Msg; Authed drone-40
+Share drone-40 to Others
+Recive Share Msg; Authed drone-39
+Share drone-39 to Others
+Recive Share Msg; Authed drone-30
+Share drone-30 to Others
+Recive Share Msg; Authed drone-36
+Share drone-36 to Others
+Recive Share Msg; Authed drone-31
+Share drone-31 to Others
+Recive Share Msg; Authed drone-38
+Share drone-38 to Others
+Recive Share Msg; Authed drone-32
+Share drone-32 to Others
+Recive Share Msg; Authed drone-35
+Share drone-35 to Others
+Recive Share Msg; Authed drone-29
+Share drone-29 to Others
+Recive Share Msg; Authed drone-37
+Share drone-37 to Others
+Recive Share Msg; Authed drone-34
+Share drone-34 to Others
+Recive Share Msg; Authed drone-33
+Share drone-33 to Others
+Recive Share Msg; Authed drone-28
+Share drone-28 to Others
+Recive Share Msg; Authed drone-26
+Share drone-26 to Others
+Recive Share Msg; Authed drone-27
+Share drone-27 to Others
+Recive Share Msg; Authed drone-25
+Share drone-25 to Others
+Recive Share Msg; Authed drone-20
+Share drone-20 to Others
+Recive Share Msg; Authed drone-24
+Share drone-24 to Others
+Recive Share Msg; Authed drone-19
+Share drone-19 to Others
+Recive Share Msg; Authed drone-21
+Share drone-21 to Others
+Recive Share Msg; Authed drone-23
+Share drone-23 to Others
+Recive Share Msg; Authed drone-22
+Share drone-22 to Others
+Recive Share Msg; Authed drone-18
+Share drone-18 to Others
+Recive Share Msg; Authed drone-17
+Share drone-17 to Others
+Recive Share Msg; Authed drone-14
+Share drone-14 to Others
+Recive Share Msg; Authed drone-16
+Share drone-16 to Others
+Recive Share Msg; Authed drone-10
+Share drone-10 to Others
+Recive Share Msg; Authed drone-9
+Share drone-9 to Others
+Recive Share Msg; Authed drone-15
+Share drone-15 to Others
+Recive Share Msg; Authed drone-8
+Share drone-8 to Others
+Recive Share Msg; Authed drone-13
+Share drone-13 to Others
+Recive Share Msg; Authed drone-11
+Share drone-11 to Others
+Recive Share Msg; Authed drone-12
+Share drone-12 to Others
+Recive Share Msg; Authed drone-7
+Share drone-7 to Others
+Recive Share Msg; Authed drone-6
+Share drone-6 to Others
+Recive Share Msg; Authed drone-5
+Share drone-5 to Others
+Recive Share Msg; Authed drone-4
+Share drone-4 to Others
+Recive Share Msg; Authed drone-3
+Share drone-3 to Others
+NUM: 79
+SUM: 10541
+
+end_time: 5643
+my_ip : 10.10.0.11, my_id : 1
+updateinterval: 10000
+start_time: 1672
+=============================START TEST!!! I am drone-1=============================
+mynonce is: 2168985E233F494346CE38BDECF47CB7
+Send Auth msg to drone-2!
+drone-2 auth success!
+Recive Share Msg; Authed drone-84
+Share drone-84 to Others
+Recive Share Msg; Authed drone-81
+Share drone-81 to Others
+Recive Share Msg; Authed drone-78
+Share drone-78 to Others
+Recive Share Msg; Authed drone-87
+Share drone-87 to Others
+Recive Share Msg; Authed drone-80
+Share drone-80 to Others
+Recive Share Msg; Authed drone-83
+Share drone-83 to Others
+Recive Share Msg; Authed drone-79
+Share drone-79 to Others
+Recive Share Msg; Authed drone-88
+Share drone-88 to Others
+Recive Share Msg; Authed drone-85
+Share drone-85 to Others
+Recive Share Msg; Authed drone-86
+Share drone-86 to Others
+Recive Share Msg; Authed drone-82
+Share drone-82 to Others
+Recive Share Msg; Authed drone-77
+Share drone-77 to Others
+Recive Share Msg; Authed drone-67
+Share drone-67 to Others
+Recive Share Msg; Authed drone-75
+Share drone-75 to Others
+Recive Share Msg; Authed drone-71
+Share drone-71 to Others
+Recive Share Msg; Authed drone-72
+Share drone-72 to Others
+Recive Share Msg; Authed drone-76
+Share drone-76 to Others
+Recive Share Msg; Authed drone-70
+Share drone-70 to Others
+Recive Share Msg; Authed drone-74
+Share drone-74 to Others
+Recive Share Msg; Authed drone-69
+Share drone-69 to Others
+Recive Share Msg; Authed drone-68
+Share drone-68 to Others
+Recive Share Msg; Authed drone-65
+Share drone-65 to Others
+Recive Share Msg; Authed drone-66
+Share drone-66 to Others
+Recive Share Msg; Authed drone-73
+Share drone-73 to Others
+Recive Share Msg; Authed drone-63
+Share drone-63 to Others
+Recive Share Msg; Authed drone-64
+Share drone-64 to Others
+Recive Share Msg; Authed drone-62
+Share drone-62 to Others
+Recive Share Msg; Authed drone-59
+Share drone-59 to Others
+Recive Share Msg; Authed drone-60
+Share drone-60 to Others
+Recive Share Msg; Authed drone-56
+Share drone-56 to Others
+Recive Share Msg; Authed drone-55
+Share drone-55 to Others
+Recive Share Msg; Authed drone-54
+Share drone-54 to Others
+Recive Share Msg; Authed drone-57
+Share drone-57 to Others
+Recive Share Msg; Authed drone-61
+Share drone-61 to Others
+Recive Share Msg; Authed drone-58
+Share drone-58 to Others
+Recive Share Msg; Authed drone-53
+Share drone-53 to Others
+Recive Share Msg; Authed drone-51
+Share drone-51 to Others
+Recive Share Msg; Authed drone-52
+Share drone-52 to Others
+Recive Share Msg; Authed drone-50
+Share drone-50 to Others
+Recive Share Msg; Authed drone-40
+Share drone-40 to Others
+Recive Share Msg; Authed drone-38
+Share drone-38 to Others
+Recive Share Msg; Authed drone-39
+Share drone-39 to Others
+Recive Share Msg; Authed drone-49
+Share drone-49 to Others
+Recive Share Msg; Authed drone-46
+Share drone-46 to Others
+Recive Share Msg; Authed drone-41
+Share drone-41 to Others
+Recive Share Msg; Authed drone-45
+Share drone-45 to Others
+Recive Share Msg; Authed drone-48
+Share drone-48 to Others
+Recive Share Msg; Authed drone-47
+Share drone-47 to Others
+Recive Share Msg; Authed drone-42
+Share drone-42 to Others
+Recive Share Msg; Authed drone-44
+Share drone-44 to Others
+Recive Share Msg; Authed drone-43
+Share drone-43 to Others
+Recive Share Msg; Authed drone-29
+Share drone-29 to Others
+Recive Share Msg; Authed drone-31
+Share drone-31 to Others
+Recive Share Msg; Authed drone-30
+Share drone-30 to Others
+Recive Share Msg; Authed drone-35
+Share drone-35 to Others
+Recive Share Msg; Authed drone-34
+Share drone-34 to Others
+Recive Share Msg; Authed drone-33
+Share drone-33 to Others
+Recive Share Msg; Authed drone-37
+Share drone-37 to Others
+Recive Share Msg; Authed drone-32
+Share drone-32 to Others
+Recive Share Msg; Authed drone-36
+Share drone-36 to Others
+Recive Share Msg; Authed drone-28
+Share drone-28 to Others
+Recive Share Msg; Authed drone-27
+Share drone-27 to Others
+Recive Share Msg; Authed drone-23
+Share drone-23 to Others
+Recive Share Msg; Authed drone-24
+Share drone-24 to Others
+Recive Share Msg; Authed drone-25
+Share drone-25 to Others
+Recive Share Msg; Authed drone-26
+Share drone-26 to Others
+Recive Share Msg; Authed drone-22
+Share drone-22 to Others
+Recive Share Msg; Authed drone-20
+Share drone-20 to Others
+Recive Share Msg; Authed drone-19
+Share drone-19 to Others
+Recive Share Msg; Authed drone-21
+Share drone-21 to Others
+Recive Share Msg; Authed drone-18
+Share drone-18 to Others
+Recive Share Msg; Authed drone-17
+Share drone-17 to Others
+Recive Share Msg; Authed drone-16
+Share drone-16 to Others
+Recive Share Msg; Authed drone-15
+Share drone-15 to Others
+Recive Share Msg; Authed drone-6
+Share drone-6 to Others
+Recive Share Msg; Authed drone-14
+Share drone-14 to Others
+Recive Share Msg; Authed drone-13
+Share drone-13 to Others
+Recive Share Msg; Authed drone-10
+Share drone-10 to Others
+Recive Share Msg; Authed drone-9
+Share drone-9 to Others
+Recive Share Msg; Authed drone-7
+Share drone-7 to Others
+Recive Share Msg; Authed drone-8
+Share drone-8 to Others
+Recive Share Msg; Authed drone-11
+Share drone-11 to Others
+Recive Share Msg; Authed drone-12
+Share drone-12 to Others
+Recive Share Msg; Authed drone-5
+Share drone-5 to Others
+Recive Share Msg; Authed drone-4
+Share drone-4 to Others
+Recive Share Msg; Authed drone-3
+Share drone-3 to Others
+NUM: 87
+SUM: 12081
+
+end_time: 6960
+my_ip : 10.10.0.11, my_id : 1
+updateinterval: 10000
+start_time: 1235
+=============================START TEST!!! I am drone-1=============================
+mynonce is: E71AC728DA1547A734CD3170514047AA
+Send Auth msg to drone-2!
+drone-2 auth success!
+Recive Share Msg; Authed drone-72
+Share drone-72 to Others
+Recive Share Msg; Authed drone-71
+Share drone-71 to Others
+Recive Share Msg; Authed drone-70
+Share drone-70 to Others
+Recive Share Msg; Authed drone-69
+Share drone-69 to Others
+Recive Share Msg; Authed drone-68
+Share drone-68 to Others
+Recive Share Msg; Authed drone-66
+Share drone-66 to Others
+Recive Share Msg; Authed drone-63
+Share drone-63 to Others
+Recive Share Msg; Authed drone-60
+Share drone-60 to Others
+Recive Share Msg; Authed drone-61
+Share drone-61 to Others
+Recive Share Msg; Authed drone-64
+Share drone-64 to Others
+Recive Share Msg; Authed drone-65
+Share drone-65 to Others
+Recive Share Msg; Authed drone-62
+Share drone-62 to Others
+Recive Share Msg; Authed drone-67
+Share drone-67 to Others
+Recive Share Msg; Authed drone-59
+Share drone-59 to Others
+Recive Share Msg; Authed drone-56
+Share drone-56 to Others
+Recive Share Msg; Authed drone-58
+Share drone-58 to Others
+Recive Share Msg; Authed drone-57
+Share drone-57 to Others
+Recive Share Msg; Authed drone-50
+Share drone-50 to Others
+Recive Share Msg; Authed drone-52
+Share drone-52 to Others
+Recive Share Msg; Authed drone-46
+Share drone-46 to Others
+Recive Share Msg; Authed drone-54
+Share drone-54 to Others
+Recive Share Msg; Authed drone-53
+Share drone-53 to Others
+Recive Share Msg; Authed drone-55
+Share drone-55 to Others
+Recive Share Msg; Authed drone-47
+Share drone-47 to Others
+Recive Share Msg; Authed drone-51
+Share drone-51 to Others
+Recive Share Msg; Authed drone-48
+Share drone-48 to Others
+Recive Share Msg; Authed drone-49
+Share drone-49 to Others
+Recive Share Msg; Authed drone-45
+Share drone-45 to Others
+Recive Share Msg; Authed drone-44
+Share drone-44 to Others
+Recive Share Msg; Authed drone-43
+Share drone-43 to Others
+Recive Share Msg; Authed drone-39
+Share drone-39 to Others
+Recive Share Msg; Authed drone-40
+Share drone-40 to Others
+Recive Share Msg; Authed drone-42
+Share drone-42 to Others
+Recive Share Msg; Authed drone-37
+Share drone-37 to Others
+Recive Share Msg; Authed drone-38
+Share drone-38 to Others
+Recive Share Msg; Authed drone-36
+Share drone-36 to Others
+Recive Share Msg; Authed drone-41
+Share drone-41 to Others
+Recive Share Msg; Authed drone-35
+Share drone-35 to Others
+Recive Share Msg; Authed drone-32
+Share drone-32 to Others
+Recive Share Msg; Authed drone-34
+Share drone-34 to Others
+Recive Share Msg; Authed drone-26
+Share drone-26 to Others
+Recive Share Msg; Authed drone-30
+Share drone-30 to Others
+Recive Share Msg; Authed drone-31
+Share drone-31 to Others
+Recive Share Msg; Authed drone-25
+Share drone-25 to Others
+Recive Share Msg; Authed drone-29
+Share drone-29 to Others
+Recive Share Msg; Authed drone-33
+Share drone-33 to Others
+Recive Share Msg; Authed drone-27
+Share drone-27 to Others
+Recive Share Msg; Authed drone-28
+Share drone-28 to Others
+Recive Share Msg; Authed drone-24
+Share drone-24 to Others
+Recive Share Msg; Authed drone-23
+Share drone-23 to Others
+Recive Share Msg; Authed drone-22
+Share drone-22 to Others
+Recive Share Msg; Authed drone-21
+Share drone-21 to Others
+Recive Share Msg; Authed drone-20
+Share drone-20 to Others
+Recive Share Msg; Authed drone-19
+Share drone-19 to Others
+Recive Share Msg; Authed drone-16
+Share drone-16 to Others
+Recive Share Msg; Authed drone-18
+Share drone-18 to Others
+Recive Share Msg; Authed drone-13
+Share drone-13 to Others
+Recive Share Msg; Authed drone-14
+Share drone-14 to Others
+Recive Share Msg; Authed drone-15
+Share drone-15 to Others
+Recive Share Msg; Authed drone-17
+Share drone-17 to Others
+Recive Share Msg; Authed drone-12
+Share drone-12 to Others
+Recive Share Msg; Authed drone-10
+Share drone-10 to Others
+Recive Share Msg; Authed drone-11
+Share drone-11 to Others
+Recive Share Msg; Authed drone-9
+Share drone-9 to Others
+Recive Share Msg; Authed drone-8
+Share drone-8 to Others
+Recive Share Msg; Authed drone-7
+Share drone-7 to Others
+Recive Share Msg; Authed drone-6
+Share drone-6 to Others
+Recive Share Msg; Authed drone-5
+Share drone-5 to Others
+Recive Share Msg; Authed drone-4
+Share drone-4 to Others
+Recive Share Msg; Authed drone-3
+Share drone-3 to Others
+NUM: 71
+SUM: 8371
+
+end_time: 5894
+my_ip : 10.10.0.11, my_id : 1
+updateinterval: 10000
+start_time: 1368
+=============================START TEST!!! I am drone-1=============================
+mynonce is: F63EC1A93DC71358E06F2EDEABBFB0B6
+Send Auth msg to drone-2!
+drone-2 auth success!
+Recive Share Msg; Authed drone-64
+Share drone-64 to Others
+Recive Share Msg; Authed drone-63
+Share drone-63 to Others
+Recive Share Msg; Authed drone-61
+Share drone-61 to Others
+Recive Share Msg; Authed drone-62
+Share drone-62 to Others
+Recive Share Msg; Authed drone-54
+Share drone-54 to Others
+Recive Share Msg; Authed drone-59
+Share drone-59 to Others
+Recive Share Msg; Authed drone-53
+Share drone-53 to Others
+Recive Share Msg; Authed drone-58
+Share drone-58 to Others
+Recive Share Msg; Authed drone-56
+Share drone-56 to Others
+Recive Share Msg; Authed drone-55
+Share drone-55 to Others
+Recive Share Msg; Authed drone-60
+Share drone-60 to Others
+Recive Share Msg; Authed drone-52
+Share drone-52 to Others
+Recive Share Msg; Authed drone-57
+Share drone-57 to Others
+Recive Share Msg; Authed drone-51
+Share drone-51 to Others
+Recive Share Msg; Authed drone-49
+Share drone-49 to Others
+Recive Share Msg; Authed drone-50
+Share drone-50 to Others
+Recive Share Msg; Authed drone-44
+Share drone-44 to Others
+Recive Share Msg; Authed drone-45
+Share drone-45 to Others
+Recive Share Msg; Authed drone-40
+Share drone-40 to Others
+Recive Share Msg; Authed drone-46
+Share drone-46 to Others
+Recive Share Msg; Authed drone-41
+Share drone-41 to Others
+Recive Share Msg; Authed drone-43
+Share drone-43 to Others
+Recive Share Msg; Authed drone-47
+Share drone-47 to Others
+Recive Share Msg; Authed drone-42
+Share drone-42 to Others
+Recive Share Msg; Authed drone-48
+Share drone-48 to Others
+Recive Share Msg; Authed drone-39
+Share drone-39 to Others
+Recive Share Msg; Authed drone-38
+Share drone-38 to Others
+Recive Share Msg; Authed drone-34
+Share drone-34 to Others
+Recive Share Msg; Authed drone-37
+Share drone-37 to Others
+Recive Share Msg; Authed drone-33
+Share drone-33 to Others
+Recive Share Msg; Authed drone-35
+Share drone-35 to Others
+Recive Share Msg; Authed drone-32
+Share drone-32 to Others
+Recive Share Msg; Authed drone-30
+Share drone-30 to Others
+Recive Share Msg; Authed drone-36
+Share drone-36 to Others
+Recive Share Msg; Authed drone-31
+Share drone-31 to Others
+Recive Share Msg; Authed drone-29
+Share drone-29 to Others
+Recive Share Msg; Authed drone-24
+Share drone-24 to Others
+Recive Share Msg; Authed drone-26
+Share drone-26 to Others
+Recive Share Msg; Authed drone-28
+Share drone-28 to Others
+Recive Share Msg; Authed drone-25
+Share drone-25 to Others
+Recive Share Msg; Authed drone-27
+Share drone-27 to Others
+Recive Share Msg; Authed drone-23
+Share drone-23 to Others
+Recive Share Msg; Authed drone-22
+Share drone-22 to Others
+Recive Share Msg; Authed drone-21
+Share drone-21 to Others
+Recive Share Msg; Authed drone-20
+Share drone-20 to Others
+Recive Share Msg; Authed drone-19
+Share drone-19 to Others
+Recive Share Msg; Authed drone-18
+Share drone-18 to Others
+Recive Share Msg; Authed drone-17
+Share drone-17 to Others
+Recive Share Msg; Authed drone-16
+Share drone-16 to Others
+Recive Share Msg; Authed drone-14
+Share drone-14 to Others
+Recive Share Msg; Authed drone-13
+Share drone-13 to Others
+Recive Share Msg; Authed drone-15
+Share drone-15 to Others
+Recive Share Msg; Authed drone-11
+Share drone-11 to Others
+Recive Share Msg; Authed drone-12
+Share drone-12 to Others
+Recive Share Msg; Authed drone-10
+Share drone-10 to Others
+Recive Share Msg; Authed drone-8
+Share drone-8 to Others
+Recive Share Msg; Authed drone-9
+Share drone-9 to Others
+Recive Share Msg; Authed drone-7
+Share drone-7 to Others
+Recive Share Msg; Authed drone-6
+Share drone-6 to Others
+Recive Share Msg; Authed drone-5
+Share drone-5 to Others
+Recive Share Msg; Authed drone-4
+Share drone-4 to Others
+Recive Share Msg; Authed drone-3
+Share drone-3 to Others
+NUM: 63
+SUM: 8494
+
+end_time: 6356
+my_ip : 10.10.0.11, my_id : 1
+updateinterval: 10000
+start_time: 1540
+=============================START TEST!!! I am drone-1=============================
+mynonce is: 229A4851D7172473890954E25FA1EAC9
+Send Auth msg to drone-2!
+drone-2 auth success!
+Recive Share Msg; Authed drone-55
+Share drone-55 to Others
+Recive Share Msg; Authed drone-54
+Share drone-54 to Others
+Recive Share Msg; Authed drone-56
+Share drone-56 to Others
+Recive Share Msg; Authed drone-53
+Share drone-53 to Others
+Recive Share Msg; Authed drone-52
+Share drone-52 to Others
+Recive Share Msg; Authed drone-51
+Share drone-51 to Others
+Recive Share Msg; Authed drone-48
+Share drone-48 to Others
+Recive Share Msg; Authed drone-47
+Share drone-47 to Others
+Recive Share Msg; Authed drone-49
+Share drone-49 to Others
+Recive Share Msg; Authed drone-50
+Share drone-50 to Others
+Recive Share Msg; Authed drone-45
+Share drone-45 to Others
+Recive Share Msg; Authed drone-46
+Share drone-46 to Others
+Recive Share Msg; Authed drone-44
+Share drone-44 to Others
+Recive Share Msg; Authed drone-43
+Share drone-43 to Others
+Recive Share Msg; Authed drone-41
+Share drone-41 to Others
+Recive Share Msg; Authed drone-42
+Share drone-42 to Others
+Recive Share Msg; Authed drone-40
+Share drone-40 to Others
+Recive Share Msg; Authed drone-39
+Share drone-39 to Others
+Recive Share Msg; Authed drone-32
+Share drone-32 to Others
+Recive Share Msg; Authed drone-38
+Share drone-38 to Others
+Recive Share Msg; Authed drone-36
+Share drone-36 to Others
+Recive Share Msg; Authed drone-37
+Share drone-37 to Others
+Recive Share Msg; Authed drone-31
+Share drone-31 to Others
+Recive Share Msg; Authed drone-33
+Share drone-33 to Others
+Recive Share Msg; Authed drone-35
+Share drone-35 to Others
+Recive Share Msg; Authed drone-34
+Share drone-34 to Others
+Recive Share Msg; Authed drone-30
+Share drone-30 to Others
+Recive Share Msg; Authed drone-29
+Share drone-29 to Others
+Recive Share Msg; Authed drone-25
+Share drone-25 to Others
+Recive Share Msg; Authed drone-26
+Share drone-26 to Others
+Recive Share Msg; Authed drone-28
+Share drone-28 to Others
+Recive Share Msg; Authed drone-23
+Share drone-23 to Others
+Recive Share Msg; Authed drone-27
+Share drone-27 to Others
+Recive Share Msg; Authed drone-24
+Share drone-24 to Others
+Recive Share Msg; Authed drone-21
+Share drone-21 to Others
+Recive Share Msg; Authed drone-20
+Share drone-20 to Others
+Recive Share Msg; Authed drone-22
+Share drone-22 to Others
+Recive Share Msg; Authed drone-15
+Share drone-15 to Others
+Recive Share Msg; Authed drone-16
+Share drone-16 to Others
+Recive Share Msg; Authed drone-17
+Share drone-17 to Others
+Recive Share Msg; Authed drone-19
+Share drone-19 to Others
+Recive Share Msg; Authed drone-14
+Share drone-14 to Others
+Recive Share Msg; Authed drone-18
+Share drone-18 to Others
+Recive Share Msg; Authed drone-12
+Share drone-12 to Others
+Recive Share Msg; Authed drone-13
+Share drone-13 to Others
+Recive Share Msg; Authed drone-10
+Share drone-10 to Others
+Recive Share Msg; Authed drone-11
+Share drone-11 to Others
+Recive Share Msg; Authed drone-9
+Share drone-9 to Others
+Recive Share Msg; Authed drone-8
+Share drone-8 to Others
+Recive Share Msg; Authed drone-7
+Share drone-7 to Others
+Recive Share Msg; Authed drone-6
+Share drone-6 to Others
+Recive Share Msg; Authed drone-5
+Share drone-5 to Others
+Recive Share Msg; Authed drone-4
+Share drone-4 to Others
+Recive Share Msg; Authed drone-3
+Share drone-3 to Others
+NUM: 55
+SUM: 8175
+
+end_time: 5123

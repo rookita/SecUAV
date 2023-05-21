@@ -12,12 +12,8 @@ Recive_func_arg* rfa;
 UpdateInfo* updateif;
 int main()
 {  
-  if (pthread_mutex_init(&mutex, NULL) != 0) {
-    printf("Mutex initialization failed.\n");
-    return 1;
-  }
   config_t* conf = confRead("./config");
-  Drone alldrone[20];
+  Drone alldrone[DRONENUM+1];
   drone_init(alldrone);
   
   Response response[DRONENUM];
@@ -39,6 +35,7 @@ int main()
 
   char DEBUG = atoi(confGet(conf, "debug"));
   int updateinterval = atoi(confGet(conf, "updateinterval"));
+  int droneNum = atoi(confGet(conf, "dronenum"));
   printf("updateinterval: %d\n", updateinterval);
 
   pthread_t id;
@@ -62,8 +59,10 @@ int main()
   ui.response = response;
   ui.receiveupdate = (ReceiveUpdate*)&receiveupdate;
   updateif = &ui;
-
-  test(cfd, alldrone, MY_ID, head);
+  testWorstGroupCreate(cfd, alldrone, MY_ID, head, droneNum);
+  //testBestGroupCreate(cfd, alldrone, MY_ID, head);
+  //testCertificationTime(cfd, alldrone, MY_ID, head);
+  //testJoinTime(cfd, alldrone, MY_ID, head, droneNum);
   int flag = -1;
   while(1){
     printf("====================menu====================\n");
@@ -74,7 +73,7 @@ int main()
     {
     case 0:
       printf("Auth Table is:\n");
-      printAuthtable(head);
+      printAuthtable(head, 1);
       break;
     case 1:
       AuthNode* p = searchList(head, DEST_ID);

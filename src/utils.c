@@ -62,7 +62,7 @@ int get_local_ip(char *ip) {
     while (ifAddrStruct != NULL) {
         if (ifAddrStruct->ifa_addr->sa_family==AF_INET) {
             tmpAddrPtr=&((struct sockaddr_in *)ifAddrStruct->ifa_addr)->sin_addr;
-			if (strncmp(ifAddrStruct->ifa_name, "eth0@if", 7) == 0){
+			if (strncmp(ifAddrStruct->ifa_name, "eth0", 4) == 0){
                 inet_ntop(AF_INET, tmpAddrPtr, ip, INET_ADDRSTRLEN);
                 //printf("%s IP Address:%s\n", ifAddrStruct->ifa_name, ip);
             }

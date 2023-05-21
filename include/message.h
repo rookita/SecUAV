@@ -11,7 +11,7 @@
 
 
 //认证消息
-typedef struct auth_msg { //64bytes
+typedef struct auth_msg { 
   char index; //认证进行到第几步
   char srcid;
   char destid;
@@ -21,11 +21,11 @@ typedef struct auth_msg { //64bytes
 }AuthMsg;
 
 //随机数分享消息
-typedef struct share_msg {  //160bytes
+typedef struct share_msg {  
   char id[DRONENUM];
-  __uint8_t nonce1[NONCELEN]; //16bytes
-  __uint8_t nonce2[NONCELEN*DRONENUM];  //
   size_t num;
+  __uint8_t nonce1[NONCELEN]; 
+  __uint8_t nonce2[NONCELEN*DRONENUM];  
 }ShareMsg;
 
 //密钥更新消息
@@ -38,10 +38,10 @@ typedef struct update_msg { //32bytes
 }UpdateMsg;
 
 //密钥更新后的密钥共享消息
-typedef struct update_share_msg{ //144bytes
+typedef struct update_share_msg{ 
   char id[DRONENUM];
+  size_t num;
   __uint8_t nonce[NONCELEN*DRONENUM];
-  size_t num; 
 }UpdateShareMsg;
 
 //记录是否收到回复

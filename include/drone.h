@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DRONENUM 8
+#define DRONENUM 88
 typedef struct drone{
   char id;
   __uint8_t IP[14];
