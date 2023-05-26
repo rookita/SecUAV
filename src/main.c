@@ -26,6 +26,8 @@ int main()
     printf("error!\n");
     return 0;
   }
+  //testSm4Time(16,1980);while(1);
+  //testHmacTime(32);while(1);
   char DEST_ID = MY_ID + 1;
   printf("my_ip : %s, my_id : %d\n", local_ip, MY_ID);
   int cfd = My_Socket_init(alldrone[MY_ID].IP, alldrone[MY_ID].PORT);
@@ -59,10 +61,12 @@ int main()
   ui.response = response;
   ui.receiveupdate = (ReceiveUpdate*)&receiveupdate;
   updateif = &ui;
-  testWorstGroupCreate(cfd, alldrone, MY_ID, head, droneNum);
+  //testWorstGroupCreate(cfd, alldrone, MY_ID, head, droneNum);
   //testBestGroupCreate(cfd, alldrone, MY_ID, head);
   //testCertificationTime(cfd, alldrone, MY_ID, head);
   //testJoinTime(cfd, alldrone, MY_ID, head, droneNum);
+  //testCRTime(cfd, alldrone, MY_ID, head, 64);
+  testOriginGroupCreateTime(cfd, alldrone, MY_ID, head, 8);
   int flag = -1;
   while(1){
     printf("====================menu====================\n");

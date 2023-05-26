@@ -5,7 +5,7 @@
 #include "gmssl/hmac.h"
 #include "gmssl/rand.h"
 
-#define KEYLEN 16
+#define KEYLEN 32
 
 extern __uint8_t Sm4_iv[KEYLEN];
 extern __uint8_t hmac_key[KEYLEN];

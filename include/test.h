@@ -10,5 +10,9 @@ void testWorstGroupCreate(int cfd, Drone* alldrone, char MY_ID, AuthNode* head, 
 void testBestGroupCreate(int cfd, Drone* alldrone, char MY_ID, AuthNode* head);
 void testCertificationTime(int cfd, Drone* alldrone, char MY_ID, AuthNode* head);
 void testJoinTime(int cfd, Drone* alldrone, char MY_ID, AuthNode* head, int droneNum);
+void testSm4Time(int keyLen,int msgLen);
+void testHmacTime(int keyLen, int msgLen);
+void testCRTime(int cfd, Drone* alldrone, char MY_ID, AuthNode* head, int droneNum);
+void testOriginGroupCreateTime(int cfd, Drone* alldrone, char MY_ID, AuthNode* head, int droneNum);
 
 #endif

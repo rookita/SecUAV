@@ -240,7 +240,9 @@ void handle_auth_message(void* msg, int DEBUG){
                   printf("[info]>> auth table \n");
                   printAuthtable(rfa->head, 0);
                 }
-                share(rfa->sock_fd, rfa->alldrone[rfa->my_id].id, rfa->head, rfa->alldrone, p3, 0, -1, DEBUG);
+                printAuthtable(rfa->head, 1);
+                printf("end_time: %ld\n", clock());
+                //share(rfa->sock_fd, rfa->alldrone[rfa->my_id].id, rfa->head, rfa->alldrone, p3, 0, -1, DEBUG);
              }
               else {
                 printf("[info]>>>case3 hmac is not equal!\n");
@@ -278,7 +280,9 @@ void handle_auth_message(void* msg, int DEBUG){
               p4->direct = 1;
               p4->index = 4;
               printf("drone-%d auth success!\n", auth_msg.srcid);
-              share(rfa->sock_fd, rfa->alldrone[rfa->my_id].id, rfa->head, rfa->alldrone, p2, 0, -1, DEBUG);
+              printAuthtable(rfa->head, 1);
+              printf("end_time: %ld\n", clock());
+              //share(rfa->sock_fd, rfa->alldrone[rfa->my_id].id, rfa->head, rfa->alldrone, p4, 0, -1, DEBUG);
               if (DEBUG){
                 printf("[info]>> auth table is \n");
                 printAuthtable(rfa->head, 0);

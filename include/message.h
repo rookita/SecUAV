@@ -29,7 +29,7 @@ typedef struct share_msg {
 }ShareMsg;
 
 //密钥更新消息
-typedef struct update_msg { //32bytes
+typedef struct update_msg { 
   char src_id;
   char dest_id;
   char index; //send or response??
