@@ -13,7 +13,14 @@
         "drone.h": "c",
         "ioctl.h": "c",
         "test.h": "c",
-        "config.h": "c"
+        "config.h": "c",
+        "basic_message.h": "c",
+        "authentication_table_share_message.h": "c",
+        "node_check_message.h": "c"
     },
-    "cmake.configureOnOpen": false
+    "cmake.configureOnOpen": false,
+    "editor.formatOnSave": true,
+    "cSpell.words": [
+        "sessionkey"
+    ]
 }

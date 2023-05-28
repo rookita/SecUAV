@@ -18,25 +18,22 @@
 extern "C" {
 #endif
 
-
-struct config
-{
-	char *name;
-	char *value;
-	struct config *next;
+struct config {
+    char* name;
+    char* value;
+    struct config* next;
 };
-typedef struct configl
-{
-	char *fn;
-	struct config *confs;
+typedef struct configl {
+    char* fn;
+    struct config* confs;
 } config_t;
 
-config_t *confRead(const char *file_name);
-int confWrite(config_t *one);
-void confDestory(config_t *one);
-const char *confGet(const config_t *one, const char *key);
-int confSet(config_t *one, const char *key, const char *val);
-void confDel(config_t *one, const char *key);
+config_t* confRead(const char* file_name);
+int confWrite(config_t* one);
+void confDestory(config_t* one);
+const char* confGet(const config_t* one, const char* key);
+int confSet(config_t* one, const char* key, const char* val);
+void confDel(config_t* one, const char* key);
 
 #ifdef __cplusplus
 }

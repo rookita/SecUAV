@@ -1,5 +1,5 @@
 #!/bin/bash
-cat > ../docker-compose.yaml <<EOF
+cat > ~/SecUAV/docker-compose.yaml <<EOF
 version: '3'
 services:
 EOF
@@ -8,7 +8,7 @@ i=1
 droneNum=$1
 while [ $i -le $droneNum ]
 do
-cat >> ../docker-compose.yaml <<EOF
+cat >> ~/SecUAV/docker-compose.yaml <<EOF
     drone$i:
         image: myubuntu:22.04
         container_name: "drone$i"
@@ -26,12 +26,12 @@ EOF
     i=`expr $i + 1`
 done
 
-cat >> ../docker-compose.yaml <<EOF
+cat >> ~/SecUAV/docker-compose.yaml <<EOF
 networks:
   group:
     external:
       name: group
 EOF
 
-echo "docker-compose file generate success!
+echo "docker-compose file generate success!"
 

@@ -8,107 +8,130 @@
 #include "../include/mytime.h"
 #include "../include/config.h"
 
-Recive_func_arg* rfa;
+GlobalVars* gV;
 UpdateInfo* updateif;
-int main()
-{  
-  config_t* conf = confRead("./config");
-  Drone alldrone[DRONENUM+1];
-  drone_init(alldrone);
-  
-  Response response[DRONENUM];
-  response_init(response, DRONENUM);
+int main() {
+    printf("authMsgLen: %ld\n", sizeof(AuthenticationMsg));
+    printf("nonceShareMsgLen: %ld\n", sizeof(NonceShareMsg));
+    printf("nodeCheckLen: %ld\n", sizeof(NodeCheckMsg));
+    printf("authTableShareMsgLen: %ld\n", sizeof(AuthenticationTableShareMsg));
 
-  char local_ip[13];
-  get_local_ip(local_ip);
-  char MY_ID = find_drone_by_ip(alldrone, local_ip);
-  if (MY_ID == -1){
-    printf("error!\n");
-    return 0;
-  }
-  //testSm4Time(16,1980);while(1);
-  //testHmacTime(32);while(1);
-  char DEST_ID = MY_ID + 1;
-  printf("my_ip : %s, my_id : %d\n", local_ip, MY_ID);
-  int cfd = My_Socket_init(alldrone[MY_ID].IP, alldrone[MY_ID].PORT);
-  AuthNode* head = initList();
-  __uint8_t* mynonce = (__uint8_t*) malloc(NONCELEN);
-  __uint8_t* othernonce = (__uint8_t*) malloc(NONCELEN);
+    config_t* conf = confRead("./config");
+    char Debug = atoi(confGet(conf, "debug"));
+    int updateinterval = atoi(confGet(conf, "updateinterval"));
+    int droneNum = atoi(confGet(conf, "dronenum"));
+    char nonceLen = atoi(confGet(conf, "noncelen"));
+    char sessionkeyLen = atoi(confGet(conf, "sessionkeylen"));
 
-  char DEBUG = atoi(confGet(conf, "debug"));
-  int updateinterval = atoi(confGet(conf, "updateinterval"));
-  int droneNum = atoi(confGet(conf, "dronenum"));
-  printf("updateinterval: %d\n", updateinterval);
+    Drone allDrone[DRONENUM + 1];
+    droneInit(allDrone);
 
-  pthread_t id;
+    Response response[DRONENUM];
+    response_init(response, DRONENUM);
 
-  Recive_func_arg ReciveFunArg;
-  ReciveFunArg.my_id = MY_ID;
-  ReciveFunArg.alldrone = alldrone;
-  ReciveFunArg.sock_fd = cfd;
-  ReciveFunArg.head = head;
-  ReciveFunArg.DEBUG = DEBUG;
-  rfa = &ReciveFunArg;
-  
-  int ret = pthread_create(&id,NULL,receive,(void* )&ReciveFunArg);
-  if (-1 == ret) print_err("pthread_create failed", __LINE__, errno);
-  wrapperOfUpdate(updateinterval, updateinterval);
-  
-  ReceiveUpdate receiveupdate[DRONENUM];
-  receiveupdate_init(receiveupdate, DRONENUM);
-  UpdateInfo ui= {0};
-  ui.updateinterval =  updateinterval;
-  ui.response = response;
-  ui.receiveupdate = (ReceiveUpdate*)&receiveupdate;
-  updateif = &ui;
-  //testWorstGroupCreate(cfd, alldrone, MY_ID, head, droneNum);
-  //testBestGroupCreate(cfd, alldrone, MY_ID, head);
-  //testCertificationTime(cfd, alldrone, MY_ID, head);
-  //testJoinTime(cfd, alldrone, MY_ID, head, droneNum);
-  //testCRTime(cfd, alldrone, MY_ID, head, 64);
-  testOriginGroupCreateTime(cfd, alldrone, MY_ID, head, 8);
-  int flag = -1;
-  while(1){
-    printf("====================menu====================\n");
-    printf("0:Print Auth Table\n");
-    printf("1:Authenticate\t 2:Update Session Key\t 3:xxxxxx\n");
-    scanf("%d", &flag);
-    switch (flag)
-    {
-    case 0:
-      printf("Auth Table is:\n");
-      printAuthtable(head, 1);
-      break;
-    case 1:
-      AuthNode* p = searchList(head, DEST_ID);
-      if (p != NULL && p->flag == 1){
-        printf("drone-%d already authed\n", DEST_ID);
-        continue;
-      }
-      __uint8_t* mynonce = (unsigned char*) malloc(NONCELEN);
-      AuthMsg auth_msg = {0};
-      auth_msg.index = 1;
-      auth_msg.srcid = alldrone[MY_ID].id;
-      auth_msg.destid = alldrone[DEST_ID].id;
-      rand_bytes(auth_msg.nonce, NONCELEN);
-      auth_msg.noncelen = NONCELEN;
-      printf("mynonce is: ");
-      print_char_arr(auth_msg.nonce, NONCELEN);
-      if (auth_msg.srcid < auth_msg.destid){
-        insertNode(head, alldrone[DEST_ID].id, auth_msg.nonce, NULL, 0, 0, 0);
-      }
-      else{
-        insertNode(head, alldrone[DEST_ID].id, NULL, auth_msg.nonce, 0, 0, 0);
-      }
-      send_padding_msg_thread(cfd, (void*)&auth_msg, sizeof(auth_msg), 0x1, alldrone[DEST_ID].IP, alldrone[DEST_ID].PORT);
-      printf("Send Auth msg to drone-%d!\n", DEST_ID);
-      break;
-    case 2:
-      Update(cfd, alldrone[MY_ID].id, alldrone, head, response, DEBUG);
-      break;
-    default:
-      break;
+    char local_ip[13];
+    getLocalIp(local_ip);
+    char myId = findDroneByIp(allDrone, local_ip);
+
+    if (myId == -1) {
+        printf("error!\n");
+        return 0;
     }
-  }
-  return 0;
+
+    char destId = myId + 1;
+    printf("my_ip : %s, myId : %d\n", local_ip, myId);
+    int cfd = mySocketInit(allDrone[myId].IP, allDrone[myId].PORT);
+
+    AuthNode* head = initList();
+
+    __uint8_t* mynonce = (__uint8_t*)malloc(NONCELEN);
+    __uint8_t* othernonce = (__uint8_t*)malloc(NONCELEN);
+
+    printf("updateinterval: %d\n", updateinterval);
+
+    pthread_t id;
+
+    GlobalVars globalVars;
+    globalVars.cfd = cfd;
+    globalVars.myId = myId;
+    globalVars.allDrone = allDrone;
+    globalVars.head = head;
+    globalVars.Debug = Debug;
+    gV = &globalVars;
+
+    int ret = pthread_create(&id, NULL, receive, NULL);
+    if (-1 == ret) print_err("pthread_create failed", __LINE__, errno);
+    wrapperOfUpdate(updateinterval, updateinterval);
+
+    ReceiveUpdate receiveupdate[DRONENUM];
+    receiveupdate_init(receiveupdate, DRONENUM);
+    UpdateInfo ui = {0};
+    ui.updateinterval = updateinterval;
+    ui.response = response;
+    ui.receiveupdate = (ReceiveUpdate*)&receiveupdate;
+    updateif = &ui;
+    testWorstGroupCreate(cfd, allDrone, myId, head, droneNum);
+
+    // testBestGroupCreate(cfd, allDrone, myId, head);
+    // testCertificationTime(cfd, allDrone, myId, head);
+    // testJoinTime(cfd, allDrone, myId, head, droneNum);
+    // testCRTime(cfd, allDrone, myId, head, 64);
+    // testOriginGroupCreateTime(cfd, allDrone, myId, head, 8);
+    // testSm4Time(16,1980);while(1);
+    // testHmacTime(32);while(1);
+
+    int flag = -1;
+    while (1) {
+        printf("====================menu====================\n");
+        printf("0:Print Auth Table\n");
+        printf("1:Authenticate\t 2:Update Session Key\t 3:xxxxxx\n");
+        scanf("%d", &flag);
+        switch (flag) {
+        case 0:
+
+            printf("Auth Table is:\n");
+            printAuthtable(head, 1);
+            break;
+
+        case 1:
+
+            AuthNode* p = searchList(head, destId);
+            if (p != NULL && p->flag == 1) {
+                printf("drone-%d already authed\n", destId);
+                continue;
+            }
+            __uint8_t* mynonce = (unsigned char*)malloc(NONCELEN);
+            AuthenticationMsg authMsg = {0};
+            MessageHeader header = {0};
+
+            header.srcId = myId;
+            header.destId = destId;
+            rand_bytes(mynonce, NONCELEN);
+
+            generateAuthMessage(&authMsg, 0x1, &header, mynonce, NULL);
+
+            printf("mynonce is: ");
+            print_char_arr(mynonce, NONCELEN);
+
+            if (header.srcId < header.destId) {
+                insertNode(head, allDrone[destId].id, authMsg.nonce, NULL, 0, 0,
+                           0);
+            }
+
+            else {
+                insertNode(head, allDrone[destId].id, NULL, authMsg.nonce, 0, 0,
+                           0);
+            }
+
+            sendPaddingMsgThread(cfd, (void*)&authMsg, sizeof(authMsg), 0x1,
+                                 allDrone[destId].IP, allDrone[destId].PORT);
+            printf("Send authMsg to drone-%d!\n", destId);
+            break;
+
+        case 2: nodeCheck(response); break;
+
+        default: break;
+        }
+    }
+    return 0;
 }

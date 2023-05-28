@@ -104,6 +104,734 @@ services:
         networks:
           group:
             ipv4_address: 10.10.0.18
+    drone9:
+        image: myubuntu:22.04
+        container_name: "drone9"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.19
+    drone10:
+        image: myubuntu:22.04
+        container_name: "drone10"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.20
+    drone11:
+        image: myubuntu:22.04
+        container_name: "drone11"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.21
+    drone12:
+        image: myubuntu:22.04
+        container_name: "drone12"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.22
+    drone13:
+        image: myubuntu:22.04
+        container_name: "drone13"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.23
+    drone14:
+        image: myubuntu:22.04
+        container_name: "drone14"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.24
+    drone15:
+        image: myubuntu:22.04
+        container_name: "drone15"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.25
+    drone16:
+        image: myubuntu:22.04
+        container_name: "drone16"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.26
+    drone17:
+        image: myubuntu:22.04
+        container_name: "drone17"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.27
+    drone18:
+        image: myubuntu:22.04
+        container_name: "drone18"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.28
+    drone19:
+        image: myubuntu:22.04
+        container_name: "drone19"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.29
+    drone20:
+        image: myubuntu:22.04
+        container_name: "drone20"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.30
+    drone21:
+        image: myubuntu:22.04
+        container_name: "drone21"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.31
+    drone22:
+        image: myubuntu:22.04
+        container_name: "drone22"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.32
+    drone23:
+        image: myubuntu:22.04
+        container_name: "drone23"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.33
+    drone24:
+        image: myubuntu:22.04
+        container_name: "drone24"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.34
+    drone25:
+        image: myubuntu:22.04
+        container_name: "drone25"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.35
+    drone26:
+        image: myubuntu:22.04
+        container_name: "drone26"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.36
+    drone27:
+        image: myubuntu:22.04
+        container_name: "drone27"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.37
+    drone28:
+        image: myubuntu:22.04
+        container_name: "drone28"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.38
+    drone29:
+        image: myubuntu:22.04
+        container_name: "drone29"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.39
+    drone30:
+        image: myubuntu:22.04
+        container_name: "drone30"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.40
+    drone31:
+        image: myubuntu:22.04
+        container_name: "drone31"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.41
+    drone32:
+        image: myubuntu:22.04
+        container_name: "drone32"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.42
+    drone33:
+        image: myubuntu:22.04
+        container_name: "drone33"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.43
+    drone34:
+        image: myubuntu:22.04
+        container_name: "drone34"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.44
+    drone35:
+        image: myubuntu:22.04
+        container_name: "drone35"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.45
+    drone36:
+        image: myubuntu:22.04
+        container_name: "drone36"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.46
+    drone37:
+        image: myubuntu:22.04
+        container_name: "drone37"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.47
+    drone38:
+        image: myubuntu:22.04
+        container_name: "drone38"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.48
+    drone39:
+        image: myubuntu:22.04
+        container_name: "drone39"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.49
+    drone40:
+        image: myubuntu:22.04
+        container_name: "drone40"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.50
+    drone41:
+        image: myubuntu:22.04
+        container_name: "drone41"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.51
+    drone42:
+        image: myubuntu:22.04
+        container_name: "drone42"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.52
+    drone43:
+        image: myubuntu:22.04
+        container_name: "drone43"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.53
+    drone44:
+        image: myubuntu:22.04
+        container_name: "drone44"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.54
+    drone45:
+        image: myubuntu:22.04
+        container_name: "drone45"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.55
+    drone46:
+        image: myubuntu:22.04
+        container_name: "drone46"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.56
+    drone47:
+        image: myubuntu:22.04
+        container_name: "drone47"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.57
+    drone48:
+        image: myubuntu:22.04
+        container_name: "drone48"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.58
+    drone49:
+        image: myubuntu:22.04
+        container_name: "drone49"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.59
+    drone50:
+        image: myubuntu:22.04
+        container_name: "drone50"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.60
+    drone51:
+        image: myubuntu:22.04
+        container_name: "drone51"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.61
+    drone52:
+        image: myubuntu:22.04
+        container_name: "drone52"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.62
+    drone53:
+        image: myubuntu:22.04
+        container_name: "drone53"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.63
+    drone54:
+        image: myubuntu:22.04
+        container_name: "drone54"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.64
+    drone55:
+        image: myubuntu:22.04
+        container_name: "drone55"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.65
+    drone56:
+        image: myubuntu:22.04
+        container_name: "drone56"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.66
+    drone57:
+        image: myubuntu:22.04
+        container_name: "drone57"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.67
+    drone58:
+        image: myubuntu:22.04
+        container_name: "drone58"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.68
+    drone59:
+        image: myubuntu:22.04
+        container_name: "drone59"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.69
+    drone60:
+        image: myubuntu:22.04
+        container_name: "drone60"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.70
+    drone61:
+        image: myubuntu:22.04
+        container_name: "drone61"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.71
+    drone62:
+        image: myubuntu:22.04
+        container_name: "drone62"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.72
+    drone63:
+        image: myubuntu:22.04
+        container_name: "drone63"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.73
+    drone64:
+        image: myubuntu:22.04
+        container_name: "drone64"
+        volumes:
+          - /home/rookia/SecUAV:/SecUAV
+        environment:
+          - LD_LIBRARY_PATH=/SecUAV/lib
+        tty: true 
+        stdin_open: true
+        command: /bin/bash -c "cd /SecUAV && ./main && ./sleep"
+        networks:
+          group:
+            ipv4_address: 10.10.0.74
 networks:
   group:
     external:

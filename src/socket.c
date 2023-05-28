@@ -5,113 +5,115 @@
 
 #define MAXLEN 2000
 
+void* receive(void* arg) {
+    int ret = 0;
+    void* msg = malloc(MAXLEN);
+    struct sockaddr_in src_addr = {0};
+    int src_addr_size = sizeof(src_addr);
 
-void *receive(void* arg) {
-  struct recive_func_arg* rfa = (struct recive_func_arg *)arg;
-  int ret = 0;
-  void* msg = malloc(MAXLEN);
-  struct sockaddr_in src_addr = {0};
-  int src_addr_size = sizeof(src_addr);
-  
-  while(1) {
-    bzero(msg, MAXLEN);
-    ret = recvfrom(rfa->sock_fd, msg, MAXLEN,0, (struct sockaddr *)&src_addr, &src_addr_size); 
-    if (-1 == ret) {
-      print_err("recv failed",__LINE__,errno);
+    while (1) {
+        bzero(msg, MAXLEN);
+        ret = recvfrom(gV->cfd, msg, MAXLEN, 0, (struct sockaddr*)&src_addr,
+                       &src_addr_size);
+
+        if (-1 == ret) {
+            print_err("recv failed", __LINE__, errno);
+        }
+
+        else if (ret > 0) {
+            int msg_type = *(char*)msg;
+            switch (msg_type) {
+            case 1: // auth msg
+
+                receiveAuthMessage(msg);
+                break;
+
+            case 2: // share msg
+
+                receiveShareMessage(msg);
+                break;
+
+            case 3: receiveNodeCheckMessage(msg); break;
+
+            case 4: receiveAuthTableShareMsg(msg); break;
+            }
+        }
     }
-    else if (ret > 0){
-      int msg_type = *(char*)msg;
-      switch(msg_type){
-        case 1:   //auth msg
-          handle_auth_message(msg, rfa->DEBUG);
-          break;
-        case 2:   //share msg
-          handle_share_message(msg, rfa->DEBUG);
-          break;
-        case 3:
-          handle_update_message(msg, rfa->DEBUG);
-          break;
-        case 4:
-          handle_update_share_msg(msg, rfa->DEBUG);
-          break;
-      }
+
+    free(msg);
+}
+
+void tSMInit(ThreadSendMsgType* tSM) {
+    tSM->cfd = -1;
+    tSM->padding = -1;
+    tSM->DestPort = -1;
+    tSM->len = -1;
+    memset(tSM->msg, 0, MAXLEN);
+    memset(tSM->DestIP, 0, 13);
+}
+
+void sendPaddingMsgThread(int cfd, void* msg, int len, char padding,
+                          unsigned char* DestIp, int DestPort) {
+    ThreadSendMsgType* tSM =
+        (ThreadSendMsgType*)malloc(sizeof(ThreadSendMsgType));
+
+    if (tSM == NULL) {
+        printf("tSM malloc error!\n");
+        return;
     }
-  }
-  free(msg);
+    pthread_t id;
+
+    tSM->cfd = cfd;
+    mystrncpy(tSM->msg, msg, len);
+    tSM->len = len;
+    tSM->padding = padding;
+    tSM->DestPort = DestPort;
+    mystrncpy(tSM->DestIP, DestIp, 13);
+
+    int ret = pthread_create(&id, NULL, sendPaddingMsg, (void*)tSM);
+    if (-1 == ret) print_err("pthread_create failed", __LINE__, errno);
 }
 
-void sfa_init(Send_func_arg* sfa){
-  sfa->sock_fd = -1;
-  sfa->padding = -1;
-  sfa->Dest_PORT = -1;
-  sfa->len = -1;
-  memset(sfa->msg, 0, MAXLEN);
-  memset(sfa->Dest_IP, 0, 13);
+void* sendPaddingMsg(void* arg) {
+    struct ThreadSendMsgType* tSM = (struct ThreadSendMsgType*)arg;
+    struct sockaddr_in destAddr;
+
+    destSocketInit(&destAddr, tSM->DestIP, tSM->DestPort);
+    __uint8_t paddingMsg[tSM->len + 1];
+    memset(paddingMsg, 0, tSM->len + 1);
+    addBytes(paddingMsg, tSM->msg, tSM->len, &(tSM->padding), 1);
+
+    sendMsg(tSM->cfd, (void*)paddingMsg, tSM->len + 1,
+            (struct sockaddr*)&destAddr);
+
+    if (tSM != NULL) free(tSM);
 }
 
-
-void send_padding_msg_thread(int cfd, void* msg, int len, char padding, unsigned char* Dest_IP, int Dest_PORT){
-  Send_func_arg* sfa = (Send_func_arg*) malloc(sizeof(Send_func_arg));
-  //printf("len: %ld\n", sizeof(Send_func_arg));
-  if (sfa == NULL){
-    printf("sfa malloc error!\n");
-    return;
-  }
-  pthread_t id;
-  sfa->sock_fd = cfd;
-  mystrncpy(sfa->msg, msg, len);
-  //printf("msg0: ");print_char_arr(sfa->msg, 100);
-  sfa->len = len;
-  sfa->padding = padding;
-  //printf("padding0: %d\n", padding);
-  mystrncpy(sfa->Dest_IP, Dest_IP, 13);
-  sfa->Dest_PORT = Dest_PORT;
-  int ret = pthread_create(&id,NULL,send_padding_msg,(void* )sfa);
-  if (-1 == ret) print_err("pthread_create failed", __LINE__, errno);
+int sendMsg(int cfd, void* msg, int len, struct sockaddr* addr) {
+    int ret = 0;
+    ret = sendto(cfd, (void*)msg, len, 0, addr, sizeof(*addr));
+    return ret;
 }
 
+int mySocketInit(const unsigned char* IP, int port) {
+    int ret = -1;
+    int cfd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (-1 == cfd) { print_err("socket failed", __LINE__, errno); }
+    struct sockaddr_in myAddr;
 
-void* send_padding_msg(void* arg){
-  struct send_func_arg* sfa = (struct send_func_arg*)arg;
-  //printf("msg: ");print_char_arr(sfa->msg, 2048);
-  struct sockaddr_in dest_addr;
-  Dest_Socket_init(&dest_addr, sfa->Dest_IP, sfa->Dest_PORT);
-  //__uint8_t* padding_msg = malloc((len + 1) * sizeof(char));
-  __uint8_t padding_msg[sfa->len+1];
-  memset(padding_msg, 0, sfa->len+1);
-  add_byte(padding_msg, sfa->msg, sfa->len, sfa->padding);
-  //printf("dest_addr: %s\n", sfa->Dest_IP);
-  send_msg(sfa->sock_fd, (void*)padding_msg, sfa->len+1, (struct sockaddr*)&dest_addr);
-  if (sfa != NULL)
-    free(sfa);
+    myAddr.sin_family = AF_INET;
+    myAddr.sin_port = htons(port);
+    myAddr.sin_addr.s_addr = inet_addr(IP);
+
+    ret = bind(cfd, (struct sockaddr*)&myAddr, sizeof(myAddr));
+
+    if (-1 == ret) { print_err("bind failed", __LINE__, errno); }
+    return cfd;
 }
 
-int send_msg(int cfd, void* msg, int len, struct sockaddr* addr){
-  int ret = 0;
-  //print_char_arr(msg, len);
-  ret = sendto(cfd, (void *)msg, len, 0, addr, sizeof(*addr));
-  return ret;
-}
-
-int My_Socket_init(const unsigned char* IP, int PORT){
-  int ret = -1;
-  int cfd = socket(AF_INET, SOCK_DGRAM, 0);
-  if (-1 == cfd) {
-    print_err("socket failed", __LINE__, errno);
-  }
-  struct sockaddr_in my_addr;
-  my_addr.sin_family = AF_INET; 
-  my_addr.sin_port = htons(PORT); 
-  my_addr.sin_addr.s_addr = inet_addr(IP); 
-  ret = bind(cfd, (struct sockaddr*)&my_addr, sizeof(my_addr));
-  if ( -1 == ret) {
-    print_err("bind failed",__LINE__,errno);
-  }
-  return cfd;
-}
-
-void Dest_Socket_init(struct sockaddr_in* dest_addr, const unsigned char* IP, int PORT){
-  dest_addr->sin_family = AF_INET; 
-  dest_addr->sin_port = htons(PORT); 
-  dest_addr->sin_addr.s_addr = inet_addr(IP);
+void destSocketInit(struct sockaddr_in* destAddr, const unsigned char* IP,
+                    int port) {
+    destAddr->sin_family = AF_INET;
+    destAddr->sin_port = htons(port);
+    destAddr->sin_addr.s_addr = inet_addr(IP);
 }

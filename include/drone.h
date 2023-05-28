@@ -5,14 +5,14 @@
 #include <string.h>
 
 #define DRONENUM 64
-typedef struct drone{
-  char id;
-  __uint8_t IP[14];
-  int PORT;
-}Drone;
+typedef struct drone {
+    char id;
+    __uint8_t IP[14];
+    int PORT;
+} Drone;
 
-int drone_init(Drone* alldrone);
-char find_drone_by_ip(Drone* alldrone, char* IP);
-char find_drone_by_id(Drone* alldrone, char id);
+int droneInit(Drone* alldrone);
+char findDroneByIp(Drone* alldrone, char* IP);
+char findDroneById(Drone* alldrone, char id);
 
 #endif

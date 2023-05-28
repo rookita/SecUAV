@@ -3,7 +3,7 @@
 droneNum=$2
 i=1
 if [ $1 == "start" ];then 
-    bash generate_docker-compose $droneNum
+    bash ~/SecUAV/scripts/generate_docker-compose $droneNum
     docker-compose up -d
 
 elif [ $1 == "stop" ];then
