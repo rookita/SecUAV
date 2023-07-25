@@ -1,4 +1,5 @@
 #include "../include/utils.h"
+#include "../include/crypto.h"
 #include <string.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -84,4 +85,17 @@ void mystrncat(char* dest, const char* src, size_t n1, size_t n2) {
     size_t i;
     for (i = 0; i < n2; i++) { dest[dest_len + i] = src[i]; }
     dest[dest_len + i] = '\0';
+}
+
+void getHashChain(const unsigned char* key, size_t len, char times,
+                  unsigned char* res) {
+    int i = 0;
+    unsigned char* tmp = (unsigned char*)malloc(len);
+    memset(tmp, 0, len);
+    mystrncpy(tmp, key, len);
+    for (i = 0; i < times; i++) {
+        my_sm3(tmp, len, res);
+        mystrncpy(tmp, res, 32);
+    }
+    free(tmp);
 }

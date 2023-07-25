@@ -1,5 +1,0 @@
-debug = 0
-dronenum = 64
-updateinterval = 100
-noncelen = 16
-sessionkeylen = 16

@@ -16,7 +16,9 @@
         "config.h": "c",
         "basic_message.h": "c",
         "authentication_table_share_message.h": "c",
-        "node_check_message.h": "c"
+        "node_check_message.h": "c",
+        "stdio.h": "c",
+        "config": "c"
     },
     "cmake.configureOnOpen": false,
     "editor.formatOnSave": true,

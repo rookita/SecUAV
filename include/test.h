@@ -6,8 +6,7 @@
 #include "utils.h"
 #include <stdlib.h>
 
-void testWorstGroupCreate(int cfd, Drone* alldrone, char MY_ID, AuthNode* head,
-                          int droneNum);
+void testWorstGroupCreate(char myId, int droneNum);
 void testBestGroupCreate(int cfd, Drone* alldrone, char MY_ID, AuthNode* head);
 void testCertificationTime(int cfd, Drone* alldrone, char MY_ID,
                            AuthNode* head);
@@ -19,5 +18,5 @@ void testCRTime(int cfd, Drone* alldrone, char MY_ID, AuthNode* head,
                 int droneNum);
 void testOriginGroupCreateTime(int cfd, Drone* alldrone, char MY_ID,
                                AuthNode* head, int droneNum);
-
+void testHashChain(char id);
 #endif

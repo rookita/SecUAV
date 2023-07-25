@@ -11,3 +11,5 @@ void addBytes(__uint8_t* paddingMsg, void* originMsg, int msgLen,
 int getLocalIp(char* local_ip);
 void mystrncpy(char* dest, const char* src, size_t n);
 void mystrncat(char* dest, const char* src, size_t n1, size_t n2);
+void getHashChain(const unsigned char* key, size_t len, char times,
+                  unsigned char* res);

@@ -2,9 +2,6 @@
 #include "../include/crypto.h"
 #include "../include/utils.h"
 
-__uint8_t Sm4_iv[KEYLEN] = "0123456789abcde";
-__uint8_t hmac_key[KEYLEN] = "Secret HMAC Keyy";
-
 void my_sm4_cbc_padding_encrypt(const unsigned char* Sm4_key,
                                 const unsigned char* Sm4_iv, unsigned char* msg,
                                 size_t mlen, unsigned char* ciphertext,
@@ -84,16 +81,24 @@ void my_sm3_hmac(const __uint8_t* key, size_t keylen, const __uint8_t* msg,
     sm3_hmac(key, keylen, msg, msglen, hmac);
 }
 
-void generate_session_key(__uint8_t* sessionkey, __uint8_t* nonce1,
-                          __uint8_t* nonce2, int len) { // hmac(K || N1 || N2)
+void my_sm3(const unsigned char* message, size_t len, unsigned char* res) {
+    SM3_CTX sm3_ctx;
+    sm3_init(&sm3_ctx);
+    sm3_update(&sm3_ctx, message, len);
+    sm3_finish(&sm3_ctx, res);
+}
+
+void generate_session_key(__uint8_t* key, __uint8_t* sessionkey,
+                          __uint8_t* nonce1, __uint8_t* nonce2,
+                          int len) { // hmac(K || N1 || N2)
     __uint8_t* mbuf = (__uint8_t*)malloc(len + len);
     __uint8_t* hmac = (__uint8_t*)malloc(32);
     memset(sessionkey, 0, len);
     memset(mbuf, 0, 2 * len);
     memset(hmac, 0, 32);
-    strncat(mbuf, nonce1, len);
-    strncat(mbuf, nonce2, len);
-    my_sm3_hmac(hmac_key, KEYLEN, mbuf, 2 * len, hmac);
+    mystrncat(mbuf, nonce1, 0, len);
+    mystrncat(mbuf, nonce2, len, len);
+    my_sm3_hmac(key, KEYLEN, mbuf, 2 * len, hmac);
     strncpy(sessionkey, hmac, len);
     free(mbuf);
     free(hmac);

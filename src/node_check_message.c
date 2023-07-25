@@ -29,8 +29,9 @@ void sendNodeCheckMsg(NodeCheckMsg* nodeCheckMsg, int msgLen,
     __uint8_t ciphertext[clen];
     memset(ciphertext, 0, clen);
 
-    my_sm4_cbc_padding_encrypt(Sm4_key, Sm4_iv, (__uint8_t*)nodeCheckMsg,
-                               msgLen, ciphertext, &clen, gV->Debug);
+    my_sm4_cbc_padding_encrypt(Sm4_key, gV->allDrone[gV->myId].Sm4_iv,
+                               (__uint8_t*)nodeCheckMsg, msgLen, ciphertext,
+                               &clen, gV->Debug);
     // printf("clen: %ld\n", clen);
 
     MessageHeader header;
@@ -64,7 +65,7 @@ void nodeCheckToOne(char destId) {
         if (node->id == destId) {
             sendNodeCheckMsg(&nodeCheckMsg, sizeof(NodeCheckMsg),
                              gV->allDrone[destId].IP, gV->allDrone[destId].PORT,
-                             node->sessionkey);
+                             node->sessionkey1);
             break;
         }
 
@@ -92,8 +93,8 @@ void nodeCheck(Response* response) {
     header.srcId = gV->myId;
     header.destId = node->id;
 
-    generateNodeCheckMsg(&nodeCheckMsg, 0x1, &header,
-                         nonce); // 触发节点对其他节点使用同一个随机数
+    // 触发节点对其他节点使用同一个随机数
+    generateNodeCheckMsg(&nodeCheckMsg, 0x1, &header, nonce);
 
     int i = 0;
     // 统计认证状态表个数
@@ -116,7 +117,7 @@ void nodeCheck(Response* response) {
 
             sendNodeCheckMsg(&nodeCheckMsg, sizeof(NodeCheckMsg),
                              gV->allDrone[node->id].IP,
-                             gV->allDrone[node->id].PORT, node->sessionkey);
+                             gV->allDrone[node->id].PORT, node->sessionkey1);
 
             printf("send update msg to drone-%d\n", node->id);
 
@@ -190,8 +191,9 @@ void receiveNodeCheckMessage(void* msg) {
 
     size_t mlen;
 
-    my_sm4_cbc_padding_decrypt(p->sessionkey, Sm4_iv, ciphertext, clen,
-                               (__uint8_t*)&nodeCheckMsg, &mlen, gV->Debug);
+    my_sm4_cbc_padding_decrypt(p->sessionkey2, gV->allDrone[gV->myId].Sm4_iv,
+                               ciphertext, clen, (__uint8_t*)&nodeCheckMsg,
+                               &mlen, gV->Debug);
 
     if (gV->Debug) {
         printf("\n");
@@ -234,7 +236,7 @@ void receiveNodeCheckMessage(void* msg) {
             &responseOfNodeCheckMsg, sizeof(responseOfNodeCheckMsg),
             gV->allDrone[responseOfNodeCheckMsg.header.destId].IP,
             gV->allDrone[responseOfNodeCheckMsg.header.destId].PORT,
-            p->sessionkey);
+            p->sessionkey1);
 
         printf("send response update msg to drone-%d\n",
                responseOfNodeCheckMsg.header.destId);
@@ -248,26 +250,21 @@ void receiveNodeCheckMessage(void* msg) {
 
         memset(p->nonce1, 0, NONCELEN);
         memset(p->nonce2, 0, NONCELEN);
-        memset(p->sessionkey, 0, NONCELEN);
+        memset(p->sessionkey1, 0, NONCELEN);
+        memset(p->sessionkey2, 0, NONCELEN);
 
-        if (p->id < myId) {
-            mystrncpy(p->nonce1, nodeCheckMsg.newnonce, NONCELEN);
-            mystrncpy(p->nonce2, nonce, NONCELEN);
-        }
+        mystrncpy(p->nonce1, nonce, NONCELEN);
+        mystrncpy(p->nonce2, nodeCheckMsg.newnonce, NONCELEN);
 
-        else {
-            mystrncpy(p->nonce1, nonce, NONCELEN);
-            mystrncpy(p->nonce2, nodeCheckMsg.newnonce, NONCELEN);
-        }
-
-        generate_session_key(p->sessionkey, p->nonce1, p->nonce2, NONCELEN);
+        generate_session_key(gV->allDrone[gV->myId].hmac_key, p->sessionkey1,
+                             p->nonce1, p->nonce2, NONCELEN);
+        generate_session_key(gV->allDrone[gV->myId].hmac_key, p->sessionkey2,
+                             p->nonce2, p->nonce1, NONCELEN);
 
         p->flag = 1;
         p->direct = 1;
 
         printf("drone-%d update success\n", responseHeader.destId);
-        printf("new session key is ");
-        print_char_arr(p->sessionkey, NONCELEN);
 
         gV->head->flag += 1;
         // printf("Auth Table:\n");
@@ -295,21 +292,16 @@ void receiveNodeCheckMessage(void* msg) {
         printf("recieve update response message of drone-%d\n",
                nodeCheckMsg.header.srcId);
 
-        if (nodeCheckMsg.header.srcId < nodeCheckMsg.header.destId) {
-            memset(p->nonce1, 0, NONCELEN);
-            mystrncpy(p->nonce1, nodeCheckMsg.newnonce, NONCELEN);
-        }
+        memset(p->nonce2, 0, NONCELEN);
+        mystrncpy(p->nonce2, nodeCheckMsg.newnonce, NONCELEN);
 
-        else {
-            memset(p->nonce2, 0, NONCELEN);
-            mystrncpy(p->nonce2, nodeCheckMsg.newnonce, NONCELEN);
-        }
-
-        generate_session_key(p->sessionkey, p->nonce1, p->nonce2, NONCELEN);
+        generate_session_key(gV->allDrone[gV->myId].hmac_key, p->sessionkey1,
+                             p->nonce1, p->nonce2, NONCELEN);
+        generate_session_key(gV->allDrone[gV->myId].hmac_key, p->sessionkey2,
+                             p->nonce2, p->nonce1, NONCELEN);
         p->direct = 1;
         printf("drone-%d update success\n", nodeCheckMsg.header.srcId);
-        printf("new session key is ");
-        print_char_arr(p->sessionkey, NONCELEN);
+
         // printf("Auth Table:\n");
         // printAuthtable(gV->head, 0);
 

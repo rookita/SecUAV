@@ -20,8 +20,9 @@ void sendAuthTableShareMsg(AuthenticationTableShareMsg* authTableShareMsg,
     __uint8_t ciphertext[clen];
     memset(ciphertext, 0, clen);
 
-    my_sm4_cbc_padding_encrypt(Sm4_key, Sm4_iv, (__uint8_t*)authTableShareMsg,
-                               msgLen, ciphertext, &clen, gV->Debug);
+    my_sm4_cbc_padding_encrypt(Sm4_key, gV->allDrone[gV->myId].Sm4_iv,
+                               (__uint8_t*)authTableShareMsg, msgLen,
+                               ciphertext, &clen, gV->Debug);
     MessageHeader header = {0};
     header.srcId = authTableShareMsg->header.srcId;
     header.destId = authTableShareMsg->header.destId;
@@ -42,18 +43,12 @@ void shareAuthTable() {
     char myId = gV->myId;
     MessageHeader header = {0};
     header.srcId = myId;
-    while (node != NULL) {     // 构造消息
+
+    while (node != NULL) { // 构造消息
         authTableShareMsg.id[i] = node->id;
-        if (node->id < myId) { // node的随机数为nonce1
-            mystrncat(authTableShareMsg.nonce, node->nonce1, i * NONCELEN,
-                      NONCELEN);
-        }
 
-        else {
-            mystrncat(authTableShareMsg.nonce, node->nonce2, i * NONCELEN,
-                      NONCELEN);
-        }
-
+        mystrncat(authTableShareMsg.nonce, node->nonce2, i * NONCELEN,
+                  NONCELEN);
         i++;
         node = node->next;
     }
@@ -67,7 +62,7 @@ void shareAuthTable() {
         authTableShareMsg.header = header;
         sendAuthTableShareMsg(&authTableShareMsg, sizeof(authTableShareMsg),
                               gV->allDrone[node->id].IP,
-                              gV->allDrone[node->id].PORT, node->sessionkey);
+                              gV->allDrone[node->id].PORT, node->sessionkey1);
         node = node->next;
     }
 
@@ -122,9 +117,9 @@ void receiveAuthTableShareMsg(void* msg) {
     }
 
     size_t mlen = 0;
-    my_sm4_cbc_padding_decrypt(p->sessionkey, Sm4_iv, ciphertext, clen,
-                               (__uint8_t*)&authTableShareMsg, &mlen,
-                               gV->Debug);
+    my_sm4_cbc_padding_decrypt(p->sessionkey2, gV->allDrone[gV->myId].Sm4_iv,
+                               ciphertext, clen, (__uint8_t*)&authTableShareMsg,
+                               &mlen, gV->Debug);
 
     if (gV->Debug) {
         printf("\n");
@@ -135,14 +130,7 @@ void receiveAuthTableShareMsg(void* msg) {
 
     __uint8_t mynonce[NONCELEN];
     memset(mynonce, 0, NONCELEN);
-
-    if (p->id < gV->allDrone[gV->myId].id) {
-        mystrncpy(mynonce, p->nonce2, NONCELEN);
-
-    } else {
-        mystrncpy(mynonce, p->nonce1, NONCELEN);
-    }
-
+    mystrncpy(mynonce, p->nonce1, NONCELEN);
     p = NULL;
     int i = 0;
     char myId = gV->myId;
@@ -158,38 +146,28 @@ void receiveAuthTableShareMsg(void* msg) {
                 p->flag = 1;
                 p->direct = 0; // 只与发送消息者direct为1，方便后续Share
 
-                if (tmp1 > myId) { // nonce1为我的随机数
-                    memset(p->nonce2, 0, NONCELEN);
-                    mystrncpy(p->nonce2, authTableShareMsg.nonce + i * NONCELEN,
-                              NONCELEN);
-                    memset(p->nonce1, 0, NONCELEN);
-                    mystrncpy(p->nonce1, mynonce, NONCELEN);
-                }
+                               // nonce1为我的随机数
+                memset(p->nonce2, 0, NONCELEN);
+                mystrncpy(p->nonce2, authTableShareMsg.nonce + i * NONCELEN,
+                          NONCELEN);
+                memset(p->nonce1, 0, NONCELEN);
+                mystrncpy(p->nonce1, mynonce, NONCELEN);
 
-                else if (tmp1 < myId) {
-                    memset(p->nonce1, 0, NONCELEN);
-                    mystrncpy(p->nonce1, authTableShareMsg.nonce + i * NONCELEN,
-                              NONCELEN);
-                    memset(p->nonce2, 0, NONCELEN);
-                    mystrncpy(p->nonce2, mynonce, NONCELEN);
-                }
             } else { // 之前没认证
 
-                if (tmp1 < myId) {
-                    p = insertNode(gV->head, tmp1,
-                                   authTableShareMsg.nonce + i * NONCELEN,
-                                   mynonce, 1, -1, 0);
-                }
-
-                else {
-                    p = insertNode(gV->head, tmp1, mynonce,
-                                   authTableShareMsg.nonce + i * NONCELEN, 1,
-                                   -1, 0);
-                }
+                p = insertNode(gV->head, tmp1, mynonce,
+                               authTableShareMsg.nonce + i * NONCELEN, 1, -1,
+                               0);
             }
 
-            memset(p->sessionkey, 0, NONCELEN);
-            generate_session_key(p->sessionkey, p->nonce1, p->nonce2, NONCELEN);
+            memset(p->sessionkey1, 0, NONCELEN);
+            memset(p->sessionkey2, 0, NONCELEN);
+            generate_session_key(gV->allDrone[gV->myId].hmac_key,
+                                 p->sessionkey1, p->nonce1, p->nonce2,
+                                 NONCELEN);
+            generate_session_key(gV->allDrone[gV->myId].hmac_key,
+                                 p->sessionkey2, p->nonce2, p->nonce1,
+                                 NONCELEN);
             printf("Update drone-%d\n", tmp1);
         }
 
@@ -220,35 +198,26 @@ void regularUpdate(int sigum) {
     char srcId = gV->myId;
     Response* response = updateif->response;
     AuthNode* node = gV->head->next;
-    char updateId = gV->myId;
+    char updateId = 0;
 
     if (gV->head->flag == 0) { // 第一次更新选择认证表中ID最小的
-
-        while (node != NULL) {
-            if (node->id <= updateId) updateId = node->id;
-            node = node->next;
-        }
-
+        updateId = gV->allDrone[gV->myId].leaderID + 1;
     }
 
     else { // 其他情况随机指定
 
         node = gV->head->next;
         int sum;
-        if (node != NULL && node->id < gV->myId)
-            sum = node->nonce2[NONCELEN - 1];
-        else if (node != NULL && node->id > gV->myId)
-            sum = node->nonce1[NONCELEN - 1];
+        sum = node->nonce1[NONCELEN - 1];
+        sum += node->nonce2[NONCELEN - 1];
+        node = node->next;
         while (node != NULL) {
-            if (node->id < gV->myId)
-                sum += node->nonce1[NONCELEN - 1];
-            else
-                sum += node->nonce2[NONCELEN - 1];
+            sum += node->nonce2[NONCELEN - 1];
             node = node->next;
         }
-
         printf("sum: %d\n", sum);
-        updateId = sum % DRONENUM + 1;
+        updateId =
+            gV->allDrone[gV->myId].leaderID + sum % (gV->groupSize - 1) + 1;
     }
 
     // sleep(1);
@@ -284,21 +253,15 @@ void regularUpdate(int sigum) {
                 generateNodeCheckMsg(&nodeCheckMsg, 0x1, &header, nonce);
                 sendNodeCheckMsg(&nodeCheckMsg, sizeof(nodeCheckMsg),
                                  gV->allDrone[node->id].IP,
-                                 gV->allDrone[node->id].PORT, node->sessionkey);
+                                 gV->allDrone[node->id].PORT,
+                                 node->sessionkey1);
                 printf("send nodeCheckMsg to drone-%d\n", header.destId);
                 response[i].id = node->id; // 记录接收到的响应
                 response[i].isresponsed = 0;
                 i++;
 
-                if (node->id < srcId) { // id小的为nonce1
-                    memset(node->nonce2, 0, NONCELEN);
-                    mystrncpy(node->nonce2, nonce, NONCELEN);
-                }
-
-                else { // node->id > srcId
-                    memset(node->nonce1, 0, NONCELEN);
-                    mystrncpy(node->nonce1, nonce, NONCELEN);
-                }
+                memset(node->nonce1, 0, NONCELEN);
+                mystrncpy(node->nonce1, nonce, NONCELEN);
             }
             node = node->next;
         }

@@ -67,28 +67,25 @@ AuthNode* searchList(AuthNode* head, char id) {
 void printAuthtable(AuthNode* head, char onlyNum) {
     AuthNode* p = head->next;
     int sum = 0, num = 0;
-    if (p != NULL && p->id < gV->myId)
-        sum = p->nonce2[NONCELEN - 1];
-    else if (p != NULL && p->id > gV->myId)
-        sum = p->nonce1[NONCELEN - 1];
+    sum = p->nonce1[NONCELEN - 1];
     if (!onlyNum)
-        printf("| %-10s | %-10s | %-10s | %-32s | %-32s | %-32s |\n", "id",
-               "Authed", "Direct", "nonce1", "nonce2", "sessionkey");
+        printf("| %-10s | %-10s | %-10s | %-32s | %-32s | %-32s | %-32s |\n",
+               "id", "Authed", "Direct", "nonce1", "nonce2", "sessionkey1",
+               "sessionkey2");
     while (p != NULL) {
         num += 1;
-        if (p->id < gV->myId)
-            sum += p->nonce1[NONCELEN - 1];
-        else
-            sum += p->nonce2[NONCELEN - 1];
+        sum += p->nonce2[NONCELEN - 1];
         if (!onlyNum) {
             printf("| %-10d ", p->id);
-            printf("| %-10s |", p->flag ? "True" : "Fasle");
+            printf("| %-10s ", p->flag ? "True" : "Fasle");
             printf("| %-10s |", p->direct ? "True" : "Fasle");
             print_char_arr1(p->nonce1, 16);
             printf("  |");
             print_char_arr1(p->nonce2, 16);
             printf("  |");
-            print_char_arr1(p->sessionkey, 16);
+            print_char_arr1(p->sessionkey1, 16);
+            printf("  |");
+            print_char_arr1(p->sessionkey2, 16);
             printf("  |");
             printf("\n");
         }

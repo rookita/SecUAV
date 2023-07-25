@@ -51,6 +51,80 @@ void printAuthenticationMsg(AuthenticationMsg* authMsg) {
 }
 
 /**
+ * @brief 发起对无人机的认证
+ *
+ * @param index
+ * @param destId
+ * @param nonce
+ * @param repeat 判断是否是首次发送
+ * @return ** void
+ */
+void auth(char index, char destId, __uint8_t* nonce, char repeat) {
+    char myId = gV->myId;
+    MessageHeader header = {0};
+    header.srcId = myId;
+    header.destId = destId;
+
+    AuthenticationMsg authMsg = {0};
+
+    if (index == 0) {
+        generateAuthMessage(&authMsg, index, &header, nonce, NULL);
+        // 首次发送，需在认证状态表中插入
+        if (repeat == 0) {
+            insertNode(gV->head, gV->allDrone[destId].id, authMsg.nonce, NULL,
+                       0, 0, 0);
+        }
+
+        printf("will send authMsg: \n");
+        printAuthenticationMsg(&authMsg);
+    }
+
+    else if (index == 1 || index == 2) {
+        __uint8_t mbuf[34];
+        memset(mbuf, 0, 2 * NONCELEN + 2);
+        AuthNode* node = searchList(gV->head, destId);
+        if (node == NULL) {
+            printf("error\n");
+            return;
+        }
+
+        if (myId < destId) {
+            mystrncat(mbuf, &authMsg.header.srcId, 0, 1);
+            mystrncat(mbuf, &authMsg.header.destId, 1, 1);
+            mystrncat(mbuf, node->nonce1, 2, NONCELEN);
+            mystrncat(mbuf, node->nonce2, 2 + NONCELEN, NONCELEN);
+            mystrncpy(authMsg.nonce, node->nonce1, NONCELEN);
+        }
+        authMsg.header = header;
+        if (index == 1)
+            authMsg.index = 1;
+        else
+            authMsg.index = 2;
+        my_sm3_hmac(gV->allDrone[gV->myId].hmac_key, KEYLEN, mbuf,
+                    sizeof(*mbuf), authMsg.hmac);
+    }
+
+    else if (index == 3) {
+        __uint8_t m[2 * NONCELEN];
+        AuthNode* node = searchList(gV->head, destId);
+
+        if (node == NULL) {
+            printf("error\n");
+            return;
+        }
+
+        mystrncat(m, node->nonce1, 0, NONCELEN);
+        mystrncat(m, node->nonce2, NONCELEN, NONCELEN);
+        generateAuthMessage(&authMsg, 0x3, &header, NULL, NULL);
+
+        my_sm4_cbc_encrypt(node->sessionkey1, gV->allDrone[gV->myId].Sm4_iv, m,
+                           2 * NONCELEN, authMsg.hmac, gV->Debug);
+    }
+
+    sendPaddingMsgThread(gV->cfd, (void*)&authMsg, sizeof(authMsg), 0x1,
+                         gV->allDrone[destId].IP, gV->allDrone[destId].PORT);
+}
+/**
  * @brief 对收到的认证消息进行处理
  *
  * @param originMsg
@@ -65,61 +139,47 @@ void receiveAuthMessage(void* originMsg) {
             printf("[info]>>>recive msg \n");
             printAuthenticationMsg(&authMsg);
         }
-
+        AuthNode* node = NULL;
         switch (authMsg.index) {
-        case 1: // reciver
+        case 0: // 收到认证消息
             if (gV->Debug)
                 printf("##########CASE ONE DEBUG INFO START##########\n");
 
+            node = searchList(gV->head, authMsg.header.srcId);
+            if (node != NULL) { return; } // 收到重复消息，直接舍弃
             __uint8_t nonce[NONCELEN];
             __uint8_t mbuf[34];
             __uint8_t hmac[32];
-            memset(nonce, 0, NONCELEN);
+            memset(nonce, 0, NONCELEN); // 生成回应的随机数
             memset(mbuf, 0, 2 * NONCELEN + 2);
             memset(hmac, 0, 32);
 
             rand_bytes(nonce, NONCELEN);
 
-            if (authMsg.header.srcId
-                < authMsg.header
-                      .destId) { // nonce1-header.srcId,nonce2-header.destId
-                AuthNode* node =
-                    insertNode(gV->head, authMsg.header.srcId, authMsg.nonce,
-                               NULL, 0, 1, 0); // nonce1-srcid
+            node =
+                insertNode(gV->head, authMsg.header.srcId, NULL, authMsg.nonce,
+                           0, 1, 0); // 其他无人机随机数为nonce2
+            mystrncpy(node->nonce1, nonce, NONCELEN); // 自己随机数为nonce1
+            mystrncat(mbuf, &authMsg.header.srcId, 0,
+                      1); // otherId || myId || myNonce || otherNonce
+            mystrncat(mbuf, &authMsg.header.destId, 1, 1);
+            mystrncat(mbuf, node->nonce1, 2, NONCELEN);
+            mystrncat(mbuf, node->nonce2, 2 + NONCELEN, NONCELEN);
 
-                mystrncpy(node->nonce2, nonce,
-                          NONCELEN); // nonce2-header.destId
-                mystrncat(mbuf, &authMsg.header.srcId, 0, 1);
-                mystrncat(mbuf, &authMsg.header.destId, 1, 1);
-                mystrncat(mbuf, node->nonce2, 2, NONCELEN);
-                mystrncat(mbuf, node->nonce1, 2 + NONCELEN, NONCELEN);
-            }
-
-            else { // header.srcId > header.destId
-                AuthNode* node =
-                    insertNode(gV->head, authMsg.header.srcId, NULL,
-                               authMsg.nonce, 0, 1, 0); // nonce1-header.destId
-
-                mystrncpy(node->nonce1, nonce, NONCELEN); // nonce2-srcid
-                mystrncat(mbuf, &authMsg.header.srcId, 0, 1);
-                mystrncat(mbuf, &authMsg.header.destId, 1, 1);
-                mystrncat(mbuf, node->nonce1, 2, NONCELEN);
-                mystrncat(mbuf, node->nonce2, 2 + NONCELEN, NONCELEN);
-            }
-
+            my_sm3_hmac(gV->allDrone[gV->myId].hmac_key, 16, mbuf,
+                        2 * NONCELEN + 2, hmac);
             if (gV->Debug) {
-                printf("[info]>>the mbuf of hmac is ");
+                printf("[info]>>mbuf:  ");
                 print_char_arr(mbuf, 2 * NONCELEN + 2);
+                printf("hmac: ");
+                print_char_arr(hmac, 32);
             }
-
-            my_sm3_hmac(hmac_key, sizeof(*hmac_key), mbuf, sizeof(*mbuf), hmac);
-
             AuthenticationMsg myAuthMsg = {0};
             MessageHeader header = {0};
             header.srcId = authMsg.header.destId;
             header.destId = authMsg.header.srcId;
 
-            generateAuthMessage(&myAuthMsg, 0x2, &header, nonce, hmac);
+            generateAuthMessage(&myAuthMsg, 0x1, &header, nonce, hmac);
 
             if (gV->Debug) {
                 printf("[info]>>>will send msg \n");
@@ -134,36 +194,27 @@ void receiveAuthMessage(void* originMsg) {
                 printf("##########CASE ONE DEBUG INFO END##########\n");
             break;
 
-        case 2: // sender
+        case 1: // 验证hmac,发送自己生成的hmac
             if (gV->Debug)
                 printf("##########CASE TWO DEBUG INFO START##########\n");
 
-            AuthNode* p2 = searchList(gV->head, authMsg.header.srcId);
+            node = searchList(gV->head, authMsg.header.srcId);
 
-            if (p2 != NULL) {
+            if (node != NULL) {
                 __uint8_t* mbuf = (__uint8_t*)malloc(2 * NONCELEN + 2);
                 __uint8_t* hmac = (__uint8_t*)malloc(32);
                 memset(mbuf, 0, 2 * NONCELEN + 2);
                 memset(hmac, 0, 32);
 
-                if (authMsg.header.srcId < authMsg.header.destId) {
-                    mystrncat(mbuf, &authMsg.header.destId, 0, 1);
-                    mystrncat(mbuf, &authMsg.header.srcId, 1, 1);
-                    mystrncat(mbuf, authMsg.nonce, 2, NONCELEN);
-                    mystrncat(mbuf, p2->nonce2, 2 + NONCELEN, NONCELEN);
-                    mystrncpy(p2->nonce1, authMsg.nonce, NONCELEN);
-                }
+                mystrncpy(node->nonce2, authMsg.nonce, NONCELEN);
 
-                else { // header.destId < srcid
-                    mystrncat(mbuf, &authMsg.header.destId, 0, 1);
-                    mystrncat(mbuf, &authMsg.header.srcId, 1, 1);
-                    mystrncat(mbuf, authMsg.nonce, 2, NONCELEN);
-                    mystrncat(mbuf, p2->nonce1, 2 + NONCELEN, NONCELEN);
-                    mystrncpy(p2->nonce2, authMsg.nonce, NONCELEN);
-                }
+                mystrncat(mbuf, &authMsg.header.destId, 0, 1);
+                mystrncat(mbuf, &authMsg.header.srcId, 1, 1);
+                mystrncat(mbuf, node->nonce2, 2, NONCELEN);
+                mystrncat(mbuf, node->nonce1, 2 + NONCELEN, NONCELEN);
 
-                my_sm3_hmac(hmac_key, sizeof(*hmac_key), mbuf, sizeof(*mbuf),
-                            hmac);
+                my_sm3_hmac(gV->allDrone[gV->myId].hmac_key, 16, mbuf,
+                            2 * NONCELEN + 2, hmac);
 
                 if (isEqual(authMsg.hmac, hmac, 32)) { // 验证通过
                     memset(mbuf, 0, 2 * NONCELEN + 2);
@@ -171,44 +222,43 @@ void receiveAuthMessage(void* originMsg) {
 
                     if (gV->Debug) printf("[info]>>> case2 hmac right\n");
 
-                    p2->flag = 1;
+                    node->flag = 1;
 
-                    if (authMsg.header.srcId < authMsg.header.destId) {
-                        mystrncat(mbuf, &authMsg.header.destId, 0, 1);
-                        mystrncat(mbuf, &authMsg.header.srcId, 1, 1);
-                        mystrncat(mbuf, p2->nonce2, 2, NONCELEN);
-                        mystrncat(mbuf, p2->nonce1, 2 + NONCELEN, NONCELEN);
+                    mystrncat(mbuf, &authMsg.header.destId, 0, 1);
+                    mystrncat(mbuf, &authMsg.header.srcId, 1, 1);
+                    mystrncat(mbuf, node->nonce1, 2, NONCELEN);
+                    mystrncat(mbuf, node->nonce2, 2 + NONCELEN, NONCELEN);
+
+                    my_sm3_hmac(gV->allDrone[gV->myId].hmac_key, 16, mbuf,
+                                2 * NONCELEN + 2, hmac);
+
+                    if (gV->Debug) {
+                        printf("mbuf: ");
+                        print_char_arr(mbuf, 34);
+                        printf("id1: %d\n", authMsg.header.destId);
+                        printf("id2: %d\n", authMsg.header.srcId);
+                        printf("nonce1: ");
+                        print_char_arr(node->nonce1, NONCELEN);
+                        printf("nonce2: ");
+                        print_char_arr(node->nonce2, NONCELEN);
+                        printf("hmac: ");
+                        print_char_arr(hmac, 32);
                     }
 
-                    else { // srcid > header.destId
-                        mystrncat(mbuf, &authMsg.header.destId, 0, 1);
-                        mystrncat(mbuf, &authMsg.header.srcId, 1, 1);
-                        mystrncat(mbuf, p2->nonce1, 2, NONCELEN);
-                        mystrncat(mbuf, p2->nonce2, 2 + NONCELEN, NONCELEN);
-                    }
-
-                    my_sm3_hmac(hmac_key, sizeof(*hmac_key), mbuf,
-                                sizeof(*mbuf), hmac);
-                    /*
-                    if (gV->Debug){
-                      printf("mbuf: ");print_char_arr(mbuf, 34);
-                      printf("id1: %d\n", authMsg.header.destId);
-                      printf("id2: %d\n", authMsg.srcid);
-                      printf("nonce1: ");print_char_arr(p2->mynonce, NONCELEN);
-                      printf("nonce2: ");print_char_arr(p2->othernonce,
-                    NONCELEN); printf("hmac: ");print_char_arr(hmac, 32);
-                    }
-                    */
                     AuthenticationMsg myAuthMsg = {0};
                     MessageHeader header = {0};
                     header.srcId = authMsg.header.destId;
                     header.destId = authMsg.header.srcId;
 
-                    generateAuthMessage(&myAuthMsg, 0x3, &header, NULL, hmac);
-                    generate_session_key(p2->sessionkey, p2->nonce1, p2->nonce2,
-                                         NONCELEN);
+                    generateAuthMessage(&myAuthMsg, 0x2, &header, NULL, hmac);
+                    generate_session_key(gV->allDrone[gV->myId].hmac_key,
+                                         node->sessionkey1, node->nonce1,
+                                         node->nonce2, NONCELEN);
+                    generate_session_key(gV->allDrone[gV->myId].hmac_key,
+                                         node->sessionkey2, node->nonce2,
+                                         node->nonce1, NONCELEN);
 
-                    p2->index = 2;
+                    node->index = 2;
 
                     if (gV->Debug) {
                         printf("[info]>>>will send auth msg: \n");
@@ -222,12 +272,12 @@ void receiveAuthMessage(void* originMsg) {
                 }
 
                 else {
-                    printf("[info]>>>case2 hmac is not equal!\n");
+                    printf("[info]>>>case1 hmac is not equal!\n");
                     printf("[info]>>>compute_hmac is ");
                     print_char_arr(hmac, 32);
                     printf("[info]>>>recive_hmac is ");
                     print_char_arr(authMsg.hmac, 32);
-                    deleteNode(gV->head, p2);
+                    deleteNode(gV->head, node);
                 }
 
                 free(mbuf);
@@ -243,8 +293,8 @@ void receiveAuthMessage(void* originMsg) {
                 printf("##########CASE TWO DEBUG INFO END##########\n");
             break;
 
-        case 3: // reciver
-            // 查找table,验证hamc
+        case 2: // 查找table,验证hamc
+
             AuthNode* p3 = searchList(gV->head, authMsg.header.srcId);
 
             if (gV->Debug)
@@ -256,28 +306,23 @@ void receiveAuthMessage(void* originMsg) {
                 memset(mbuf, 0, 2 * NONCELEN + 2);
                 memset(hmac, 0, 32);
 
-                if (authMsg.header.srcId < authMsg.header.destId) {
-                    mystrncat(mbuf, &authMsg.header.srcId, 0, 1);
-                    mystrncat(mbuf, &authMsg.header.destId, 1, 1);
-                    mystrncat(mbuf, p3->nonce1, 2, NONCELEN);
-                    mystrncat(mbuf, p3->nonce2, 2 + NONCELEN, NONCELEN);
-                }
+                mystrncat(mbuf, &authMsg.header.srcId, 0, 1);
+                mystrncat(mbuf, &authMsg.header.destId, 1, 1);
+                mystrncat(mbuf, p3->nonce2, 2, NONCELEN);
+                mystrncat(mbuf, p3->nonce1, 2 + NONCELEN, NONCELEN);
 
-                else {
-                    mystrncat(mbuf, &authMsg.header.srcId, 0, 1);
-                    mystrncat(mbuf, &authMsg.header.destId, 1, 1);
-                    mystrncat(mbuf, p3->nonce2, 2, NONCELEN);
-                    mystrncat(mbuf, p3->nonce1, 2 + NONCELEN, NONCELEN);
-                }
-
-                my_sm3_hmac(hmac_key, sizeof(*hmac_key), mbuf, sizeof(*mbuf),
-                            hmac);
+                my_sm3_hmac(gV->allDrone[gV->myId].hmac_key, 16, mbuf,
+                            2 * NONCELEN + 2, hmac);
 
                 if (isEqual(authMsg.hmac, hmac, 32)) { // 验证通过
-                    if (gV->Debug) { printf("[info]>>> hmac right\n"); }
+                    if (gV->Debug) { printf("[info]>>> case3 hmac right\n"); }
 
-                    generate_session_key(p3->sessionkey, p3->nonce1, p3->nonce2,
-                                         NONCELEN);
+                    generate_session_key(gV->allDrone[gV->myId].hmac_key,
+                                         p3->sessionkey1, p3->nonce1,
+                                         p3->nonce2, NONCELEN);
+                    generate_session_key(gV->allDrone[gV->myId].hmac_key,
+                                         p3->sessionkey2, p3->nonce2,
+                                         p3->nonce1, NONCELEN);
 
                     p3->flag = 1;
                     // printf("end_time: %ld\n", clock());
@@ -295,10 +340,11 @@ void receiveAuthMessage(void* originMsg) {
 
                     mystrncat(m, p3->nonce1, 0, NONCELEN);
                     mystrncat(m, p3->nonce2, NONCELEN, NONCELEN);
-                    generateAuthMessage(&myAuthMsg, 0x4, &header, NULL, NULL);
+                    generateAuthMessage(&myAuthMsg, 0x3, &header, NULL, NULL);
 
-                    my_sm4_cbc_encrypt(p3->sessionkey, Sm4_iv, m, 2 * NONCELEN,
-                                       myAuthMsg.hmac, gV->Debug);
+                    my_sm4_cbc_encrypt(p3->sessionkey1,
+                                       gV->allDrone[gV->myId].Sm4_iv, m,
+                                       2 * NONCELEN, myAuthMsg.hmac, gV->Debug);
                     if (gV->Debug) {
                         printf("[info]>>>will send auth msg: \n");
                         printAuthenticationMsg(&myAuthMsg);
@@ -346,23 +392,24 @@ void receiveAuthMessage(void* originMsg) {
             printf("##########CASE THREE DEBUG INFO END##########\n");
             break;
 
-        case 4:
+        case 3:
             AuthNode* p4 = searchList(gV->head, authMsg.header.srcId);
 
             if (gV->Debug)
                 printf("##########CASE FOUR DEBUG INFO START##########\n");
 
             if (p4 != NULL) {
+                __uint8_t* decrypted_m = (__uint8_t*)malloc(2 * NONCELEN);
+                memset(decrypted_m, 0, 2 * NONCELEN);
                 __uint8_t* m = (__uint8_t*)malloc(2 * NONCELEN);
                 memset(m, 0, 2 * NONCELEN);
-                __uint8_t* mm = (__uint8_t*)malloc(2 * NONCELEN);
-                memset(mm, 0, 2 * NONCELEN);
-                mystrncat(mm, p4->nonce1, 0, NONCELEN);
-                mystrncat(mm, p4->nonce2, NONCELEN, NONCELEN);
-                my_sm4_cbc_decrypt(p4->sessionkey, Sm4_iv, authMsg.hmac,
-                                   2 * NONCELEN, m, gV->Debug);
+                mystrncat(m, p4->nonce2, 0, NONCELEN);
+                mystrncat(m, p4->nonce1, NONCELEN, NONCELEN);
+                my_sm4_cbc_decrypt(p4->sessionkey2,
+                                   gV->allDrone[gV->myId].Sm4_iv, authMsg.hmac,
+                                   2 * NONCELEN, decrypted_m, gV->Debug);
 
-                if (strncmp(m, mm, 2 * NONCELEN) == 0) { // 相等
+                if (strncmp(m, decrypted_m, 2 * NONCELEN) == 0) { // 相等
                     p4->flag = 1;
                     // printf("end_time: %ld\n", clock());
                     p4->direct = 1;
@@ -380,15 +427,15 @@ void receiveAuthMessage(void* originMsg) {
                 }
 
                 else {
-                    printf("case4 not equal!\n");
+                    printf("case3 not equal!\n");
                     printf("m: ");
                     print_char_arr(m, 2 * NONCELEN);
-                    printf("mm: ");
-                    print_char_arr(mm, 2 * NONCELEN);
+                    printf("decrypted_m: ");
+                    print_char_arr(decrypted_m, 2 * NONCELEN);
                 }
 
                 free(m);
-                free(mm);
+                free(decrypted_m);
             }
             if (gV->Debug)
                 printf("##########CASE FOUR DEBUG INFO END##########\n");

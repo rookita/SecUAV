@@ -14,5 +14,5 @@ elif [ $1 == "stop" ];then
     done
     #echo ${droneName}
     docker stop ${droneName}
-    #docker rm ${droneName}
+    docker rm ${droneName}
 fi

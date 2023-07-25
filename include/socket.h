@@ -24,6 +24,9 @@ typedef struct GlobalVars {
     Drone* allDrone;
     AuthNode* head;
     char Debug;
+    char groupSize;
+    unsigned char* currentHash;
+
 } GlobalVars;
 
 typedef struct ThreadSendMsgType {

@@ -15,6 +15,8 @@ void generateAuthMessage(AuthenticationMsg* authMsg, char index,
                          __uint8_t* hmac);
 void sendAuthMessage(AuthenticationMsg* authMsg, unsigned char* DestIP,
                      int DestPort, int msgLen);
+
+void auth(char index, char destId, __uint8_t* nonce, char repeat);
 void printAuthenticationMsg(AuthenticationMsg* authMsg);
 void receiveAuthMessage(void* originMsg);
 

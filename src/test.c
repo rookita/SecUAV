@@ -2,86 +2,45 @@
 #include <unistd.h>
 #include <time.h>
 
-void testWorstGroupCreate(int cfd, Drone* alldrone, char myId, AuthNode* head,
-                          int droneNum) { // chain
+// 测试链式结构群组建立
+void testWorstGroupCreate(char myId, int droneNum) { // chain
 
     printf(
         "=============================START TEST!!! I am drone-%d=============================\n",
         myId);
     char destId = myId + 1;
-    if (findDroneById(alldrone, destId) == 0) { // 无对应无人机
+    printf("%d\n", gV->allDrone[myId].leaderID);
+    if (myId == gV->allDrone[myId].leaderID) { return; }
+    if (findDroneById(gV->allDrone, destId) == 0
+        || compareDroneGroup(gV->allDrone, myId, destId) != 0) {
         return;
     }
+    unsigned char nonce[NONCELEN];
     while (1) {
+        memset(nonce, 0, NONCELEN);
         printf("start_time: %ld\n", clock());
         sleep(myId);
         if (myId < droneNum) {
-            AuthNode* p = searchList(head, destId);
-            if (p == NULL) {
-                unsigned char nonce[NONCELEN];
-                memset(nonce, 0, NONCELEN);
+            AuthNode* node = searchList(gV->head, destId);
+            if (node == NULL) {
                 rand_bytes(nonce, NONCELEN);
-
-                AuthenticationMsg authMsg = {0};
-                MessageHeader header = {0};
-                header.srcId = myId;
-                header.destId = destId;
-
-                generateAuthMessage(&authMsg, 0x1, &header, nonce, NULL);
-
-                printf("mynonce is: ");
-                print_char_arr(authMsg.nonce, NONCELEN);
-
-                if (header.srcId < header.destId) {
-                    insertNode(head, alldrone[destId].id, authMsg.nonce, NULL,
-                               0, 0, 0);
-                }
-
-                else {
-                    insertNode(head, alldrone[destId].id, NULL, authMsg.nonce,
-                               0, 0, 0);
-                }
-
-                sendPaddingMsgThread(cfd, (void*)&authMsg, sizeof(authMsg), 0x1,
-                                     alldrone[destId].IP,
-                                     alldrone[destId].PORT);
-                printf("Send Auth msg to drone-%d!\n", destId);
+                printf("nonce is ");
+                print_char_arr(nonce, NONCELEN);
+                auth(0x0, destId, nonce, 0);
             }
 
-            else if (p != NULL && p->flag != 1 && p->index == 0) {
-                unsigned char nonce[NONCELEN];
-                memset(nonce, 0, NONCELEN);
-                rand_bytes(nonce, NONCELEN);
-                AuthenticationMsg authMsg = {0};
-
-                MessageHeader header = {0};
-                header.srcId = myId;
-                header.destId = destId;
-
-                generateAuthMessage(&authMsg, 0x1, &header, nonce, NULL);
-
-                printf("mynonce is: ");
-                print_char_arr(authMsg.nonce, NONCELEN);
-
-                if (header.srcId < header.destId) {
-                    memset(p->nonce1, 0, NONCELEN);
-                    mystrncpy(p->nonce1, authMsg.nonce, NONCELEN);
-
+            // 已经发起过认证
+            else if (node != NULL && node->flag != 1) {
+                AuthNode* node = searchList(gV->head, destId);
+                if (node == NULL) {
+                    printf("error\n");
+                    return;
                 }
-
-                else {
-                    memset(p->nonce2, 0, NONCELEN);
-                    mystrncpy(p->nonce2, authMsg.nonce, NONCELEN);
-                }
-
-                sendPaddingMsgThread(cfd, (void*)&authMsg, sizeof(authMsg), 0x1,
-                                     alldrone[destId].IP,
-                                     alldrone[destId].PORT);
-                printf("Send Auth msg to drone-%d!\n", destId);
-
-            }
-
-            else {
+                if (myId < destId)
+                    auth(node->index, destId, node->nonce1, 1);
+                else
+                    auth(node->index, destId, node->nonce2, 1);
+            } else {
                 break;
             }
         }
@@ -91,11 +50,13 @@ void testWorstGroupCreate(int cfd, Drone* alldrone, char myId, AuthNode* head,
         myId);
 }
 
+// 测试二叉树结构群组建立
 void testBestGroupCreate(int cfd, Drone* alldrone, char myId,
                          AuthNode* head) { // 二叉树
     printf(
         "=============================START TEST!!! I am drone-%d=============================\n",
         myId);
+    if (myId == gV->allDrone[myId].leaderID) { return; }
     int count = 1, dn = DRONENUM, i, destId = 0;
     int interval = 1, start = 1, drone;
     unsigned char nonce[NONCELEN];
@@ -127,72 +88,27 @@ void testBestGroupCreate(int cfd, Drone* alldrone, char myId,
         if (destId != 0) {
             while (1) {
                 p = searchList(head, destId);
+                // 首次发送
                 if (p == NULL) {
                     memset(nonce, 0, NONCELEN);
                     rand_bytes(nonce, NONCELEN);
-                    memset(&authMsg, 0, sizeof(authMsg));
-                    MessageHeader header = {0};
-                    header.srcId = myId;
-                    header.destId = destId;
-
-                    generateAuthMessage(&authMsg, 0x1, &header, nonce, NULL);
-                    printf("mynonce is: ");
-                    print_char_arr(authMsg.nonce, NONCELEN);
-
-                    if (header.srcId < header.destId) {
-                        insertNode(head, alldrone[destId].id, authMsg.nonce,
-                                   NULL, 0, 0, 0);
-
-                    }
-
-                    else {
-                        insertNode(head, alldrone[destId].id, NULL,
-                                   authMsg.nonce, 0, 0, 0);
-                    }
-
-                    sendPaddingMsgThread(cfd, (void*)&authMsg, sizeof(authMsg),
-                                         0x1, alldrone[destId].IP,
-                                         alldrone[destId].PORT);
-
+                    auth(0x0, destId, nonce, 0);
                     printf("start_time: %ld\n", clock());
                     printf("Send authMsg to drone-%d!\n", destId);
-
                 }
 
-                else if (p->flag != 1 && p->index == 0) {
-                    unsigned char nonce[NONCELEN];
-                    memset(nonce, 0, NONCELEN);
-                    rand_bytes(nonce, NONCELEN);
-                    memset(&authMsg, 0, sizeof(authMsg));
-                    MessageHeader header = {0};
-                    header.srcId = myId;
-                    header.destId = destId;
-
-                    generateAuthMessage(&authMsg, 0x1, &header, nonce, NULL);
-
-                    printf("mynonce is: ");
-                    print_char_arr(authMsg.nonce, NONCELEN);
-
-                    if (header.srcId < header.destId) {
-                        memset(p->nonce1, 0, NONCELEN);
-                        mystrncpy(p->nonce1, authMsg.nonce, NONCELEN);
-
+                // 已经发起过认证
+                else if (p != NULL && p->flag != 1) {
+                    AuthNode* node = searchList(gV->head, destId);
+                    if (node == NULL) {
+                        printf("error\n");
+                        return;
                     }
-
-                    else {
-                        memset(p->nonce2, 0, NONCELEN);
-                        mystrncpy(p->nonce2, authMsg.nonce, NONCELEN);
-                    }
-
-                    sendPaddingMsgThread(cfd, (void*)&authMsg, sizeof(authMsg),
-                                         0x1, alldrone[destId].IP,
-                                         alldrone[destId].PORT);
-                    printf("start_time: %ld\n", clock());
-                    printf("Send Auth msg to drone-%d!\n", destId);
-
-                }
-
-                else {
+                    if (myId < destId)
+                        auth(node->index, destId, node->nonce1, 1);
+                    else
+                        auth(node->index, destId, node->nonce2, 1);
+                } else {
                     break;
                 }
                 sleep(10);
@@ -209,6 +125,7 @@ void testBestGroupCreate(int cfd, Drone* alldrone, char myId,
         myId);
 }
 
+// 测试两方认证时间
 void testCertificationTime(int cfd, Drone* alldrone, char myId,
                            AuthNode* head) {
     printf(
@@ -241,6 +158,7 @@ void testCertificationTime(int cfd, Drone* alldrone, char myId,
     printf("Send authMsg to drone-%d!\n", destId);
 }
 
+// 测试节点加入群组时间
 void testJoinTime(int cfd, Drone* alldrone, char myId, AuthNode* head,
                   int droneNum) {
     printf("start_time: %ld\n", clock());
@@ -340,11 +258,13 @@ void testSm4Time(int keyLen, int msgLen) {
         rand_bytes(msg, msgLen);
         printf("plantext: ");
         print_char_arr(msg, msgLen);
-        my_sm4_cbc_encrypt(key, Sm4_iv, msg, msgLen, ciphertext, 0);
+        my_sm4_cbc_encrypt(key, gV->allDrone[gV->myId].Sm4_iv, msg, msgLen,
+                           ciphertext, 0);
         printf("ciphertext: ");
         print_char_arr(ciphertext, msgLen);
         memset(msg, 0, msgLen);
-        my_sm4_cbc_decrypt(key, Sm4_iv, ciphertext, msgLen, msg, 0);
+        my_sm4_cbc_decrypt(key, gV->allDrone[gV->myId].Sm4_iv, ciphertext,
+                           msgLen, msg, 0);
         printf("decode_text: ");
         print_char_arr(msg, msgLen);
     }
@@ -354,6 +274,7 @@ void testSm4Time(int keyLen, int msgLen) {
     free(ciphertext);
 }
 
+// 测试HMAC耗时
 void testHmacTime(int keyLen, int msgLen) {
     printf("keyLen: %d\n", keyLen);
     __uint8_t* key = (__uint8_t*)malloc(keyLen);
@@ -378,6 +299,7 @@ void testHmacTime(int keyLen, int msgLen) {
     free(key);
 }
 
+// 测试挑战-应答时间
 void testCRTime(int cfd, Drone* alldrone, char myId, AuthNode* head,
                 int droneNum) {
     printf(
@@ -473,6 +395,7 @@ void testCRTime(int cfd, Drone* alldrone, char myId, AuthNode* head,
         myId);
 }
 
+// 测试无信任传递群组建立时间
 void testOriginGroupCreateTime(int cfd, Drone* alldrone, char myId,
                                AuthNode* head, int droneNum) {
     printf(
@@ -560,4 +483,19 @@ void testOriginGroupCreateTime(int cfd, Drone* alldrone, char myId,
     printf(
         "=============================TEST END!!! I am drone-%d=============================\n",
         myId);
+}
+
+void testHashChain(char id) {
+    unsigned char res1[32];
+    unsigned char res2[32];
+    unsigned char res3[32];
+    my_sm3(gV->allDrone[id].hashChainKey, 32, res1);
+    my_sm3(res1, 32, res2);
+    getHashChain(gV->allDrone[id].hashChainKey, 32, 10, res3);
+    printf("res1:");
+    print_char_arr(res1, 32);
+    printf("res2:");
+    print_char_arr(res2, 32);
+    printf("res3:");
+    print_char_arr(res3, 32);
 }

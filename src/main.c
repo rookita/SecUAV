@@ -16,22 +16,32 @@ int main() {
     printf("nodeCheckLen: %ld\n", sizeof(NodeCheckMsg));
     printf("authTableShareMsgLen: %ld\n", sizeof(AuthenticationTableShareMsg));
 
-    config_t* conf = confRead("./config");
+    // 读取配置文件
+    config_t* conf = confRead("./config.txt");
     char Debug = atoi(confGet(conf, "debug"));
     int updateinterval = atoi(confGet(conf, "updateinterval"));
     int droneNum = atoi(confGet(conf, "dronenum"));
     char nonceLen = atoi(confGet(conf, "noncelen"));
     char sessionkeyLen = atoi(confGet(conf, "sessionkeylen"));
-
-    Drone allDrone[DRONENUM + 1];
-    droneInit(allDrone);
-
-    Response response[DRONENUM];
-    response_init(response, DRONENUM);
+    char groupSize = atoi(confGet(conf, "groupsize"));
 
     char local_ip[13];
     getLocalIp(local_ip);
-    char myId = findDroneByIp(allDrone, local_ip);
+    char myId = (local_ip[8] - '0') * 10 + local_ip[9] - '0';
+
+    char groupID = ((myId - 1) / groupSize) + 1;
+    char leaderID = (groupID - 1) * groupSize + 1;
+    if (myId == leaderID) {
+        __uint8_t allDrone[groupSize + 1 + DRONENUM / groupSize];
+        droneInit(allDrone, groupSize, 1, leaderID, groupID,
+                  groupSize + DRONENUM / groupSize - 1);
+    } else {
+        __uint8_t allDrone[groupSize + 1];
+        droneInit(allDrone, groupSize, 0, leaderID, groupID, groupSize);
+    }
+
+    Response response[DRONENUM];
+    response_init(response, DRONENUM);
 
     if (myId == -1) {
         printf("error!\n");
@@ -39,24 +49,29 @@ int main() {
     }
 
     char destId = myId + 1;
-    printf("my_ip : %s, myId : %d\n", local_ip, myId);
+    // printf("my_ip : %s, myId : %d\n", local_ip, myId);
     int cfd = mySocketInit(allDrone[myId].IP, allDrone[myId].PORT);
 
     AuthNode* head = initList();
 
     __uint8_t* mynonce = (__uint8_t*)malloc(NONCELEN);
-    __uint8_t* othernonce = (__uint8_t*)malloc(NONCELEN);
 
     printf("updateinterval: %d\n", updateinterval);
 
     pthread_t id;
 
+    unsigned char currentHash[32];
+    my_sm3(allDrone[myId].hashChainKey, 32, currentHash);
+
+    // 初始化全局变量
     GlobalVars globalVars;
     globalVars.cfd = cfd;
     globalVars.myId = myId;
     globalVars.allDrone = allDrone;
     globalVars.head = head;
     globalVars.Debug = Debug;
+    globalVars.currentHash = currentHash;
+    globalVars.groupSize = groupSize;
     gV = &globalVars;
 
     int ret = pthread_create(&id, NULL, receive, NULL);
@@ -70,7 +85,10 @@ int main() {
     ui.response = response;
     ui.receiveupdate = (ReceiveUpdate*)&receiveupdate;
     updateif = &ui;
-    testWorstGroupCreate(cfd, allDrone, myId, head, droneNum);
+
+    printDroneInfo(&(gV->allDrone[myId]));
+
+    testWorstGroupCreate(myId, droneNum);
 
     // testBestGroupCreate(cfd, allDrone, myId, head);
     // testCertificationTime(cfd, allDrone, myId, head);
@@ -79,8 +97,10 @@ int main() {
     // testOriginGroupCreateTime(cfd, allDrone, myId, head, 8);
     // testSm4Time(16,1980);while(1);
     // testHmacTime(32);while(1);
+    // testHashChain(myId);
 
     int flag = -1;
+    // 用于人工手动输入命令验证
     while (1) {
         printf("====================menu====================\n");
         printf("0:Print Auth Table\n");

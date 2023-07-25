@@ -21,6 +21,7 @@ void* receive(void* arg) {
         }
 
         else if (ret > 0) {
+            // print_char_arr(msg, 200);
             int msg_type = *(char*)msg;
             switch (msg_type) {
             case 1: // auth msg
@@ -72,6 +73,7 @@ void sendPaddingMsgThread(int cfd, void* msg, int len, char padding,
 
     int ret = pthread_create(&id, NULL, sendPaddingMsg, (void*)tSM);
     if (-1 == ret) print_err("pthread_create failed", __LINE__, errno);
+    // printf("Send Success!\n");
 }
 
 void* sendPaddingMsg(void* arg) {

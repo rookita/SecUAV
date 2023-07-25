@@ -4,6 +4,7 @@
 #include "gmssl/sm4.h"
 #include "gmssl/hmac.h"
 #include "gmssl/rand.h"
+#include "gmssl/sm3.h"
 
 #define KEYLEN 16
 
@@ -26,7 +27,10 @@ void my_sm4_cbc_decrypt(const unsigned char* Sm4_key,
                         size_t clen, unsigned char* msg, int DEBUG);
 void my_sm3_hmac(const __uint8_t* key, size_t keylen, const __uint8_t* msg,
                  size_t msglen, __uint8_t* hmac); // hmac为32字节
-void generate_session_key(__uint8_t* sessionkey, __uint8_t* nonce1,
-                          __uint8_t* nonce2, int len);
+
+void my_sm3(const unsigned char* message, size_t len, unsigned char* res);
+
+void generate_session_key(__uint8_t* key, __uint8_t* sessionkey,
+                          __uint8_t* nonce1, __uint8_t* nonce2, int len);
 
 #endif

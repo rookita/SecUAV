@@ -36,8 +36,9 @@ void sendShareMessage(NonceShareMsg* shareMsg, size_t msgLen,
 
     memset(ciphertext, 0, clen);
 
-    my_sm4_cbc_padding_encrypt(Sm4_key, Sm4_iv, (__uint8_t*)shareMsg, msgLen,
-                               ciphertext, &clen, gV->Debug);
+    my_sm4_cbc_padding_encrypt(Sm4_key, gV->allDrone[gV->myId].Sm4_iv,
+                               (__uint8_t*)shareMsg, msgLen, ciphertext, &clen,
+                               gV->Debug);
     // printf("clen: %ld\n", clen);
 
     MessageHeader header = shareMsg->header;
@@ -88,24 +89,14 @@ void nonceShare(AuthNode* p, char type, char dont_share) {
     if (type == 0) { // 是否对p分享
 
         int i = 0;
-        if (p->id < myId) {
-            mystrncpy(shareMsgToP.yourNonce, p->nonce1, NONCELEN);
-        }
 
-        else {
-            mystrncpy(shareMsgToP.yourNonce, p->nonce2, NONCELEN);
-        }
+        mystrncpy(shareMsgToP.yourNonce, p->nonce2, NONCELEN);
 
         while (node != NULL) {
             if (node != p && node->flag == 1 && node->id != dont_share) {
                 shareMsgToP.shareId[i] = node->id;
-                if (node->id < myId) {
-                    mystrncat(shareMsgToP.shareNonce, node->nonce1,
-                              i * NONCELEN, NONCELEN);
-                } else {
-                    mystrncat(shareMsgToP.shareNonce, node->nonce2,
-                              i * NONCELEN, NONCELEN);
-                }
+                mystrncat(shareMsgToP.shareNonce, node->nonce2, i * NONCELEN,
+                          NONCELEN);
                 i++;
             }
 
@@ -118,7 +109,7 @@ void nonceShare(AuthNode* p, char type, char dont_share) {
         if (i != 0) {
             sendShareMessage(&shareMsgToP, sizeof(shareMsgToP),
                              gV->allDrone[p->id].IP, gV->allDrone[p->id].PORT,
-                             p->sessionkey);
+                             p->sessionkey1);
             printf("Send Share Msg to drone-%d\n", p->id);
         }
     }
@@ -135,22 +126,11 @@ void nonceShare(AuthNode* p, char type, char dont_share) {
             header.srcId = myId;
             header.destId = node->id;
 
-            if (node->id < myId && p->id < myId) {
-                generateShareMessage(&shareMsgToNode, p->id, &header,
-                                     node->nonce1, p->nonce1); // 发送给node
-            } else if (node->id < myId && p->id > myId) {
-                generateShareMessage(&shareMsgToNode, p->id, &header,
-                                     node->nonce1, p->nonce2); // 发送给node
-            } else if (node->id > myId && p->id < myId) {
-                generateShareMessage(&shareMsgToNode, p->id, &header,
-                                     node->nonce2, p->nonce1); // 发送给node
-            } else if (node->id > myId && p->id > myId) {
-                generateShareMessage(&shareMsgToNode, p->id, &header,
-                                     node->nonce2, p->nonce2); // 发送给node
-            }
+            generateShareMessage(&shareMsgToNode, p->id, &header, node->nonce2,
+                                 p->nonce2); // 发送给node
             sendShareMessage(&shareMsgToNode, sizeof(shareMsgToNode),
                              gV->allDrone[node->id].IP,
-                             gV->allDrone[node->id].PORT, node->sessionkey);
+                             gV->allDrone[node->id].PORT, node->sessionkey1);
 
             printf("Send Share Msg to drone-%d\n", node->id);
         }
@@ -208,8 +188,9 @@ void receiveShareMessage(void* msg) {
         return;
     }
     size_t mlen = 0;
-    my_sm4_cbc_padding_decrypt(p->sessionkey, Sm4_iv, ciphertext, clen,
-                               (__uint8_t*)&shareMsg, &mlen, gV->Debug);
+    my_sm4_cbc_padding_decrypt(p->sessionkey2, gV->allDrone[gV->myId].Sm4_iv,
+                               ciphertext, clen, (__uint8_t*)&shareMsg, &mlen,
+                               gV->Debug);
 
     if (gV->Debug) {
         printf("shareMsg:\n");
@@ -219,7 +200,7 @@ void receiveShareMessage(void* msg) {
     int i = 0;
     for (i = 0; i < shareMsg.shareNum; i++) {
         p = searchList(gV->head, shareMsg.shareId[i]);
-        if (p != NULL) {
+        if (p != NULL) { // 已经认证过
             if (p->flag == 1)
 
                 printf("drone-%d aleardy auth!\n", shareMsg.shareId[i]);
@@ -228,21 +209,17 @@ void receiveShareMessage(void* msg) {
                 memset(p->nonce1, 0, NONCELEN);
                 memset(p->nonce2, 0, NONCELEN);
 
-                if (p->id < myId) {
-                    mystrncpy(p->nonce1, shareMsg.shareNonce + i * NONCELEN,
-                              NONCELEN); // p的nonce
-                    mystrncpy(p->nonce2, shareMsg.yourNonce,
-                              NONCELEN); // mynonce
-                }
-
-                else { // p->id > my_id
-                    mystrncpy(p->nonce1, shareMsg.yourNonce, NONCELEN);
-                    mystrncpy(p->nonce2, shareMsg.shareNonce + i * NONCELEN,
-                              NONCELEN);
-                }
+                mystrncpy(p->nonce1, shareMsg.yourNonce,
+                          NONCELEN); // mynonce
+                mystrncpy(p->nonce2, shareMsg.shareNonce + i * NONCELEN,
+                          NONCELEN); // p的nonce
 
                 p->flag = 1;
-                generate_session_key(p->sessionkey, p->nonce1, p->nonce2,
+                generate_session_key(gV->allDrone[gV->myId].hmac_key,
+                                     p->sessionkey1, p->nonce1, p->nonce2,
+                                     NONCELEN);
+                generate_session_key(gV->allDrone[gV->myId].hmac_key,
+                                     p->sessionkey2, p->nonce2, p->nonce1,
                                      NONCELEN);
                 printf("Recive Share Msg; Authed drone-%d\n",
                        shareMsg.shareId[i]);
@@ -251,17 +228,15 @@ void receiveShareMessage(void* msg) {
             }
         }
 
-        else {
-            if (shareMsg.shareId[i] < myId) {
-                p = insertNode(gV->head, shareMsg.shareId[i],
-                               shareMsg.shareNonce + i * NONCELEN,
-                               shareMsg.yourNonce, 1, -1, 0);
-            } else { // p->id > my_id
-                p = insertNode(gV->head, shareMsg.shareId[i],
-                               shareMsg.yourNonce,
-                               shareMsg.shareNonce + i * NONCELEN, 1, -1, 0);
-            }
-            generate_session_key(p->sessionkey, p->nonce1, p->nonce2, NONCELEN);
+        else { // 首次认证
+            p = insertNode(gV->head, shareMsg.shareId[i], shareMsg.yourNonce,
+                           shareMsg.shareNonce + i * NONCELEN, 1, -1, 0);
+            generate_session_key(gV->allDrone[gV->myId].hmac_key,
+                                 p->sessionkey1, p->nonce1, p->nonce2,
+                                 NONCELEN);
+            generate_session_key(gV->allDrone[gV->myId].hmac_key,
+                                 p->sessionkey2, p->nonce2, p->nonce1,
+                                 NONCELEN);
             printf("Recive Share Msg; Authed drone-%d\n", shareMsg.shareId[i]);
             printf("Share drone-%d to Others\n", p->id);
             nonceShare(p, 1, pp->id);
